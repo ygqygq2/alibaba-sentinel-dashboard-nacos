@@ -9,8 +9,8 @@
   <version>1.0.0</version>
   <packaging>jar</packaging>
 
-  <name>Token Server</name>
-  <description>Token Server for Sentinel Dashboard - Simple testing service with Hello World endpoint</description>
+  <name>Sentinel Cluster Token Server</name>
+  <description>Standalone Cluster Token Server for Sentinel - Provides centralized flow control token distribution for all applications</description>
 
   <parent>
     <groupId>org.springframework.boot</groupId>
@@ -24,6 +24,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <sentinel.version>1.8.9</sentinel.version>
   </properties>
 
   <dependencies>
@@ -35,6 +36,48 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+
+    <!-- Sentinel Core -->
+    <dependency>
+      <groupId>com.alibaba.csp</groupId>
+      <artifactId>sentinel-core</artifactId>
+      <version>${sentinel.version}</version>
+    </dependency>
+
+    <!-- Sentinel Transport - 与 Dashboard 通信 -->
+    <dependency>
+      <groupId>com.alibaba.csp</groupId>
+      <artifactId>sentinel-transport-simple-http</artifactId>
+      <version>${sentinel.version}</version>
+    </dependency>
+
+    <!-- Sentinel Annotation Support -->
+    <dependency>
+      <groupId>com.alibaba.csp</groupId>
+      <artifactId>sentinel-annotation-aspectj</artifactId>
+      <version>${sentinel.version}</version>
+    </dependency>
+
+    <!-- Sentinel Cluster Server - Token Server 模式 -->
+    <dependency>
+      <groupId>com.alibaba.csp</groupId>
+      <artifactId>sentinel-cluster-server-default</artifactId>
+      <version>${sentinel.version}</version>
+    </dependency>
+
+    <!-- Sentinel Cluster Client - 支持集群客户端模式 -->
+    <dependency>
+      <groupId>com.alibaba.csp</groupId>
+      <artifactId>sentinel-cluster-client-default</artifactId>
+      <version>${sentinel.version}</version>
+    </dependency>
+
+    <!-- Sentinel Nacos 数据源 - 从 Nacos 加载规则 -->
+    <dependency>
+      <groupId>com.alibaba.csp</groupId>
+      <artifactId>sentinel-datasource-nacos</artifactId>
+      <version>${sentinel.version}</version>
     </dependency>
 
     <dependency>

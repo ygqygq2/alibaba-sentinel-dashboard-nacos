@@ -28,6 +28,8 @@ services:
     image: sentinel/dashboard:local
     build:
       context: ./sentinel-dashboard
+      args:
+        - USE_CHINA_MIRROR=${USE_CHINA_MIRROR:-false}
     container_name: sentinel-dashboard
     depends_on:
       nacos:
@@ -53,17 +55,34 @@ services:
     image: sentinel/token-server:local
     build:
       context: ./token-server
+      args:
+        - USE_CHINA_MIRROR=${USE_CHINA_MIRROR:-false}
     container_name: token-server
+    hostname: token-server
     depends_on:
       sentinel-dashboard:
         condition: service_healthy
     environment:
+      - APP_NAME=sentinel-token-server
       - SERVER_PORT=8081
+      # Sentinel Dashboard 配置
       - SENTINEL_DASHBOARD_HOST=sentinel-dashboard
       - SENTINEL_DASHBOARD_PORT=8080
+      - CSP_SENTINEL_API_PORT=8719
+      - SERVICE_NAME=token-server
+      # Cluster Token Server 配置
+      - CLUSTER_SERVER_PORT=18730
+      - CLUSTER_IDLE_SECONDS=600
+      # Nacos 配置（用于从 Nacos 加载规则）
+      - NACOS_SERVER_ADDR=nacos:8848
+      - NACOS_GROUP_ID=SENTINEL_GROUP
+      # 命名空间（可选，逗号分隔的应用名）
+      # - CLUSTER_NAMESPACES=app1,app2
       - JAVA_OPTS=-Xms128m -Xmx256m
     ports:
-      - "8081:8081"
+      - "8081:8081" # HTTP 服务端口
+      - "8719:8719" # Sentinel API 端口（Dashboard 通信）
+      - "18730:18730" # Cluster Token Server 端口（集群限流通信）
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8081/actuator/health"]
       interval: 10s

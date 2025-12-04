@@ -153,7 +153,7 @@ java -Dserver.port=8080 \
 ### 构建镜像
 
 ```bash
-docker build -t sentinel-dashboard:1.8.6-nacos .
+docker build -t sentinel-dashboard:1.8.9-nacos .
 ```
 
 ### 运行容器
@@ -165,7 +165,7 @@ docker run -d \
   -e NACOS_NAMESPACE=test \
   -e NACOS_GROUP=DEFAULT_GROUP \
   --name sentinel-dashboard \
-  sentinel-dashboard:1.8.6-nacos
+  sentinel-dashboard:1.8.9-nacos
 ```
 
 ## Kubernetes 部署
@@ -187,7 +187,7 @@ spec:
     spec:
       containers:
         - name: sentinel-dashboard
-          image: sentinel-dashboard:1.8.6-nacos
+          image: sentinel-dashboard:1.8.9-nacos
           ports:
             - containerPort: 8080
           env:
@@ -242,5 +242,5 @@ spec:
 
 - [Sentinel 官方文档](https://sentinelguard.io/zh-cn/docs/introduction.html)
 - [Nacos 官方文档](https://nacos.io/zh-cn/)
-- [Sentinel Dashboard 源码](https://github.com/alibaba/Sentinel/tree/1.8.6/sentinel-dashboard)
+- [Sentinel Dashboard 源码](https://github.com/alibaba/Sentinel/tree/1.8.9/sentinel-dashboard)
 - [Sentinel 动态规则扩展](https://sentinelguard.io/zh-cn/docs/dynamic-rule-configuration.html)

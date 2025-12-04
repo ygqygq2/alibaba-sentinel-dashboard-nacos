@@ -10,16 +10,65 @@ if [ "${JAVA_VER}" -ge 9 ] 2>/dev/null; then
   EXTRA_OPTS="--add-opens=java.base/java.lang=ALL-UNNAMED"
 fi
 
+# 应用名称，用于注册到 Dashboard
+APP_NAME="${APP_NAME:-sentinel-token-server}"
+
+# Cluster Token Server 配置
+CLUSTER_SERVER_PORT="${CLUSTER_SERVER_PORT:-18730}"
+CLUSTER_IDLE_SECONDS="${CLUSTER_IDLE_SECONDS:-600}"
+CLUSTER_NAMESPACES="${CLUSTER_NAMESPACES:-}"
+
+# Nacos 配置
+NACOS_SERVER_ADDR="${NACOS_SERVER_ADDR:-nacos:8848}"
+NACOS_GROUP_ID="${NACOS_GROUP_ID:-SENTINEL_GROUP}"
+
+# 获取客户端地址（服务名或 IP）
+get_client_address() {
+  if [ -n "${CSP_SENTINEL_CLIENT_IP}" ]; then
+    echo "${CSP_SENTINEL_CLIENT_IP}"
+  elif [ -n "${SERVICE_NAME}" ]; then
+    echo "${SERVICE_NAME}"
+  else
+    hostname
+  fi
+}
+
+CLIENT_ADDRESS=$(get_client_address)
+
 echo "========================================="
-echo "Token Server Startup"
+echo "Sentinel Cluster Token Server (Standalone)"
 echo "========================================="
+echo "App Name: ${APP_NAME}"
 echo "Java Version: ${JAVA_VER}"
-echo "Server Port: ${SERVER_PORT}"
+echo "HTTP Server Port: ${SERVER_PORT}"
+echo "Cluster Server Port: ${CLUSTER_SERVER_PORT}"
+echo "Nacos Server: ${NACOS_SERVER_ADDR}"
+echo "Nacos Group: ${NACOS_GROUP_ID}"
+echo "Namespaces: ${CLUSTER_NAMESPACES:-<dynamic>}"
 echo "Dashboard: ${SENTINEL_DASHBOARD_HOST}:${SENTINEL_DASHBOARD_PORT}"
-echo "JVM Options: ${JAVA_OPTS}"
+echo "Client Address: ${CLIENT_ADDRESS}"
 echo "========================================="
 
-exec java ${JAVA_OPTS} ${EXTRA_OPTS} \
-  -Dserver.port=${SERVER_PORT} \
-  -Dcsp.sentinel.dashboard.server=${SENTINEL_DASHBOARD_HOST}:${SENTINEL_DASHBOARD_PORT} \
-  -jar app.jar "$@"
+# 基础 JVM 参数
+SENTINEL_OPTS="-Dproject.name=${APP_NAME}"
+SENTINEL_OPTS="${SENTINEL_OPTS} -Dserver.port=${SERVER_PORT}"
+
+# Cluster Server 配置
+SENTINEL_OPTS="${SENTINEL_OPTS} -Dsentinel.cluster.server.port=${CLUSTER_SERVER_PORT}"
+SENTINEL_OPTS="${SENTINEL_OPTS} -Dsentinel.cluster.server.idle-seconds=${CLUSTER_IDLE_SECONDS}"
+if [ -n "${CLUSTER_NAMESPACES}" ]; then
+  SENTINEL_OPTS="${SENTINEL_OPTS} -Dsentinel.cluster.namespaces=${CLUSTER_NAMESPACES}"
+fi
+
+# Nacos 配置
+SENTINEL_OPTS="${SENTINEL_OPTS} -Dnacos.server-addr=${NACOS_SERVER_ADDR}"
+SENTINEL_OPTS="${SENTINEL_OPTS} -Dnacos.group-id=${NACOS_GROUP_ID}"
+
+# Dashboard 注册（Token Server 也注册到 Dashboard 以便管理）
+SENTINEL_OPTS="${SENTINEL_OPTS} -Dcsp.sentinel.dashboard.server=${SENTINEL_DASHBOARD_HOST}:${SENTINEL_DASHBOARD_PORT}"
+SENTINEL_OPTS="${SENTINEL_OPTS} -Dcsp.sentinel.api.port=${CSP_SENTINEL_API_PORT:-8719}"
+if [ -n "${CLIENT_ADDRESS}" ]; then
+  SENTINEL_OPTS="${SENTINEL_OPTS} -Dcsp.sentinel.heartbeat.client.ip=${CLIENT_ADDRESS}"
+fi
+
+exec java ${JAVA_OPTS} ${EXTRA_OPTS} ${SENTINEL_OPTS} -jar app.jar "$@"

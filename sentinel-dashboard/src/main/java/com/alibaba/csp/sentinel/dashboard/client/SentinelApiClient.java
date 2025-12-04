@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
@@ -145,6 +146,29 @@ public class SentinelApiClient {
             }
         }).setMaxConnTotal(4000).setMaxConnPerRoute(1000).setDefaultIOReactorConfig(ioConfig).build();
         httpClient.start();
+    }
+
+    /**
+     * 域名/服务名正则：支持 K8s 服务名格式，如 service-name, service-name.namespace, service-name.namespace.svc.cluster.local
+     */
+    private static final Pattern HOSTNAME_PATTERN = Pattern.compile(
+        "^[a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?(\\.[a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?)*$"
+    );
+
+    /**
+     * 校验是否为有效的 IP 地址或域名/服务名
+     * 支持：IPv4, IPv6, 域名, K8s 服务名
+     */
+    private boolean isValidIpOrHostname(String address) {
+        if (StringUtil.isBlank(address)) {
+            return false;
+        }
+        // 检查是否为有效 IP
+        if (InetAddressUtils.isIPv4Address(address) || InetAddressUtils.isIPv6Address(address)) {
+            return true;
+        }
+        // 检查是否为有效域名/服务名
+        return HOSTNAME_PATTERN.matcher(address).matches();
     }
 
     private boolean isSuccess(int statusCode) {
@@ -283,8 +307,9 @@ public class SentinelApiClient {
             future.completeExceptionally(new IllegalArgumentException("Bad URL or command name"));
             return future;
         }
-        if (!InetAddressUtils.isIPv4Address(ip) && !InetAddressUtils.isIPv6Address(ip)) {
-            future.completeExceptionally(new IllegalArgumentException("Bad IP"));
+        // 支持 IP 和域名/服务名
+        if (!isValidIpOrHostname(ip)) {
+            future.completeExceptionally(new IllegalArgumentException("Bad IP or hostname"));
             return future;
         }
         if (!StringUtil.isEmpty(app) && !appManagement.isValidMachineOfApp(app, ip)) {

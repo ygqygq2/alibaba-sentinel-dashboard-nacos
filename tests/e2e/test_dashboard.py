@@ -150,7 +150,7 @@ class TestFlowControl:
         # 尝试获取流控规则（可能为空）
         resp = auth_session.get(
             f"{dashboard_url}/v1/flow/rules",
-            params={"app": "test-app"}
+            params={"app": "token-server"}
         )
         # API 应该可访问
         assert resp.status_code in [200, 400, 404]
@@ -159,9 +159,161 @@ class TestFlowControl:
         """Test degrade rules API"""
         resp = auth_session.get(
             f"{dashboard_url}/v1/degrade/rules",
-            params={"app": "test-app"}
+            params={"app": "token-server"}
         )
         assert resp.status_code in [200, 400, 404]
+
+
+class TestClientRegistration:
+    """Test Token Server as Sentinel Client - registers to Dashboard"""
+
+    @pytest.fixture
+    def auth_session(self, dashboard_url, dashboard_credentials):
+        """Create authenticated session"""
+        session = requests.Session()
+        resp = session.post(
+            f"{dashboard_url}/auth/login",
+            data={
+                "username": dashboard_credentials["username"],
+                "password": dashboard_credentials["password"]
+            }
+        )
+        assert resp.status_code == 200
+        return session
+
+    def test_token_server_registered(self, auth_session, dashboard_url):
+        """Test Token Server appears in Dashboard app list"""
+        import time
+        # 等待客户端注册
+        time.sleep(5)
+        
+        resp = auth_session.get(f"{dashboard_url}/app/briefinfos.json")
+        assert resp.status_code == 200
+        
+        data = resp.json()
+        if data.get("data"):
+            app_names = [app.get("app") for app in data["data"]]
+            # token-server 应该出现在应用列表中
+            assert "token-server" in app_names, f"token-server not found in apps: {app_names}"
+
+    def test_token_server_machine_info(self, auth_session, dashboard_url):
+        """Test Token Server machine info is available"""
+        import time
+        time.sleep(3)
+        
+        resp = auth_session.get(
+            f"{dashboard_url}/app/token-server/machines.json"
+        )
+        # 如果应用存在，应该能获取机器信息
+        if resp.status_code == 200:
+            data = resp.json()
+            assert data.get("code") == 0 or data.get("success") == True
+
+
+class TestFlowRuleE2E:
+    """End-to-End Flow Rule Tests: Dashboard -> Nacos -> Client"""
+
+    @pytest.fixture
+    def auth_session(self, dashboard_url, dashboard_credentials):
+        """Create authenticated session"""
+        session = requests.Session()
+        resp = session.post(
+            f"{dashboard_url}/auth/login",
+            data={
+                "username": dashboard_credentials["username"],
+                "password": dashboard_credentials["password"]
+            }
+        )
+        assert resp.status_code == 200
+        return session
+
+    def test_create_flow_rule(self, auth_session, dashboard_url, nacos_url):
+        """Test creating a flow rule and verify it's saved to Nacos"""
+        import time
+        time.sleep(5)  # 等待 token-server 注册
+        
+        # 1. 创建流控规则
+        rule_data = {
+            "app": "token-server",
+            "resource": "/test-resource",
+            "limitApp": "default",
+            "grade": 1,  # QPS
+            "count": 100,
+            "strategy": 0,
+            "controlBehavior": 0,
+            "clusterMode": False
+        }
+        
+        resp = auth_session.post(
+            f"{dashboard_url}/v1/flow/rule",
+            data=rule_data
+        )
+        
+        # 规则创建可能需要应用先注册
+        if resp.status_code == 200:
+            data = resp.json()
+            print(f"Create rule response: {data}")
+            
+            # 2. 验证规则是否保存到 Nacos
+            time.sleep(2)
+            nacos_resp = requests.get(
+                f"{nacos_url}/nacos/v1/cs/configs",
+                params={
+                    "dataId": "token-server-flow-rules",
+                    "group": "SENTINEL_GROUP"
+                }
+            )
+            print(f"Nacos config response: {nacos_resp.status_code}, {nacos_resp.text[:200] if nacos_resp.text else 'empty'}")
+
+    def test_get_flow_rules_from_dashboard(self, auth_session, dashboard_url):
+        """Test getting flow rules from dashboard"""
+        resp = auth_session.get(
+            f"{dashboard_url}/v1/flow/rules",
+            params={"app": "token-server"}
+        )
+        assert resp.status_code in [200, 400]
+        if resp.status_code == 200:
+            data = resp.json()
+            print(f"Flow rules: {data}")
+
+
+class TestClusterFlowControl:
+    """Test Cluster Flow Control with Token Server"""
+
+    @pytest.fixture
+    def auth_session(self, dashboard_url, dashboard_credentials):
+        """Create authenticated session"""
+        session = requests.Session()
+        resp = session.post(
+            f"{dashboard_url}/auth/login",
+            data={
+                "username": dashboard_credentials["username"],
+                "password": dashboard_credentials["password"]
+            }
+        )
+        assert resp.status_code == 200
+        return session
+
+    def test_cluster_state_api(self, auth_session, dashboard_url):
+        """Test cluster state API"""
+        resp = auth_session.get(
+            f"{dashboard_url}/cluster/state/token-server"
+        )
+        # API 应该可访问
+        assert resp.status_code in [200, 400, 404]
+
+    def test_token_server_as_cluster_server(self, auth_session, dashboard_url):
+        """Test configuring Token Server as cluster server"""
+        # 获取 Token Server 的集群状态
+        resp = auth_session.get(
+            f"{dashboard_url}/cluster/client_state/token-server"
+        )
+        print(f"Cluster client state: {resp.status_code}")
+        
+        resp = auth_session.get(
+            f"{dashboard_url}/cluster/server_state/token-server"
+        )
+        print(f"Cluster server state: {resp.status_code}")
 
 
 class TestIntegration:

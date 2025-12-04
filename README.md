@@ -58,8 +58,15 @@ java -Dserver.port=8080 \
 │   ├── ci.yml                     # CI: 自动测试
 │   └── release.yml                # Release: tag 触发构建镜像
 ├── docs/                          # 文档
-│   ├── NACOS_INTEGRATION.md       # Nacos 集成指南
-│   └── DEPLOYMENT.md              # 部署指南
+│   ├── 00-INDEX.md                # 文档索引
+│   ├── 01-QUICK-START.md          # 快速开始
+│   ├── 02-ARCHITECTURE.md         # 架构设计
+│   ├── 03-NACOS-INTEGRATION.md    # Nacos 集成指南
+│   ├── 04-CLUSTER-FLOW-CONTROL.md # 集群流控指南
+│   ├── 05-DEPLOYMENT.md           # 部署指南
+│   ├── 06-DEVELOPMENT.md          # 开发指南
+│   ├── 07-API-REFERENCE.md        # API 参考
+│   └── 08-TROUBLESHOOTING.md      # 故障排查
 ├── docker-compose.yml             # 全栈测试（Nacos + Dashboard + Token Server）
 └── README_CN.md                   # 本文件
 ```
@@ -127,11 +134,15 @@ java -Dserver.port=8080 \
 
 ## 配置指南
 
-详见 [Nacos 集成指南](docs/NACOS_INTEGRATION.md)
+详见 [Nacos 集成指南](docs/03-NACOS-INTEGRATION.md)
+
+## 集群流控指南
+
+详见 [集群流控指南](docs/04-CLUSTER-FLOW-CONTROL.md)
 
 ## 部署指南
 
-详见 [部署指南](docs/DEPLOYMENT.md)
+详见 [部署指南](docs/05-DEPLOYMENT.md)
 
 ## 开发指南
 
@@ -241,4 +252,5 @@ Apache License 2.0
 
 - 提交 Issue
 - 发起 Pull Request
-- 查看 [故障排查指南](docs/NACOS_INTEGRATION.md#故障排查)
+- 查看 [故障排查指南](docs/08-TROUBLESHOOTING.md)
+- 查看 [完整文档索引](docs/00-INDEX.md)

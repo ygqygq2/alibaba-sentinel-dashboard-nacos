@@ -7,6 +7,23 @@ server:
   servlet:
     context-path: /
 
+# Sentinel Cluster Token Server 配置
+sentinel:
+  cluster:
+    server:
+      # Token Server 监听端口（集群限流通信端口）
+      port: ${CLUSTER_SERVER_PORT:18730}
+      # 空闲连接超时时间（秒）
+      idle-seconds: ${CLUSTER_IDLE_SECONDS:600}
+    # 命名空间列表（逗号分隔的应用名，用于加载对应应用的规则）
+    # 例如: app1,app2,app3
+    namespaces: ${CLUSTER_NAMESPACES:}
+
+# Nacos 配置（用于加载规则）
+nacos:
+  server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
+  group-id: ${NACOS_GROUP_ID:SENTINEL_GROUP}
+
 management:
   endpoints:
     web:

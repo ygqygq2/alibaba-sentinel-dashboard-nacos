@@ -15,11 +15,11 @@
 mvn clean package
 
 # 构建 Docker 镜像
-docker build -t sentinel-dashboard:1.8.6-nacos -f docker/Dockerfile .
+docker build -t sentinel-dashboard:1.8.9-nacos -f docker/Dockerfile .
 
 # 或推送到私有仓库
-docker tag sentinel-dashboard:1.8.6-nacos <your-registry>/sentinel-dashboard:1.8.6-nacos
-docker push <your-registry>/sentinel-dashboard:1.8.6-nacos
+docker tag sentinel-dashboard:1.8.9-nacos <your-registry>/sentinel-dashboard:1.8.9-nacos
+docker push <your-registry>/sentinel-dashboard:1.8.9-nacos
 ```
 
 ### 2. 运行容器
@@ -33,7 +33,7 @@ docker run -d \
   -e NACOS_GROUP=DEFAULT_GROUP \
   -e SENTINEL_DASHBOARD_AUTH_USERNAME=sentinel \
   -e SENTINEL_DASHBOARD_AUTH_PASSWORD=your-password \
-  sentinel-dashboard:1.8.6-nacos
+  sentinel-dashboard:1.8.9-nacos
 ```
 
 ### 3. 验证部署
@@ -58,7 +58,7 @@ curl http://localhost:8080/health
 kubectl create namespace sentinel
 
 # 加载镜像到集群（如果使用本地镜像）
-# kubectl load docker-image sentinel-dashboard:1.8.6-nacos --image-platform=linux/amd64
+# kubectl load docker-image sentinel-dashboard:1.8.9-nacos --image-platform=linux/amd64
 ```
 
 ### 2. 部署到 Kubernetes
@@ -265,7 +265,7 @@ curl -u sentinel:sentinel http://localhost:8080/api/rules > rules-backup.json
 ```bash
 docker stop sentinel-dashboard
 docker rm sentinel-dashboard
-docker rmi sentinel-dashboard:1.8.6-nacos
+docker rmi sentinel-dashboard:1.8.9-nacos
 ```
 
 ### Kubernetes

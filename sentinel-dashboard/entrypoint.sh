@@ -7,7 +7,7 @@ SENTINEL_VER=$(cat /home/sentinel/VERSION 2>/dev/null || echo 'unknown')
 # Get Java version
 JAVA_VER=$(java -version 2>&1 | head -n 1 | awk -F '"' '{print $2}' | cut -d'.' -f1)
 
-# Auto-add --add-opens for JDK 9+ with old Sentinel versions (< 1.8.6)
+# Auto-add --add-opens for JDK 9+ with old Sentinel versions (< 1.8.9)
 EXTRA_OPTS=""
 if [ "${JAVA_VER}" -ge 9 ] 2>/dev/null; then
   SENTINEL_VER_NUM=$(echo "${SENTINEL_VER}" | sed 's/^v//' | sed 's/-nacos//')

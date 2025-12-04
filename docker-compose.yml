@@ -1,0 +1,72 @@
+# Full stack test: Nacos + Sentinel Dashboard + Token Server
+services:
+  nacos:
+    image: nacos/nacos-server:v2.3.0
+    container_name: nacos
+    environment:
+      - MODE=standalone
+      - NACOS_AUTH_ENABLE=false
+      - JVM_XMS=256m
+      - JVM_XMX=256m
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "-sf",
+          "http://localhost:8848/nacos/v1/console/health/readiness",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  sentinel-dashboard:
+    image: sentinel/dashboard:local
+    build:
+      context: ./sentinel-dashboard
+    container_name: sentinel-dashboard
+    depends_on:
+      nacos:
+        condition: service_healthy
+    environment:
+      - SENTINEL_DASHBOARD_SERVER_PORT=8080
+      - NACOS_SERVER_ADDR=nacos:8848
+      - NACOS_NAMESPACE=public
+      - NACOS_GROUP=DEFAULT_GROUP
+      - SENTINEL_DASHBOARD_AUTH_USERNAME=sentinel
+      - SENTINEL_DASHBOARD_AUTH_PASSWORD=sentinel
+      - JAVA_OPTS=-Xms256m -Xmx512m
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 90s
+
+  token-server:
+    image: sentinel/token-server:local
+    build:
+      context: ./token-server
+    container_name: token-server
+    depends_on:
+      sentinel-dashboard:
+        condition: service_healthy
+    environment:
+      - SERVER_PORT=8081
+      - SENTINEL_DASHBOARD_HOST=sentinel-dashboard
+      - SENTINEL_DASHBOARD_PORT=8080
+      - JAVA_OPTS=-Xms128m -Xmx256m
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8081/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s

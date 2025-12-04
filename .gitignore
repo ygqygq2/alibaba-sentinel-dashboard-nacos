@@ -1,0 +1,42 @@
+# Build output
+target/
+*.jar
+*.war
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Test results
+tests/e2e/test-results/
+tests/e2e/.pytest_cache/
+tests/e2e/__pycache__/
+__pycache__/
+.pytest_cache/
+*.pyc
+
+# Node
+node_modules/
+
+# Docker
+.docker/
+
+# Temporary files
+*.tmp
+*.bak
+*~

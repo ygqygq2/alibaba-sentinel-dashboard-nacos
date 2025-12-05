@@ -37,11 +37,11 @@ export function DropdownPopover({
   width = 'auto',
   height = 'auto',
   animationDuration = 'slow',
-  placement = 'bottom-start',
-  gutter = 0,
+  placement: _placement = 'bottom-start',
+  gutter: _gutter = 0,
   contentStyles,
 }: DropdownPopoverProps): React.JSX.Element {
-  const { onPopoverMouseEnter, onPopoverMouseLeave, isOpen } = React.useContext(DropdownContext);
+  const { onPopoverMouseEnter, onPopoverMouseLeave, isOpen: _isOpen } = React.useContext(DropdownContext);
 
   return (
     <Popover.Positioner>

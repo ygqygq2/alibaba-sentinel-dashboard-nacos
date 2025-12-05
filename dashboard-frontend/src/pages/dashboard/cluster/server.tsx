@@ -11,20 +11,6 @@ import { useParams } from 'react-router-dom';
 import { useTokenServers } from '@/hooks/api';
 import type { TokenServer } from '@/types/cluster';
 
-/** 集群状态映射 */
-const STATE_MAP: Record<number, string> = {
-  0: '离线',
-  1: 'Token Client',
-  2: 'Token Server',
-};
-
-/** 状态颜色映射 */
-const STATE_COLOR_MAP: Record<number, string> = {
-  0: 'gray',
-  1: 'blue',
-  2: 'green',
-};
-
 export function Page(): React.JSX.Element {
   const { app } = useParams<{ app: string }>();
   const { data: servers, isLoading, error, refetch } = useTokenServers(app ?? '');

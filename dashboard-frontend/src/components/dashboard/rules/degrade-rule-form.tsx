@@ -1,12 +1,13 @@
 /**
  * 降级规则表单组件
+ * 使用通用表单组件构建
  */
 
-import { Box, Button, Card, Field, Flex, Heading, Input, NativeSelect, Stack, Text } from '@chakra-ui/react';
-import { Icon } from '@iconify/react';
+import { Text } from '@chakra-ui/react';
 import * as React from 'react';
-import { useNavigate } from 'react-router-dom';
 
+import { FormInput, FormSelect } from '@/components/ui/form-field';
+import { FormSection, RuleFormLayout } from '@/components/ui/rule-form-layout';
 import type { DegradeRule } from '@/types/rule';
 
 export interface DegradeRuleFormProps {
@@ -22,10 +23,17 @@ export interface DegradeRuleFormProps {
   backPath: string;
 }
 
+/** 降级策略选项 */
+const GRADE_OPTIONS = [
+  { value: 0, label: '慢调用比例' },
+  { value: 1, label: '异常比例' },
+  { value: 2, label: '异常数' },
+];
+
 /** 默认表单值 */
 const defaultValues: Omit<DegradeRule, 'app' | 'id'> = {
   resource: '',
-  grade: 0, // 慢调用比例
+  grade: 0,
   count: 0,
   timeWindow: 5,
   minRequestAmount: 5,
@@ -40,7 +48,6 @@ export function DegradeRuleForm({
   isSubmitting,
   backPath,
 }: DegradeRuleFormProps): React.JSX.Element {
-  const navigate = useNavigate();
   const [formData, setFormData] = React.useState<Omit<DegradeRule, 'id'>>(() => ({
     ...defaultValues,
     ...initialData,
@@ -62,23 +69,11 @@ export function DegradeRuleForm({
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.resource.trim()) {
-      newErrors.resource = '资源名称不能为空';
-    }
+    if (!formData.resource.trim()) newErrors.resource = '资源名称不能为空';
+    if (formData.count < 0) newErrors.count = '阈值不能为负数';
+    if (formData.timeWindow <= 0) newErrors.timeWindow = '时间窗口必须大于 0';
+    if (formData.minRequestAmount <= 0) newErrors.minRequestAmount = '最小请求数必须大于 0';
 
-    if (formData.count < 0) {
-      newErrors.count = '阈值不能为负数';
-    }
-
-    if (formData.timeWindow <= 0) {
-      newErrors.timeWindow = '时间窗口必须大于 0';
-    }
-
-    if (formData.minRequestAmount <= 0) {
-      newErrors.minRequestAmount = '最小请求数必须大于 0';
-    }
-
-    // 慢调用比例模式校验
     if (formData.grade === 0) {
       if (!formData.slowRatioThreshold || formData.slowRatioThreshold < 0 || formData.slowRatioThreshold > 1) {
         newErrors.slowRatioThreshold = '慢调用比例阈值必须在 0-1 之间';
@@ -88,7 +83,6 @@ export function DegradeRuleForm({
       }
     }
 
-    // 异常比例模式校验
     if (formData.grade === 1 && (formData.count < 0 || formData.count > 1)) {
       newErrors.count = '异常比例必须在 0-1 之间';
     }
@@ -100,10 +94,8 @@ export function DegradeRuleForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-
     try {
       await onSubmit(formData);
-      navigate(backPath);
     } catch (err) {
       console.error('提交失败:', err);
     }
@@ -111,142 +103,151 @@ export function DegradeRuleForm({
 
   const isEditMode = !!initialData?.id;
 
+  const helpContent = (
+    <>
+      <Text
+        fontWeight="medium"
+        mb={2}
+      >
+        降级策略
+      </Text>
+      <Text mb={3}>
+        • 慢调用比例：RT 超过阈值且比例超限
+        <br />• 异常比例：异常请求比例超限
+        <br />• 异常数：异常请求数量超限
+      </Text>
+
+      <Text
+        fontWeight="medium"
+        mb={2}
+      >
+        熔断机制
+      </Text>
+      <Text>
+        触发降级后进入熔断状态，熔断时长结束后进入半开状态。半开状态下如果下一个请求成功，则结束熔断；否则继续熔断。
+      </Text>
+    </>
+  );
+
   return (
-    <Card.Root>
-      <Card.Header>
-        <Heading size="md">{isEditMode ? '编辑降级规则' : '新增降级规则'}</Heading>
-      </Card.Header>
-      <Card.Body>
-        <form onSubmit={handleSubmit}>
-          <Stack gap={4}>
-            {/* 资源名称 */}
-            <Field.Root invalid={!!errors.resource}>
-              <Field.Label>资源名称 *</Field.Label>
-              <Input
-                value={formData.resource}
-                onChange={(e) => handleChange('resource', e.target.value)}
-                placeholder="请输入资源名称"
-                disabled={isEditMode}
-              />
-              {errors.resource && <Field.ErrorText>{errors.resource}</Field.ErrorText>}
-            </Field.Root>
+    <RuleFormLayout
+      title="熔断规则"
+      isEditMode={isEditMode}
+      isSubmitting={isSubmitting}
+      backPath={backPath}
+      onSubmit={handleSubmit}
+      helpContent={helpContent}
+    >
+      {/* 基础配置 */}
+      <FormSection>
+        <FormInput
+          label="资源名称"
+          required
+          value={formData.resource}
+          onChange={(v) => handleChange('resource', v)}
+          placeholder="请输入资源名称"
+          disabled={isEditMode}
+          error={errors.resource}
+        />
+        <FormSelect
+          label="降级策略"
+          value={formData.grade}
+          onChange={(v) => handleChange('grade', Number(v))}
+          options={GRADE_OPTIONS}
+        />
+        <FormInput
+          label="熔断时长(秒)"
+          required
+          type="number"
+          value={formData.timeWindow}
+          onChange={(v) => handleChange('timeWindow', Number(v))}
+          min={1}
+          error={errors.timeWindow}
+          helperText="降级持续时间，到期后进入半开状态"
+        />
+      </FormSection>
 
-            {/* 降级策略 */}
-            <Field.Root>
-              <Field.Label>降级策略</Field.Label>
-              <NativeSelect.Root>
-                <NativeSelect.Field
-                  value={formData.grade}
-                  onChange={(e) => handleChange('grade', Number(e.target.value))}
-                >
-                  <option value={0}>慢调用比例</option>
-                  <option value={1}>异常比例</option>
-                  <option value={2}>异常数</option>
-                </NativeSelect.Field>
-              </NativeSelect.Root>
-            </Field.Root>
+      {/* 慢调用比例特有字段 */}
+      <FormSection show={formData.grade === 0}>
+        <FormInput
+          label="最大 RT(ms)"
+          required
+          type="number"
+          value={formData.statIntervalMs || ''}
+          onChange={(v) => handleChange('statIntervalMs', Number(v))}
+          min={1}
+          placeholder="1000"
+          error={errors.statIntervalMs}
+          helperText="超过此响应时间视为慢调用"
+        />
+        <FormInput
+          label="比例阈值"
+          required
+          type="number"
+          value={formData.slowRatioThreshold ?? ''}
+          onChange={(v) => handleChange('slowRatioThreshold', Number(v))}
+          min={0}
+          max={1}
+          error={errors.slowRatioThreshold}
+          helperText="慢调用比例阈值（0-1）"
+        />
+        <FormInput
+          label="最小请求数"
+          required
+          type="number"
+          value={formData.minRequestAmount}
+          onChange={(v) => handleChange('minRequestAmount', Number(v))}
+          min={1}
+          error={errors.minRequestAmount}
+          helperText="触发降级的最小请求数量"
+        />
+      </FormSection>
 
-            {/* 慢调用比例特有字段 */}
-            {formData.grade === 0 && (
-              <>
-                <Field.Root invalid={!!errors.statIntervalMs}>
-                  <Field.Label>最大 RT（毫秒） *</Field.Label>
-                  <Input
-                    type="number"
-                    value={formData.statIntervalMs || ''}
-                    onChange={(e) => handleChange('statIntervalMs', Number(e.target.value))}
-                    min={1}
-                    placeholder="1000"
-                  />
-                  <Field.HelperText>超过此响应时间视为慢调用</Field.HelperText>
-                  {errors.statIntervalMs && <Field.ErrorText>{errors.statIntervalMs}</Field.ErrorText>}
-                </Field.Root>
+      {/* 异常比例字段 */}
+      <FormSection show={formData.grade === 1}>
+        <FormInput
+          label="异常比例阈值"
+          required
+          type="number"
+          value={formData.count}
+          onChange={(v) => handleChange('count', Number(v))}
+          min={0}
+          max={1}
+          error={errors.count}
+          helperText="异常比例 0-1 之间"
+        />
+        <FormInput
+          label="最小请求数"
+          required
+          type="number"
+          value={formData.minRequestAmount}
+          onChange={(v) => handleChange('minRequestAmount', Number(v))}
+          min={1}
+          error={errors.minRequestAmount}
+        />
+      </FormSection>
 
-                <Field.Root invalid={!!errors.slowRatioThreshold}>
-                  <Field.Label>比例阈值 *</Field.Label>
-                  <Input
-                    type="number"
-                    value={formData.slowRatioThreshold ?? ''}
-                    onChange={(e) => handleChange('slowRatioThreshold', Number(e.target.value))}
-                    min={0}
-                    max={1}
-                    step={0.1}
-                    placeholder="0.5"
-                  />
-                  <Field.HelperText>慢调用比例达到此阈值触发降级（0-1）</Field.HelperText>
-                  {errors.slowRatioThreshold && <Field.ErrorText>{errors.slowRatioThreshold}</Field.ErrorText>}
-                </Field.Root>
-              </>
-            )}
-
-            {/* 异常比例/异常数阈值 */}
-            <Field.Root invalid={!!errors.count}>
-              <Field.Label>
-                {formData.grade === 0 ? '（此字段不生效）' : formData.grade === 1 ? '异常比例阈值 *' : '异常数阈值 *'}
-              </Field.Label>
-              <Input
-                type="number"
-                value={formData.count}
-                onChange={(e) => handleChange('count', Number(e.target.value))}
-                min={0}
-                max={formData.grade === 1 ? 1 : undefined}
-                step={formData.grade === 1 ? 0.1 : 1}
-                disabled={formData.grade === 0}
-              />
-              {formData.grade === 1 && <Field.HelperText>异常比例 0-1 之间</Field.HelperText>}
-              {errors.count && <Field.ErrorText>{errors.count}</Field.ErrorText>}
-            </Field.Root>
-
-            {/* 时间窗口 */}
-            <Field.Root invalid={!!errors.timeWindow}>
-              <Field.Label>熔断时长（秒） *</Field.Label>
-              <Input
-                type="number"
-                value={formData.timeWindow}
-                onChange={(e) => handleChange('timeWindow', Number(e.target.value))}
-                min={1}
-              />
-              <Field.HelperText>降级持续时间，到期后进入半开状态</Field.HelperText>
-              {errors.timeWindow && <Field.ErrorText>{errors.timeWindow}</Field.ErrorText>}
-            </Field.Root>
-
-            {/* 最小请求数 */}
-            <Field.Root invalid={!!errors.minRequestAmount}>
-              <Field.Label>最小请求数 *</Field.Label>
-              <Input
-                type="number"
-                value={formData.minRequestAmount}
-                onChange={(e) => handleChange('minRequestAmount', Number(e.target.value))}
-                min={1}
-              />
-              <Field.HelperText>触发降级的最小请求数量</Field.HelperText>
-              {errors.minRequestAmount && <Field.ErrorText>{errors.minRequestAmount}</Field.ErrorText>}
-            </Field.Root>
-          </Stack>
-
-          {/* 操作按钮 */}
-          <Flex
-            mt={6}
-            gap={3}
-            justifyContent="flex-end"
-          >
-            <Button
-              variant="outline"
-              onClick={() => navigate(backPath)}
-            >
-              取消
-            </Button>
-            <Button
-              type="submit"
-              colorPalette="blue"
-              loading={isSubmitting}
-            >
-              <Icon icon="mdi:check" />
-              {isEditMode ? '保存' : '创建'}
-            </Button>
-          </Flex>
-        </form>
-      </Card.Body>
-    </Card.Root>
+      {/* 异常数字段 */}
+      <FormSection show={formData.grade === 2}>
+        <FormInput
+          label="异常数阈值"
+          required
+          type="number"
+          value={formData.count}
+          onChange={(v) => handleChange('count', Number(v))}
+          min={0}
+          error={errors.count}
+        />
+        <FormInput
+          label="最小请求数"
+          required
+          type="number"
+          value={formData.minRequestAmount}
+          onChange={(v) => handleChange('minRequestAmount', Number(v))}
+          min={1}
+          error={errors.minRequestAmount}
+        />
+      </FormSection>
+    </RuleFormLayout>
   );
 }

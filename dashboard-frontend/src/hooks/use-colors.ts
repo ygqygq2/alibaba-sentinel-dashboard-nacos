@@ -23,7 +23,7 @@ export function useColors(): ColorSystemOptions {
         main: '#6366f1',
         dark: '#4f46e5',
         contrastText: '#ffffff',
-      } as any,
+      } as unknown as Record<string, string>,
     },
   } as ColorSystemOptions;
 }

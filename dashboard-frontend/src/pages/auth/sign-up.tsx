@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
 
-import { SignUpForm } from '@/components/auth/sign-up-form';
 import { GuestGuard } from '@/components/auth/guest-guard';
+import { SignUpForm } from '@/components/auth/sign-up-form';
 import { SplitLayout } from '@/components/auth/split-layout';
 import { config } from '@/config';
 import type { Metadata } from '@/types/metadata';

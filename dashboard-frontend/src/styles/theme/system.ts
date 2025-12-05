@@ -7,11 +7,11 @@ import type { PaletteRange } from './types';
 // 生成颜色 tokens (直接使用颜色值，不含条件)
 function generateColorTokens(colorPalette: PaletteRange) {
   const levels = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const;
-  const tokens: Record<number, any> = {};
+  const tokens: Record<number, { value: string }> = {};
   levels.forEach((level) => {
     const color = colorPalette[level as keyof typeof colorPalette] || colorPalette[500];
     tokens[level] = {
-      value: color,
+      value: color ?? '',
     };
   });
   return tokens;

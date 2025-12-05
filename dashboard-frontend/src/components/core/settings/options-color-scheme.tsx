@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Field, Stack } from '@chakra-ui/react';
+import { Field, Stack } from '@chakra-ui/react';
 import { Icon } from '@iconify/react';
 import * as React from 'react';
 

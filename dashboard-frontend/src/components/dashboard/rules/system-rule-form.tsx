@@ -1,12 +1,13 @@
 /**
  * 系统规则表单组件
+ * 使用通用表单组件构建
  */
 
-import { Button, Card, Field, Flex, Heading, Input, NativeSelect, Stack, Switch, Text } from '@chakra-ui/react';
-import { Icon } from '@iconify/react';
+import { Text } from '@chakra-ui/react';
 import * as React from 'react';
-import { useNavigate } from 'react-router-dom';
 
+import { FormInput, FormSelect } from '@/components/ui/form-field';
+import { FormSection, RuleFormLayout } from '@/components/ui/rule-form-layout';
 import type { SystemRule } from '@/types/rule';
 
 export interface SystemRuleFormProps {
@@ -32,6 +33,12 @@ const ruleTypeMap: Record<RuleType, { label: string; unit: string; description: 
   qps: { label: '入口 QPS', unit: '', description: '所有入口流量的 QPS' },
   cpu: { label: 'CPU 使用率', unit: '%', description: 'CPU 使用率（0-1）' },
 };
+
+/** 规则类型选项 */
+const RULE_TYPE_OPTIONS = Object.entries(ruleTypeMap).map(([key, info]) => ({
+  value: key,
+  label: info.label,
+}));
 
 function getRuleType(rule: Partial<SystemRule>): RuleType {
   if (rule.highestSystemLoad !== undefined && rule.highestSystemLoad >= 0) return 'load';
@@ -66,7 +73,6 @@ export function SystemRuleForm({
   isSubmitting,
   backPath,
 }: SystemRuleFormProps): React.JSX.Element {
-  const navigate = useNavigate();
   const [ruleType, setRuleType] = React.useState<RuleType>(() => (initialData ? getRuleType(initialData) : 'qps'));
   const [threshold, setThreshold] = React.useState<number>(() =>
     initialData ? getThresholdValue(initialData, getRuleType(initialData)) : 0
@@ -75,15 +81,8 @@ export function SystemRuleForm({
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
-
-    if (threshold < 0) {
-      newErrors.threshold = '阈值不能为负数';
-    }
-
-    if (ruleType === 'cpu' && threshold > 1) {
-      newErrors.threshold = 'CPU 使用率必须在 0-1 之间';
-    }
-
+    if (threshold < 0) newErrors.threshold = '阈值不能为负数';
+    if (ruleType === 'cpu' && threshold > 1) newErrors.threshold = 'CPU 使用率必须在 0-1 之间';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -103,7 +102,6 @@ export function SystemRuleForm({
 
     try {
       await onSubmit(rule);
-      navigate(backPath);
     } catch (err) {
       console.error('提交失败:', err);
     }
@@ -112,85 +110,73 @@ export function SystemRuleForm({
   const isEditMode = !!initialData?.id;
   const typeInfo = ruleTypeMap[ruleType];
 
+  const helpContent = (
+    <>
+      <Text
+        fontWeight="medium"
+        mb={2}
+      >
+        阈值类型说明
+      </Text>
+      <Text mb={3}>
+        • LOAD：系统负载（1分钟平均）
+        <br />• 平均 RT：所有入口流量的平均响应时间
+        <br />• 并发线程数：所有入口流量的并发线程数
+        <br />• 入口 QPS：所有入口流量的 QPS
+        <br />• CPU 使用率：CPU 使用率（0-1）
+      </Text>
+
+      <Text
+        fontWeight="medium"
+        mb={2}
+      >
+        触发机制
+      </Text>
+      <Text>当系统指标超过阈值时，将触发系统保护，拒绝新的请求，直到系统恢复。</Text>
+    </>
+  );
+
   return (
-    <Card.Root>
-      <Card.Header>
-        <Heading size="md">{isEditMode ? '编辑系统规则' : '新增系统规则'}</Heading>
-      </Card.Header>
-      <Card.Body>
-        <form onSubmit={handleSubmit}>
-          <Stack gap={4}>
-            {/* 阈值类型 */}
-            <Field.Root>
-              <Field.Label>阈值类型</Field.Label>
-              <NativeSelect.Root disabled={isEditMode}>
-                <NativeSelect.Field
-                  value={ruleType}
-                  onChange={(e) => {
-                    setRuleType(e.target.value as RuleType);
-                    setThreshold(0);
-                  }}
-                >
-                  {Object.entries(ruleTypeMap).map(([key, info]) => (
-                    <option
-                      key={key}
-                      value={key}
-                    >
-                      {info.label}
-                    </option>
-                  ))}
-                </NativeSelect.Field>
-              </NativeSelect.Root>
-              <Field.HelperText>{typeInfo.description}</Field.HelperText>
-            </Field.Root>
-
-            {/* 阈值 */}
-            <Field.Root invalid={!!errors.threshold}>
-              <Field.Label>阈值 {typeInfo.unit && `(${typeInfo.unit})`} *</Field.Label>
-              <Input
-                type="number"
-                value={threshold}
-                onChange={(e) => {
-                  setThreshold(Number(e.target.value));
-                  if (errors.threshold) {
-                    setErrors((prev) => {
-                      const newErrors = { ...prev };
-                      delete newErrors.threshold;
-                      return newErrors;
-                    });
-                  }
-                }}
-                min={0}
-                max={ruleType === 'cpu' ? 1 : undefined}
-                step={ruleType === 'cpu' ? 0.01 : 1}
-              />
-              {errors.threshold && <Field.ErrorText>{errors.threshold}</Field.ErrorText>}
-            </Field.Root>
-          </Stack>
-
-          {/* 操作按钮 */}
-          <Flex
-            mt={6}
-            gap={3}
-            justifyContent="flex-end"
-          >
-            <Button
-              variant="outline"
-              onClick={() => navigate(backPath)}
-            >
-              取消
-            </Button>
-            <Button
-              type="submit"
-              colorPalette="blue"
-              loading={isSubmitting}
-            >
-              <Icon icon="mdi:check" />
-              {isEditMode ? '保存' : '创建'}
-            </Button>
-          </Flex>
-        </form>
-      </Card.Body>
-    </Card.Root>
+    <RuleFormLayout
+      title="系统规则"
+      isEditMode={isEditMode}
+      isSubmitting={isSubmitting}
+      backPath={backPath}
+      onSubmit={handleSubmit}
+      helpContent={helpContent}
+    >
+      <FormSection columns={{ base: 1, md: 2 }}>
+        <FormSelect
+          label="阈值类型"
+          value={ruleType}
+          onChange={(v) => {
+            setRuleType(v as RuleType);
+            setThreshold(0);
+          }}
+          options={RULE_TYPE_OPTIONS}
+          disabled={isEditMode}
+          helperText={typeInfo.description}
+        />
+        <FormInput
+          label={`阈值${typeInfo.unit ? ` (${typeInfo.unit})` : ''}`}
+          required
+          type="number"
+          value={threshold}
+          onChange={(v) => {
+            setThreshold(Number(v));
+            if (errors.threshold) {
+              setErrors((prev) => {
+                const newErrors = { ...prev };
+                delete newErrors.threshold;
+                return newErrors;
+              });
+            }
+          }}
+          min={0}
+          max={ruleType === 'cpu' ? 1 : undefined}
+          error={errors.threshold}
+        />
+      </FormSection>
+    </RuleFormLayout>
   );
 }

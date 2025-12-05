@@ -16,9 +16,9 @@ import type { NavItemConfig } from '@/types/nav';
 import type { NavColor } from '@/types/settings';
 
 import { AppSelector } from '../app-selector';
+import { getAppFunctionMenuItems } from '../config';
 import { icons } from '../nav-icons';
 import { RecentApps } from '../recent-apps';
-import { getAppFunctionMenuItems } from '../config';
 import { navColorStyles } from './styles';
 
 const logoColors = {
@@ -50,11 +50,11 @@ export interface SideNavProps {
 export function SideNav({ color = 'evident', items = [] }: SideNavProps): React.JSX.Element {
   const pathname = usePathname();
   const currentApp = useCurrentApp();
-  const { data: apps = [] } = useApps();
+  const { data: _apps = [] } = useApps();
   const { settings } = useSettings();
   const { colorMode } = useColorMode(); // 使用 resolvedTheme,会将 'system' 解析为 'light' 或 'dark'
 
-  const styles = navColorStyles[colorMode][color];
+  const _styles = navColorStyles[colorMode][color];
   const logoColor = logoColors[colorMode][color];
 
   // 获取当前 primary color 的实际颜色值 (dark 模式使用 400, light 模式使用 500)

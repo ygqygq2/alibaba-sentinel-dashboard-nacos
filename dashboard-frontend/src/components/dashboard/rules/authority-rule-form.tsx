@@ -1,12 +1,13 @@
 /**
  * 授权规则表单组件
+ * 使用通用表单组件构建
  */
 
-import { Button, Card, Field, Flex, Heading, Input, NativeSelect, Stack, Textarea } from '@chakra-ui/react';
-import { Icon } from '@iconify/react';
+import { Text } from '@chakra-ui/react';
 import * as React from 'react';
-import { useNavigate } from 'react-router-dom';
 
+import { FormInput, FormSelect, FormTextarea } from '@/components/ui/form-field';
+import { FormSection, RuleFormLayout } from '@/components/ui/rule-form-layout';
 import type { AuthorityRule } from '@/types/rule';
 
 export interface AuthorityRuleFormProps {
@@ -22,11 +23,17 @@ export interface AuthorityRuleFormProps {
   backPath: string;
 }
 
+/** 授权类型选项 */
+const STRATEGY_OPTIONS = [
+  { value: 0, label: '白名单' },
+  { value: 1, label: '黑名单' },
+];
+
 /** 默认表单值 */
 const defaultValues: Omit<AuthorityRule, 'app' | 'id'> = {
   resource: '',
   limitApp: '',
-  strategy: 0, // 白名单
+  strategy: 0,
 };
 
 export function AuthorityRuleForm({
@@ -36,7 +43,6 @@ export function AuthorityRuleForm({
   isSubmitting,
   backPath,
 }: AuthorityRuleFormProps): React.JSX.Element {
-  const navigate = useNavigate();
   const [formData, setFormData] = React.useState<Omit<AuthorityRule, 'id'>>(() => ({
     ...defaultValues,
     ...initialData,
@@ -57,15 +63,8 @@ export function AuthorityRuleForm({
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
-
-    if (!formData.resource.trim()) {
-      newErrors.resource = '资源名称不能为空';
-    }
-
-    if (!formData.limitApp.trim()) {
-      newErrors.limitApp = '流控应用不能为空';
-    }
-
+    if (!formData.resource.trim()) newErrors.resource = '资源名称不能为空';
+    if (!formData.limitApp.trim()) newErrors.limitApp = '流控应用不能为空';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -73,10 +72,8 @@ export function AuthorityRuleForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-
     try {
       await onSubmit(formData);
-      navigate(backPath);
     } catch (err) {
       console.error('提交失败:', err);
     }
@@ -84,78 +81,69 @@ export function AuthorityRuleForm({
 
   const isEditMode = !!initialData?.id;
 
+  const helpContent = (
+    <>
+      <Text
+        fontWeight="medium"
+        mb={2}
+      >
+        授权类型
+      </Text>
+      <Text mb={3}>
+        • 白名单：只允许指定应用访问
+        <br />• 黑名单：禁止指定应用访问
+      </Text>
+
+      <Text
+        fontWeight="medium"
+        mb={2}
+      >
+        流控应用
+      </Text>
+      <Text>填写调用方的应用名称，多个应用用英文逗号分隔。用于区分调用来源，实现访问控制。</Text>
+    </>
+  );
+
   return (
-    <Card.Root>
-      <Card.Header>
-        <Heading size="md">{isEditMode ? '编辑授权规则' : '新增授权规则'}</Heading>
-      </Card.Header>
-      <Card.Body>
-        <form onSubmit={handleSubmit}>
-          <Stack gap={4}>
-            {/* 资源名称 */}
-            <Field.Root invalid={!!errors.resource}>
-              <Field.Label>资源名称 *</Field.Label>
-              <Input
-                value={formData.resource}
-                onChange={(e) => handleChange('resource', e.target.value)}
-                placeholder="请输入资源名称"
-                disabled={isEditMode}
-              />
-              {errors.resource && <Field.ErrorText>{errors.resource}</Field.ErrorText>}
-            </Field.Root>
+    <RuleFormLayout
+      title="授权规则"
+      isEditMode={isEditMode}
+      isSubmitting={isSubmitting}
+      backPath={backPath}
+      onSubmit={handleSubmit}
+      helpContent={helpContent}
+    >
+      <FormSection columns={{ base: 1, md: 2 }}>
+        <FormInput
+          label="资源名称"
+          required
+          value={formData.resource}
+          onChange={(v) => handleChange('resource', v)}
+          placeholder="请输入资源名称"
+          disabled={isEditMode}
+          error={errors.resource}
+        />
+        <FormSelect
+          label="授权类型"
+          value={formData.strategy}
+          onChange={(v) => handleChange('strategy', Number(v))}
+          options={STRATEGY_OPTIONS}
+          helperText={formData.strategy === 0 ? '只允许指定应用访问' : '禁止指定应用访问'}
+        />
+      </FormSection>
 
-            {/* 授权类型 */}
-            <Field.Root>
-              <Field.Label>授权类型</Field.Label>
-              <NativeSelect.Root>
-                <NativeSelect.Field
-                  value={formData.strategy}
-                  onChange={(e) => handleChange('strategy', Number(e.target.value))}
-                >
-                  <option value={0}>白名单</option>
-                  <option value={1}>黑名单</option>
-                </NativeSelect.Field>
-              </NativeSelect.Root>
-              <Field.HelperText>{formData.strategy === 0 ? '只允许指定应用访问' : '禁止指定应用访问'}</Field.HelperText>
-            </Field.Root>
-
-            {/* 流控应用 */}
-            <Field.Root invalid={!!errors.limitApp}>
-              <Field.Label>流控应用 *</Field.Label>
-              <Textarea
-                value={formData.limitApp}
-                onChange={(e) => handleChange('limitApp', e.target.value)}
-                placeholder="多个应用用逗号分隔，如：app1,app2,app3"
-                rows={3}
-              />
-              <Field.HelperText>填写调用方的应用名称，多个应用用英文逗号分隔</Field.HelperText>
-              {errors.limitApp && <Field.ErrorText>{errors.limitApp}</Field.ErrorText>}
-            </Field.Root>
-          </Stack>
-
-          {/* 操作按钮 */}
-          <Flex
-            mt={6}
-            gap={3}
-            justifyContent="flex-end"
-          >
-            <Button
-              variant="outline"
-              onClick={() => navigate(backPath)}
-            >
-              取消
-            </Button>
-            <Button
-              type="submit"
-              colorPalette="blue"
-              loading={isSubmitting}
-            >
-              <Icon icon="mdi:check" />
-              {isEditMode ? '保存' : '创建'}
-            </Button>
-          </Flex>
-        </form>
-      </Card.Body>
-    </Card.Root>
+      <FormSection columns={{ base: 1, md: 1 }}>
+        <FormTextarea
+          label="流控应用"
+          required
+          value={formData.limitApp}
+          onChange={(v) => handleChange('limitApp', v)}
+          placeholder="多个应用用逗号分隔，如：app1,app2,app3"
+          rows={3}
+          error={errors.limitApp}
+          helperText="填写调用方的应用名称，多个应用用英文逗号分隔"
+        />
+      </FormSection>
+    </RuleFormLayout>
   );
 }

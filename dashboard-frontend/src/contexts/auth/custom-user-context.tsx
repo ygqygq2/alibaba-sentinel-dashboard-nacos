@@ -6,7 +6,7 @@ import { authClient } from '@/lib/auth/client';
 import { logger } from '@/lib/default-logger';
 import type { User } from '@/types/user';
 
-import type { UserContextValue } from '../types';
+import type { UserContextValue } from './types';
 
 export const UserContext = React.createContext<UserContextValue | undefined>(undefined);
 

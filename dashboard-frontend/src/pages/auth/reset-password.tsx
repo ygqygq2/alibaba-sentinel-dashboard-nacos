@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
 
-import { ResetPasswordForm } from '@/components/auth/reset-password-form';
 import { GuestGuard } from '@/components/auth/guest-guard';
+import { ResetPasswordForm } from '@/components/auth/reset-password-form';
 import { SplitLayout } from '@/components/auth/split-layout';
 import { config } from '@/config';
 import type { Metadata } from '@/types/metadata';

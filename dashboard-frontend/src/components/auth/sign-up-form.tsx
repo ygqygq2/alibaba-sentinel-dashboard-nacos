@@ -88,7 +88,7 @@ export function SignUpForm(): React.JSX.Element {
     <Stack gap={4}>
       <Box
         as={RouterLink}
-        {...({ href: paths.home } as any)}
+        {...({ href: paths.home } as Record<string, unknown>)}
       >
         <DynamicLogo
           colorDark="light"
@@ -103,7 +103,7 @@ export function SignUpForm(): React.JSX.Element {
           Already have an account?{' '}
           <Link
             as={RouterLink}
-            {...({ href: paths.auth.custom.signIn } as any)}
+            {...({ href: paths.auth.custom.signIn } as Record<string, unknown>)}
             color="blue.500"
           >
             Sign in

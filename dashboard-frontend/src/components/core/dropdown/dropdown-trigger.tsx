@@ -11,6 +11,7 @@ export function DropdownTrigger({ children }: DropdownTriggerProps): React.JSX.E
   const { onTriggerKeyUp, onTriggerMouseEnter, onTriggerMouseLeave } = useDropdownContext();
 
   // 使用类型断言来处理 children
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const child = React.Children.only(children) as React.ReactElement<any>;
 
   const enhancedChild = React.cloneElement(child, {

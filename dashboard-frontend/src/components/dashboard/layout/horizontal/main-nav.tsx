@@ -12,13 +12,14 @@ import { useGlobalSearch } from '@/contexts/search-context';
 import { useSettings } from '@/hooks/use-settings';
 import { authClient } from '@/lib/auth/client';
 import { paths } from '@/paths';
+import type { NavItemConfig } from '@/types/nav';
 
 import { MobileNav } from '../mobile-nav';
 
 // Types
 export interface MainNavProps {
   color?: 'blend_in' | 'discrete' | 'evident';
-  items?: any[];
+  items?: NavItemConfig[];
 }
 
 // Components
@@ -71,11 +72,11 @@ function LogoutButton(): React.JSX.Element {
   );
 }
 
-export function MainNav({ color = 'evident', items = [] }: MainNavProps): React.JSX.Element {
+export function MainNav({ color: _color = 'evident', items = [] }: MainNavProps): React.JSX.Element {
   const [openNav, setOpenNav] = React.useState<boolean>(false);
 
   const {
-    settings: { colorScheme = 'light' },
+    settings: { colorScheme: _colorScheme = 'light' },
   } = useSettings();
 
   return (

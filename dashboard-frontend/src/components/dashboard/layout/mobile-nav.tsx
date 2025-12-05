@@ -4,7 +4,6 @@ import * as React from 'react';
 
 import { RouterLink } from '@/components/core/link';
 import { Logo } from '@/components/core/logo';
-import { useDialog } from '@/hooks/use-dialog';
 import { usePathname } from '@/hooks/use-pathname';
 import { isNavItemActive } from '@/lib/is-nav-item-active';
 import { paths } from '@/paths';

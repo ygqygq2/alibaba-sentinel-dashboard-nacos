@@ -34,7 +34,7 @@ export interface DataTableProps<TRowModel> extends Omit<React.ComponentProps<typ
 export function DataTable<TRowModel extends object & { id?: RowId | null }>({
   columnDefs,
   hideHead,
-  hover,
+  _hover,
   onClick,
   onDeselectAll,
   onDeselectOne,
@@ -130,7 +130,7 @@ export function DataTable<TRowModel extends object & { id?: RowId | null }>({
                       (column.formatter
                         ? column.formatter(row, index)
                         : column.field
-                          ? (row as any)[column.field]
+                          ? String((row as Record<string, unknown>)[column.field as string] ?? '')
                           : null) as React.ReactNode
                     }
                   </Table.Cell>

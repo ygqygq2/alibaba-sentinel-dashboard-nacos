@@ -62,7 +62,7 @@ export function SignInForm(): React.JSX.Element {
       <div>
         <Box
           as={RouterLink}
-          {...({ href: paths.home } as any)}
+          {...({ href: paths.home } as Record<string, unknown>)}
           display="inline-block"
           fontSize={0}
         >

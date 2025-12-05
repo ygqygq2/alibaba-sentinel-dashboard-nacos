@@ -93,7 +93,7 @@ export function SearchDialog({ onClose, open = false }: SearchDialogProps): Reac
   return (
     <DialogRoot
       open={open}
-      onOpenChange={(details: any) => !details.open && onClose?.()}
+      onOpenChange={(details: { open: boolean }) => !details.open && onClose?.()}
     >
       <Portal>
         <DialogBackdrop

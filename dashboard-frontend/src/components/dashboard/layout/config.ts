@@ -1,6 +1,5 @@
 import { paths } from '@/paths';
 import type { NavItemConfig } from '@/types/nav';
-import type { AppInfo } from '@/types/sentinel';
 
 /**
  * Sentinel Dashboard 布局配置
@@ -31,30 +30,35 @@ export function getAppFunctionMenuItems(appName: string): NavItemConfig[] {
       title: '流控规则',
       href: paths.dashboard.flow.list(appName),
       icon: 'funnel',
+      matcher: { type: 'startsWith', href: paths.dashboard.flow.list(appName) },
     },
     {
       key: `${appName}-degrade`,
       title: '熔断规则',
       href: paths.dashboard.degrade.list(appName),
       icon: 'shield-warning',
+      matcher: { type: 'startsWith', href: paths.dashboard.degrade.list(appName) },
     },
     {
       key: `${appName}-paramFlow`,
       title: '热点规则',
       href: paths.dashboard.paramFlow.list(appName),
       icon: 'fire',
+      matcher: { type: 'startsWith', href: paths.dashboard.paramFlow.list(appName) },
     },
     {
       key: `${appName}-system`,
       title: '系统规则',
       href: paths.dashboard.system.list(appName),
       icon: 'gear',
+      matcher: { type: 'startsWith', href: paths.dashboard.system.list(appName) },
     },
     {
       key: `${appName}-authority`,
       title: '授权规则',
       href: paths.dashboard.authority.list(appName),
       icon: 'key',
+      matcher: { type: 'startsWith', href: paths.dashboard.authority.list(appName) },
     },
     {
       key: `${appName}-machines`,

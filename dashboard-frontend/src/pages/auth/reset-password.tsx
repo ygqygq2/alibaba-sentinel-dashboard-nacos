@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
 
-import { SignInForm } from '@/components/auth/custom/sign-in-form';
+import { ResetPasswordForm } from '@/components/auth/reset-password-form';
 import { GuestGuard } from '@/components/auth/guest-guard';
 import { SplitLayout } from '@/components/auth/split-layout';
 import { config } from '@/config';
 import type { Metadata } from '@/types/metadata';
 
-const metadata: Metadata = { title: `Sign in | Custom | Auth | ${config.site.name}` };
+const metadata: Metadata = { title: `Reset password | Custom | Auth | ${config.site.name}` };
 
 export function Page(): React.JSX.Element {
   return (
@@ -17,7 +17,7 @@ export function Page(): React.JSX.Element {
       </Helmet>
       <GuestGuard>
         <SplitLayout>
-          <SignInForm />
+          <ResetPasswordForm />
         </SplitLayout>
       </GuestGuard>
     </React.Fragment>

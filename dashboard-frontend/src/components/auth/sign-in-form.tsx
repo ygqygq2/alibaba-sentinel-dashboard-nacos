@@ -9,7 +9,7 @@ import { RouterLink } from '@/components/core/link';
 import { DynamicLogo } from '@/components/core/logo';
 import { useSettings } from '@/hooks/use-settings';
 import { useUser } from '@/hooks/use-user';
-import { authClient } from '@/lib/auth/custom/client';
+import { authClient } from '@/lib/auth/client';
 import { paths } from '@/paths';
 
 const schema = zod.object({
@@ -67,8 +67,8 @@ export function SignInForm(): React.JSX.Element {
           fontSize={0}
         >
           <DynamicLogo
-            colorDark="light"
-            colorLight="dark"
+            colorDark="dark"
+            colorLight="light"
             height={32}
             width={140}
           />

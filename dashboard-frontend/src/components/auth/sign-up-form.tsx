@@ -11,7 +11,7 @@ import { DynamicLogo } from '@/components/core/logo';
 import { toast } from '@/components/core/toaster';
 import { useSettings } from '@/hooks/use-settings';
 import { useUser } from '@/hooks/use-user';
-import { authClient } from '@/lib/auth/custom/client';
+import { authClient } from '@/lib/auth/client';
 import { paths } from '@/paths';
 
 interface OAuthProvider {

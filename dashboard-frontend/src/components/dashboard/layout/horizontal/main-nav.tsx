@@ -10,7 +10,7 @@ import { SearchInput } from '@/components/ui/search-input';
 import { Tooltip } from '@/components/ui/tooltip';
 import { useGlobalSearch } from '@/contexts/search-context';
 import { useSettings } from '@/hooks/use-settings';
-import { authClient } from '@/lib/auth/custom/client';
+import { authClient } from '@/lib/auth/client';
 import { paths } from '@/paths';
 
 import { MobileNav } from '../mobile-nav';

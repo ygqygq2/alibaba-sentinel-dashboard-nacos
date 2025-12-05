@@ -6,7 +6,7 @@ import { z as zod } from 'zod';
 
 import { RouterLink } from '@/components/core/link';
 import { DynamicLogo } from '@/components/core/logo';
-import { authClient } from '@/lib/auth/custom/client';
+import { authClient } from '@/lib/auth/client';
 import { paths } from '@/paths';
 
 const schema = zod.object({ email: zod.string().min(1, { message: 'Email is required' }).email() });

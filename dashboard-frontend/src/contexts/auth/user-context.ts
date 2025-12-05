@@ -3,7 +3,7 @@ import type * as React from 'react';
 import { config } from '@/config';
 import { AuthStrategy } from '@/lib/auth/strategy';
 
-import { UserContext as CustomUserContext, UserProvider as CustomUserProvider } from './custom/user-context';
+import { UserContext as CustomUserContext, UserProvider as CustomUserProvider } from './custom-user-context';
 import { UserContext as SupabaseUserContext, UserProvider as SupabaseUserProvider } from './supabase/user-context';
 import type { UserContextValue } from './types';
 

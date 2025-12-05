@@ -7,9 +7,9 @@ export const paths = {
     signIn: '/auth/sign-in',
     signOut: '/auth/sign-out',
     custom: {
-      signIn: '/auth/custom/sign-in',
-      signUp: '/auth/custom/sign-up',
-      resetPassword: '/auth/custom/reset-password',
+      signIn: '/auth/sign-in',
+      signUp: '/auth/sign-up',
+      resetPassword: '/auth/reset-password',
     },
   },
   dashboard: {

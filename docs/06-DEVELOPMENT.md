@@ -39,9 +39,13 @@ docker run -d --name nacos \
 ### 3. 编译运行 Dashboard
 
 ```bash
-cd sentinel-dashboard
+# 使用 Makefile（推荐）
+make build        # 构建前端 + 后端
+make dev          # 启动前端开发服务器
+make help         # 查看所有命令
 
-# 编译
+# 或手动编译
+cd sentinel-dashboard
 mvn clean package -DskipTests
 
 # 运行
@@ -89,7 +93,28 @@ java -Dserver.port=8081 \
 
 ## 代码结构
 
-### Dashboard 模块
+### 前端模块
+
+```
+dashboard-frontend/
+├── src/
+│   ├── components/          # 通用组件
+│   │   ├── core/            # 核心组件
+│   │   └── dashboard/       # Dashboard 组件
+│   ├── hooks/               # 自定义 Hooks
+│   │   └── api/             # React Query Hooks
+│   ├── lib/                 # 工具库
+│   │   └── api/             # API 客户端
+│   ├── pages/               # 页面组件
+│   │   └── dashboard/       # Dashboard 页面
+│   ├── routes/              # 路由配置
+│   └── types/               # TypeScript 类型
+├── tests/                   # 单元测试
+├── package.json
+└── vite.config.mts
+```
+
+### Dashboard 后端模块
 
 ```
 sentinel-dashboard/src/main/java/com/alibaba/csp/sentinel/dashboard/
@@ -192,9 +217,26 @@ public class MyRuleController {
 
 ## 测试
 
-### 单元测试
+### 前端测试
 
 ```bash
+# 使用 Makefile
+make test-fe
+
+# 或直接运行
+cd dashboard-frontend
+pnpm test              # 运行测试
+pnpm test --watch      # 监听模式
+pnpm test --coverage   # 覆盖率报告
+```
+
+### 后端测试
+
+```bash
+# 使用 Makefile
+make test-be
+
+# 或直接运行
 cd sentinel-dashboard
 mvn test
 ```

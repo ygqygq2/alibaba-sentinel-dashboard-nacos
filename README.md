@@ -22,7 +22,14 @@ docker-compose logs -f
 ### 本地编译运行
 
 ```bash
-# 编译 Dashboard
+# 使用 Makefile 构建（推荐）
+make build        # 构建前端 + 后端
+make frontend     # 仅构建前端
+make backend      # 仅构建后端
+make dev          # 启动前端开发服务器
+make help         # 查看所有命令
+
+# 或手动编译
 cd sentinel-dashboard
 mvn clean package
 
@@ -38,37 +45,25 @@ java -Dserver.port=8080 \
 
 ```
 .
-├── sentinel-dashboard/            # Sentinel Dashboard 模块
-│   ├── src/                       # Java 源码
-│   ├── resources/                 # 配置文件
-│   ├── webapp/                    # 前端资源
+├── dashboard-frontend/            # React 前端（独立目录）
+│   ├── src/                       # 前端源码
+│   ├── tests/                     # 前端单元测试
+│   └── dist/                      # 构建产物
+├── sentinel-dashboard/            # Dashboard 后端模块
+│   ├── src/main/java/             # Java 后端源码
+│   ├── src/main/webapp/           # 前端构建输出（make frontend 生成）
 │   ├── Dockerfile                 # Dashboard Docker 镜像
-│   ├── docker-compose.yml         # 单独测试 Dashboard
 │   └── pom.xml
 ├── token-server/                  # Token Server 模块（集群流控）
 │   ├── src/                       # Java 源码
 │   ├── Dockerfile                 # Token Server Docker 镜像
-│   ├── docker-compose.yml         # 单独测试 Token Server
 │   └── pom.xml
 ├── tests/e2e/                     # E2E 自动化测试
-│   ├── test_dashboard.py          # Playwright 测试用例
-│   ├── conftest.py                # pytest fixtures
-│   └── run_tests.sh               # 测试脚本
-├── .github/workflows/             # GitHub Actions
-│   ├── ci.yml                     # CI: 自动测试
-│   └── release.yml                # Release: tag 触发构建镜像
+├── scripts/                       # 构建脚本
 ├── docs/                          # 文档
-│   ├── 00-INDEX.md                # 文档索引
-│   ├── 01-QUICK-START.md          # 快速开始
-│   ├── 02-ARCHITECTURE.md         # 架构设计
-│   ├── 03-NACOS-INTEGRATION.md    # Nacos 集成指南
-│   ├── 04-CLUSTER-FLOW-CONTROL.md # 集群流控指南
-│   ├── 05-DEPLOYMENT.md           # 部署指南
-│   ├── 06-DEVELOPMENT.md          # 开发指南
-│   ├── 07-API-REFERENCE.md        # API 参考
-│   └── 08-TROUBLESHOOTING.md      # 故障排查
-├── docker-compose.yml             # 全栈测试（Nacos + Dashboard + Token Server）
-└── README_CN.md                   # 本文件
+├── Makefile                       # 构建入口（make help 查看命令）
+├── docker-compose.yml             # 全栈测试
+└── README.md                      # 本文件
 ```
 
 ## 核心特性
@@ -169,13 +164,17 @@ public class GatewayFlowRuleNacosProvider implements DynamicRuleProvider<Gateway
 ### 测试
 
 ```bash
-# 运行 Maven 单元测试
-cd sentinel-dashboard
-mvn test
+# 使用 Makefile
+make test         # 运行所有测试
+make test-fe      # 运行前端测试
+make test-be      # 运行后端测试
 
-# 运行 E2E 自动化测试（需要先启动服务）
-cd tests/e2e
-./run_tests.sh
+# 或手动运行
+cd dashboard-frontend && pnpm test   # 前端测试
+cd sentinel-dashboard && mvn test    # 后端测试
+
+# E2E 自动化测试（需要先启动服务）
+cd tests/e2e && ./run_tests.sh
 ```
 
 ## Docker 镜像

@@ -32,6 +32,10 @@ __pycache__/
 
 # Node
 node_modules/
+dashboard-frontend/dist/
+
+# Java webapp (frontend build output)
+sentinel-dashboard/src/main/webapp/resources/
 
 # Docker
 .docker/
@@ -40,3 +44,5 @@ node_modules/
 *.tmp
 *.bak
 *~
+
+resources-old/

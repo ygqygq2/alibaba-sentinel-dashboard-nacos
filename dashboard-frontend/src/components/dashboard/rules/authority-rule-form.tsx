@@ -1,0 +1,161 @@
+/**
+ * 授权规则表单组件
+ */
+
+import { Button, Card, Field, Flex, Heading, Input, NativeSelect, Stack, Textarea } from '@chakra-ui/react';
+import { Icon } from '@iconify/react';
+import * as React from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import type { AuthorityRule } from '@/types/rule';
+
+export interface AuthorityRuleFormProps {
+  /** 应用名称 */
+  app: string;
+  /** 初始值（编辑模式） */
+  initialData?: AuthorityRule;
+  /** 提交处理 */
+  onSubmit: (data: Omit<AuthorityRule, 'id'>) => Promise<void>;
+  /** 是否提交中 */
+  isSubmitting?: boolean;
+  /** 返回路径 */
+  backPath: string;
+}
+
+/** 默认表单值 */
+const defaultValues: Omit<AuthorityRule, 'app' | 'id'> = {
+  resource: '',
+  limitApp: '',
+  strategy: 0, // 白名单
+};
+
+export function AuthorityRuleForm({
+  app,
+  initialData,
+  onSubmit,
+  isSubmitting,
+  backPath,
+}: AuthorityRuleFormProps): React.JSX.Element {
+  const navigate = useNavigate();
+  const [formData, setFormData] = React.useState<Omit<AuthorityRule, 'id'>>(() => ({
+    ...defaultValues,
+    ...initialData,
+    app,
+  }));
+  const [errors, setErrors] = React.useState<Record<string, string>>({});
+
+  const handleChange = (field: keyof AuthorityRule, value: string | number) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
+
+  const validate = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.resource.trim()) {
+      newErrors.resource = '资源名称不能为空';
+    }
+
+    if (!formData.limitApp.trim()) {
+      newErrors.limitApp = '流控应用不能为空';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    try {
+      await onSubmit(formData);
+      navigate(backPath);
+    } catch (err) {
+      console.error('提交失败:', err);
+    }
+  };
+
+  const isEditMode = !!initialData?.id;
+
+  return (
+    <Card.Root>
+      <Card.Header>
+        <Heading size="md">{isEditMode ? '编辑授权规则' : '新增授权规则'}</Heading>
+      </Card.Header>
+      <Card.Body>
+        <form onSubmit={handleSubmit}>
+          <Stack gap={4}>
+            {/* 资源名称 */}
+            <Field.Root invalid={!!errors.resource}>
+              <Field.Label>资源名称 *</Field.Label>
+              <Input
+                value={formData.resource}
+                onChange={(e) => handleChange('resource', e.target.value)}
+                placeholder="请输入资源名称"
+                disabled={isEditMode}
+              />
+              {errors.resource && <Field.ErrorText>{errors.resource}</Field.ErrorText>}
+            </Field.Root>
+
+            {/* 授权类型 */}
+            <Field.Root>
+              <Field.Label>授权类型</Field.Label>
+              <NativeSelect.Root>
+                <NativeSelect.Field
+                  value={formData.strategy}
+                  onChange={(e) => handleChange('strategy', Number(e.target.value))}
+                >
+                  <option value={0}>白名单</option>
+                  <option value={1}>黑名单</option>
+                </NativeSelect.Field>
+              </NativeSelect.Root>
+              <Field.HelperText>{formData.strategy === 0 ? '只允许指定应用访问' : '禁止指定应用访问'}</Field.HelperText>
+            </Field.Root>
+
+            {/* 流控应用 */}
+            <Field.Root invalid={!!errors.limitApp}>
+              <Field.Label>流控应用 *</Field.Label>
+              <Textarea
+                value={formData.limitApp}
+                onChange={(e) => handleChange('limitApp', e.target.value)}
+                placeholder="多个应用用逗号分隔，如：app1,app2,app3"
+                rows={3}
+              />
+              <Field.HelperText>填写调用方的应用名称，多个应用用英文逗号分隔</Field.HelperText>
+              {errors.limitApp && <Field.ErrorText>{errors.limitApp}</Field.ErrorText>}
+            </Field.Root>
+          </Stack>
+
+          {/* 操作按钮 */}
+          <Flex
+            mt={6}
+            gap={3}
+            justifyContent="flex-end"
+          >
+            <Button
+              variant="outline"
+              onClick={() => navigate(backPath)}
+            >
+              取消
+            </Button>
+            <Button
+              type="submit"
+              colorPalette="blue"
+              loading={isSubmitting}
+            >
+              <Icon icon="mdi:check" />
+              {isEditMode ? '保存' : '创建'}
+            </Button>
+          </Flex>
+        </form>
+      </Card.Body>
+    </Card.Root>
+  );
+}

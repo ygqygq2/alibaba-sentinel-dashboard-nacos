@@ -3,6 +3,7 @@ services:
   nacos:
     image: nacos/nacos-server:v2.3.0
     container_name: nacos
+    restart: always
     environment:
       - MODE=standalone
       - NACOS_AUTH_ENABLE=false
@@ -26,6 +27,7 @@ services:
 
   sentinel-dashboard:
     image: sentinel/dashboard:local
+    restart: always
     build:
       context: ./sentinel-dashboard
       args:
@@ -45,14 +47,19 @@ services:
     ports:
       - "8080:8080"
     healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:8080/"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 90s
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf -X POST 'http://localhost:8080/auth/login?username=sentinel&password=sentinel' || exit 1",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 15
+      start_period: 60s
 
   token-server:
     image: sentinel/token-server:local
+    restart: always
     build:
       context: ./token-server
       args:
@@ -78,6 +85,8 @@ services:
       - NACOS_GROUP_ID=SENTINEL_GROUP
       # 命名空间（可选，逗号分隔的应用名）
       # - CLUSTER_NAMESPACES=app1,app2
+      # 启用测试接口（生产环境设为 false 或不设置）
+      - DEMO_API_ENABLED=true
       - JAVA_OPTS=-Xms128m -Xmx256m
     ports:
       - "8081:8081" # HTTP 服务端口
@@ -85,7 +94,7 @@ services:
       - "18730:18730" # Cluster Token Server 端口（集群限流通信）
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8081/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s

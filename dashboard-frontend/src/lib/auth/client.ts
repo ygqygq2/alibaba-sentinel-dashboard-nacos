@@ -73,6 +73,27 @@ class AuthClient {
     // Dev helper: allow auto-login via env or localStorage flag
     const AUTO_LOGIN = import.meta.env.VITE_AUTO_LOGIN === 'true';
     if (AUTO_LOGIN) {
+      // 自动登录模式：先调用后端登录接口建立 session
+      const alreadyLoggedIn = localStorage.getItem('sentinel-auth') === 'true';
+      if (!alreadyLoggedIn) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({ username: 'sentinel', password: 'sentinel' }),
+            credentials: 'include',
+          });
+          if (!response.ok) {
+            console.error('Auto-login failed');
+            return { data: null };
+          }
+        } catch (err) {
+          console.error('Auto-login error:', err);
+          return { data: null };
+        }
+      }
       localStorage.setItem('sentinel-auth', 'true');
       localStorage.setItem('sentinel-user', 'sentinel');
       return {

@@ -6,6 +6,57 @@
 
 ---
 
+## AI 助手行为规范
+
+### 脚本优先原则
+
+- **优先使用项目提供的一键脚本**，避免手动执行多个命令
+- 测试时使用 `./scripts/e2e-test.sh [smoke|api|ui|all]`
+- 构建时使用 `make` 命令（`make help` 查看可用命令）
+- 避免在终端中逐条执行可以合并的命令
+
+### 常用一键命令
+
+```bash
+# E2E 测试（推荐使用一键脚本）
+./scripts/e2e-test.sh api              # API 测试（默认）
+./scripts/e2e-test.sh ui               # UI 测试（无头模式）
+./scripts/e2e-test.sh ui --headed      # UI 测试（有头模式，开发者可见）
+./scripts/e2e-test.sh smoke            # 冒烟测试
+./scripts/e2e-test.sh all              # 全部测试
+./scripts/e2e-test.sh all --headed     # 全部测试（有头模式）
+
+# 服务管理
+docker compose up -d           # 启动后端服务
+docker compose down            # 停止服务
+
+# 前端开发
+cd dashboard-frontend && pnpm dev         # 启动前端开发服务器
+cd dashboard-frontend && pnpm test        # 运行单元测试
+cd dashboard-frontend && pnpm test:e2e:report  # 查看测试报告
+```
+
+### 测试分层说明
+
+本项目采用**分层测试架构**：
+
+| 层级         | 运行位置            | 用途           |
+| ------------ | ------------------- | -------------- |
+| 前端开发测试 | dashboard-frontend/ | 开发时快速验证 |
+| 集成测试     | 项目根目录 scripts/ | CI/CD 完整验证 |
+
+**测试模式**：
+
+- **无头模式（默认）**：用于 CI/CD，无界面，速度快
+- **有头模式（--headed）**：开发者调试用，可见浏览器操作
+
+**测试报告**：
+
+- 本地：`pnpm test:e2e:report` 查看 HTML 报告
+- CI/CD：测试报告自动发布到 GitHub Pages
+
+---
+
 ## 项目结构概述
 
 ```
@@ -154,38 +205,44 @@ SD-5001: Nacos 配置推送失败，请检查 Nacos 连接状态或网络配置
 
 ### 测试分层
 
-| 层级             | 位置                      | 技术栈                         | 职责                   |
-| ---------------- | ------------------------- | ------------------------------ | ---------------------- |
-| **外层集成测试** | `tests/e2e/`              | Python + Pytest + Playwright   | 端到端流程、服务间通信 |
-| **内层前端测试** | `webapp/resources/tests/` | Vitest + React Testing Library | 组件、hooks、工具函数  |
+| 层级             | 位置                  | 技术栈              | 职责           |
+| ---------------- | --------------------- | ------------------- | -------------- |
+| **前端开发测试** | `dashboard-frontend/` | Vitest + Playwright | 开发时快速验证 |
+| **集成测试**     | `scripts/e2e-test.sh` | Playwright          | CI/CD 完整验证 |
 
-### 前端测试（内层）
+### 前端测试（开发时）
 
-位置：`sentinel-dashboard/webapp/resources/tests/`
-
-- **单元测试**：Vitest，覆盖 hooks 和工具函数
-- **组件测试**：React Testing Library
-
-运行方式：
+位置：`dashboard-frontend/`
 
 ```bash
-cd sentinel-dashboard/webapp/resources
-pnpm test        # 运行测试
-pnpm test:watch  # 监听模式
+# 单元测试
+pnpm test                  # Vitest 单元测试
+pnpm test:watch            # 监听模式
+
+# E2E 测试
+pnpm test:e2e              # 无头 UI 测试
+pnpm test:e2e:headed       # 有头 UI 测试（开发者可见）
+pnpm test:e2e:debug        # Playwright UI 调试模式
+pnpm test:e2e:api          # 纯 API 测试
+pnpm test:e2e:all          # 全部测试
+pnpm test:e2e:report       # 查看 HTML 报告
 ```
 
-### 集成测试（外层）
+### 集成测试（CI/CD）
 
-位置：`tests/e2e/`
-
-- **技术栈**：Python + Pytest + Playwright
-- **覆盖范围**：登录、API 调用、服务注册、集群流控
-
-运行方式：
+从项目根目录运行：
 
 ```bash
-./scripts/dev.sh test  # 启动环境并运行测试
+./scripts/e2e-test.sh api              # API 测试
+./scripts/e2e-test.sh ui               # UI 测试（无头）
+./scripts/e2e-test.sh ui --headed      # UI 测试（有头）
+./scripts/e2e-test.sh all              # 全部测试
 ```
+
+### 测试报告
+
+- **本地**：`pnpm test:e2e:report` 查看 HTML 报告
+- **CI/CD**：自动发布到 GitHub Pages
 
 ### 后端测试
 

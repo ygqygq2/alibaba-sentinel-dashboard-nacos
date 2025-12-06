@@ -132,6 +132,19 @@ jobs:
           DASHBOARD_URL: ${{ env.DASHBOARD_URL }}
           TOKEN_SERVER_URL: ${{ env.TOKEN_SERVER_URL }}
 
+      - name: Add test summary
+        if: always()
+        run: |
+          echo "## 🧪 E2E Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f "dashboard-frontend/e2e/test-results/index.html" ]; then
+            echo "✅ Test report generated successfully" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "📊 View the full report in the [GitHub Pages](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/) after deployment." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ No HTML report found" >> $GITHUB_STEP_SUMMARY
+          fi
+
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()

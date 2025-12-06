@@ -1,85 +1,111 @@
 # Sentinel Dashboard 构建 Makefile
 # ================================
+# 所有构建和测试都通过 Docker 容器执行，无需本地安装 mvn/node 等工具
 
-.PHONY: all clean frontend backend build dev test help
+.PHONY: help build up down restart logs ps clean \
+        test test-api test-ui test-smoke test-all \
+        fe-check fe-type fe-lint fe-test dev-fe
 
 # 目录定义
-ROOT_DIR := $(shell pwd)
-FRONTEND_DIR := $(ROOT_DIR)/dashboard-frontend
-BACKEND_DIR := $(ROOT_DIR)/sentinel-dashboard
-WEBAPP_DEST := $(BACKEND_DIR)/src/main/webapp/resources
+SCRIPTS := ./scripts
 
 # 默认目标
-all: build
+.DEFAULT_GOAL := help
 
+# ========================================
 # 帮助信息
+# ========================================
 help:
-	@echo "Sentinel Dashboard 构建命令"
-	@echo "=========================="
-	@echo "  make build      - 完整构建（前端 + 后端）"
-	@echo "  make frontend   - 仅构建前端"
-	@echo "  make backend    - 仅构建后端 JAR"
-	@echo "  make dev        - 启动前端开发服务器"
-	@echo "  make test       - 运行所有测试"
-	@echo "  make test-fe    - 运行前端测试"
-	@echo "  make test-be    - 运行后端测试"
-	@echo "  make clean      - 清理构建产物"
-	@echo "  make install    - 安装前端依赖"
+	@echo "Sentinel Dashboard 命令（全部通过 Docker 容器执行）"
+	@echo "=================================================="
+	@echo ""
+	@echo "🐳 服务管理:"
+	@echo "  make build      - 构建所有镜像（前端 + Dashboard + Token Server）"
+	@echo "  make up         - 构建并启动所有服务"
+	@echo "  make down       - 停止并删除服务"
+	@echo "  make restart    - 重新构建并启动"
+	@echo "  make logs       - 查看服务日志"
+	@echo "  make ps         - 查看服务状态"
+	@echo "  make clean      - 清理所有（包括卷和镜像）"
+	@echo ""
+	@echo "🧪 E2E 测试:"
+	@echo "  make test       - 运行 API 测试（默认）"
+	@echo "  make test-api   - 运行 API 测试"
+	@echo "  make test-ui    - 运行 UI 测试（CI 模式，访问 8080）"
+	@echo "  make test-smoke - 运行冒烟测试"
+	@echo "  make test-all   - 运行全部测试"
+	@echo ""
+	@echo "🔍 前端检查:"
+	@echo "  make fe-check   - 运行所有前端检查（type + lint + test）"
+	@echo "  make fe-type    - 前端类型检查"
+	@echo "  make fe-lint    - 前端 Lint 检查"
+	@echo "  make fe-test    - 前端单元测试"
+	@echo ""
+	@echo "💻 本地开发:"
+	@echo "  make dev-fe     - 启动前端开发服务器（需要本地 pnpm）"
+	@echo ""
+	@echo "环境变量:"
+	@echo "  USE_CHINA_MIRROR=true  使用中国镜像加速（默认开启）"
 
-# 安装前端依赖
-install:
-	@echo "📦 安装前端依赖..."
-	cd $(FRONTEND_DIR) && pnpm install
+# ========================================
+# 服务管理（调用 scripts/dev.sh）
+# ========================================
+build:
+	@$(SCRIPTS)/dev.sh build
 
-# 构建前端并复制到后端 webapp
-frontend:
-	@echo "🔨 构建前端..."
-	cd $(FRONTEND_DIR) && pnpm build
-	@echo "📋 复制到 webapp..."
-	rm -rf $(WEBAPP_DEST)
-	mkdir -p $(WEBAPP_DEST)
-	cp -r $(FRONTEND_DIR)/dist/* $(WEBAPP_DEST)/
+up:
+	@$(SCRIPTS)/dev.sh up
 
-# 构建后端 JAR
-backend:
-	@echo "🔨 构建后端 JAR..."
-	cd $(BACKEND_DIR) && mvn clean package -DskipTests
+down:
+	@$(SCRIPTS)/dev.sh down
 
-# 完整构建
-build: frontend backend
-	@echo "✅ 构建完成: $(BACKEND_DIR)/target/sentinel-dashboard.jar"
+restart:
+	@$(SCRIPTS)/dev.sh restart
 
-# 前端开发服务器
-dev:
-	@echo "🚀 启动前端开发服务器..."
-	cd $(FRONTEND_DIR) && pnpm dev
+logs:
+	@$(SCRIPTS)/dev.sh logs
 
-# 前端测试
-test-fe:
-	@echo "🧪 运行前端测试..."
-	cd $(FRONTEND_DIR) && pnpm test --run
+ps:
+	@$(SCRIPTS)/dev.sh ps
 
-# 后端测试
-test-be:
-	@echo "🧪 运行后端测试..."
-	cd $(BACKEND_DIR) && mvn test
-
-# 所有测试
-test: test-fe test-be
-
-# 前端类型检查
-type-check:
-	@echo "🔍 类型检查..."
-	cd $(FRONTEND_DIR) && pnpm type-check
-
-# 前端 lint
-lint:
-	@echo "🔍 Lint 检查..."
-	cd $(FRONTEND_DIR) && pnpm lint
-
-# 清理
 clean:
-	@echo "🧹 清理构建产物..."
-	rm -rf $(FRONTEND_DIR)/dist
-	rm -rf $(WEBAPP_DEST)
-	cd $(BACKEND_DIR) && mvn clean
+	@$(SCRIPTS)/dev.sh clean
+
+# ========================================
+# E2E 测试（调用 scripts/dev.sh test）
+# ========================================
+test: test-api
+
+test-api:
+	@$(SCRIPTS)/dev.sh test api
+
+test-ui:
+	@$(SCRIPTS)/dev.sh test ui --ci
+
+test-smoke:
+	@$(SCRIPTS)/dev.sh test smoke
+
+test-all:
+	@$(SCRIPTS)/dev.sh test all --ci
+
+# ========================================
+# 前端检查（调用 scripts/dev.sh check）
+# ========================================
+fe-check:
+	@$(SCRIPTS)/dev.sh check all
+
+fe-type:
+	@$(SCRIPTS)/dev.sh check type
+
+fe-lint:
+	@$(SCRIPTS)/dev.sh check lint
+
+fe-test:
+	@$(SCRIPTS)/dev.sh check test
+
+# ========================================
+# 本地开发（需要本地安装 pnpm）
+# ========================================
+dev-fe:
+	@echo "🚀 启动前端开发服务器..."
+	@cd dashboard-frontend && pnpm dev

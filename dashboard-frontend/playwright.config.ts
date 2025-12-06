@@ -11,8 +11,8 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 4 : undefined, // CI 用 4 workers，本地自动检测 CPU 核心数
   reporter: process.env.CI
-    ? [['github'], ['html', { outputFolder: 'e2e/test-results' }]]
-    : [['list'], ['html', { outputFolder: 'e2e/test-results' }]],
+    ? [['github'], ['html', { outputFolder: 'e2e/test-results', open: 'never' }]]
+    : [['list'], ['html', { outputFolder: 'e2e/test-results', open: 'never' }]],
   timeout: 60000,
 
   use: {

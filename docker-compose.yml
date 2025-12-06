@@ -25,6 +25,15 @@ services:
       retries: 10
       start_period: 30s
 
+  # 前端构建镜像
+  frontend:
+    image: sentinel/frontend:local
+    build:
+      context: ./dashboard-frontend
+    container_name: sentinel-frontend-builder
+    # 此服务仅用于构建，不需要运行
+    command: ["echo", "Frontend build complete"]
+
   sentinel-dashboard:
     image: sentinel/dashboard:local
     restart: always
@@ -32,10 +41,13 @@ services:
       context: ./sentinel-dashboard
       args:
         - USE_CHINA_MIRROR=${USE_CHINA_MIRROR:-false}
+        - FRONTEND_IMAGE=sentinel/frontend:local
     container_name: sentinel-dashboard
     depends_on:
       nacos:
         condition: service_healthy
+      frontend:
+        condition: service_completed_successfully
     environment:
       - SENTINEL_DASHBOARD_SERVER_PORT=8080
       - NACOS_SERVER_ADDR=nacos:8848

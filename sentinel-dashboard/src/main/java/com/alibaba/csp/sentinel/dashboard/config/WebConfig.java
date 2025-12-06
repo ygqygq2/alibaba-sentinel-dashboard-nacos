@@ -60,12 +60,18 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/**").addResourceLocations("classpath:/resources/");
+        // Serve React frontend static resources
+        registry.addResourceHandler("/**")
+                .addResourceLocations("classpath:/webapp/resources/")
+                .addResourceLocations("classpath:/resources/");
     }
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        registry.addViewController("/").setViewName("forward:/index.htm");
+        // SPA fallback: forward non-API routes to index.html
+        registry.addViewController("/").setViewName("forward:/index.html");
+        registry.addViewController("/auth/**").setViewName("forward:/index.html");
+        registry.addViewController("/dashboard/**").setViewName("forward:/index.html");
     }
 
     /**

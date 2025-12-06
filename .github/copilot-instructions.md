@@ -10,29 +10,37 @@
 
 ### 脚本优先原则
 
-- **优先使用项目提供的一键脚本**，避免手动执行多个命令
-- 测试时使用 `./scripts/e2e-test.sh [smoke|api|ui|all]`
+- **优先使用项目提供的一键脚本** `./scripts/dev.sh`，避免手动执行多个命令
 - 构建时使用 `make` 命令（`make help` 查看可用命令）
 - 避免在终端中逐条执行可以合并的命令
 
 ### 常用一键命令
 
 ```bash
-# E2E 测试（推荐使用一键脚本）
-./scripts/e2e-test.sh api              # API 测试（默认）
-./scripts/e2e-test.sh ui               # UI 测试（无头模式）
-./scripts/e2e-test.sh ui --headed      # UI 测试（有头模式，开发者可见）
-./scripts/e2e-test.sh smoke            # 冒烟测试
-./scripts/e2e-test.sh all              # 全部测试
-./scripts/e2e-test.sh all --headed     # 全部测试（有头模式）
+# 服务管理（推荐使用一键脚本）
+./scripts/dev.sh up             # 构建并启动所有服务
+./scripts/dev.sh down           # 停止服务
+./scripts/dev.sh restart        # 重新构建并启动
+./scripts/dev.sh logs           # 查看日志
+./scripts/dev.sh ps             # 查看服务状态
+./scripts/dev.sh clean          # 清理所有
 
-# 服务管理
-docker compose up -d           # 启动后端服务
-docker compose down            # 停止服务
+# E2E 测试
+./scripts/dev.sh test api              # API 测试（默认）
+./scripts/dev.sh test ui               # UI 测试（无头模式）
+./scripts/dev.sh test ui --headed      # UI 测试（有头模式，开发者可见）
+./scripts/dev.sh test smoke            # 冒烟测试
+./scripts/dev.sh test all              # 全部测试
+./scripts/dev.sh test all --ci         # 全部测试（CI 模式）
 
-# 前端开发
+# 前端检查
+./scripts/dev.sh check all      # 类型 + lint + 单元测试
+./scripts/dev.sh check type     # 类型检查
+./scripts/dev.sh check lint     # Lint 检查
+./scripts/dev.sh check test     # 单元测试
+
+# 前端开发（需要本地 pnpm）
 cd dashboard-frontend && pnpm dev         # 启动前端开发服务器
-cd dashboard-frontend && pnpm test        # 运行单元测试
 cd dashboard-frontend && pnpm test:e2e:report  # 查看测试报告
 ```
 

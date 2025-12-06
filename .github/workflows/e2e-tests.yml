@@ -123,7 +123,7 @@ jobs:
 
       - name: Run E2E tests (API + UI)
         run: |
-          ./scripts/e2e-test.sh all --ci
+          ./scripts/dev.sh test all --ci
         env:
           DASHBOARD_URL: ${{ env.DASHBOARD_URL }}
           TOKEN_SERVER_URL: ${{ env.TOKEN_SERVER_URL }}

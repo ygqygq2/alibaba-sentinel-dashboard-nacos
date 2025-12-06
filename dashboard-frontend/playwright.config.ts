@@ -6,10 +6,10 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 export default defineConfig({
   testDir: './e2e',
-  fullyParallel: false, // 按顺序执行，避免并发问题
+  fullyParallel: true, // 启用并行测试
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : 1, // 单线程执行
+  workers: process.env.CI ? 4 : undefined, // CI 用 4 workers，本地自动检测 CPU 核心数
   reporter: process.env.CI
     ? [['github'], ['html', { outputFolder: 'e2e/test-results' }]]
     : [['list'], ['html', { outputFolder: 'e2e/test-results' }]],

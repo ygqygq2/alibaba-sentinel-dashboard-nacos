@@ -59,12 +59,20 @@ do_build() {
         exit 1
     fi
     
+    # 确保前端镜像已存在
+    if ! docker image inspect sentinel/frontend:local > /dev/null 2>&1; then
+        error "前端镜像构建后仍不存在"
+        exit 1
+    fi
+    info "✓ 前端镜像已准备: sentinel/frontend:local"
+    
     info "Step 2/3: 构建 Dashboard 镜像..."
     if ! docker compose build sentinel-dashboard >> "$log_file" 2>&1; then
         error "Dashboard 构建失败，查看日志: $log_file"
         tail -50 "$log_file"
         exit 1
     fi
+    info "✓ Dashboard 镜像已准备: sentinel/dashboard:local"
     
     info "Step 3/3: 构建 Token Server 镜像..."
     if ! docker compose build token-server >> "$log_file" 2>&1; then
@@ -72,6 +80,7 @@ do_build() {
         tail -50 "$log_file"
         exit 1
     fi
+    info "✓ Token Server 镜像已准备: sentinel/token-server:local"
     
     info "所有镜像构建完成"
     rm -f "$log_file"

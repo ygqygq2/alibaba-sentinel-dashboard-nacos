@@ -77,13 +77,18 @@ jobs:
       - name: Verify Token Server registration
         run: |
           echo "Checking if token-server is registered..."
-          timeout 60 bash -c '
-            until curl -sf "http://localhost:8080/app/sentinel-token-server/machines.json" | grep -q "sentinel-token-server"; do
+          # 先登录获取 cookie
+          COOKIE_FILE=$(mktemp)
+          curl -sf -c "$COOKIE_FILE" -X POST "http://localhost:8080/auth/login?username=sentinel&password=sentinel"
+
+          timeout 90 bash -c "
+            until curl -sf -b \"$COOKIE_FILE\" \"http://localhost:8080/app/sentinel-token-server/machines.json\" | grep -q 'sentinel-token-server'; do
               curl -sf http://localhost:8081/api/hello || true
               sleep 5
             done
-          '
+          "
           echo "Token Server registered successfully"
+          rm -f "$COOKIE_FILE"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

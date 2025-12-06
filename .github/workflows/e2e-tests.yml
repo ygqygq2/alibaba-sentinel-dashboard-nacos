@@ -121,18 +121,9 @@ jobs:
         working-directory: dashboard-frontend
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Run API tests
-        working-directory: dashboard-frontend
+      - name: Run E2E tests (API + UI)
         run: |
-          CI=true pnpm exec playwright test --project=api
-        env:
-          DASHBOARD_URL: ${{ env.DASHBOARD_URL }}
-          TOKEN_SERVER_URL: ${{ env.TOKEN_SERVER_URL }}
-
-      - name: Run UI tests
-        working-directory: dashboard-frontend
-        run: |
-          CI=true pnpm exec playwright test --project=chromium
+          ./scripts/e2e-test.sh all --ci
         env:
           DASHBOARD_URL: ${{ env.DASHBOARD_URL }}
           TOKEN_SERVER_URL: ${{ env.TOKEN_SERVER_URL }}

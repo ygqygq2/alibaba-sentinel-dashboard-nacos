@@ -34,12 +34,13 @@ export default defineConfig({
       },
     },
     // UI 测试 - 匹配 auth.spec.ts, dashboard.spec.ts 等（排除 api 和 smoke）
+    // CI 环境下使用 DASHBOARD_URL（前端已打包进 Java），本地使用 FRONTEND_URL（dev server）
     {
       name: 'chromium',
       testMatch: /^(?!.*\.(api|smoke)\.spec\.ts$).*\.spec\.ts$/,
       use: {
         ...devices['Desktop Chrome'],
-        baseURL: FRONTEND_URL,
+        baseURL: process.env.CI ? DASHBOARD_URL : FRONTEND_URL,
       },
     },
   ],

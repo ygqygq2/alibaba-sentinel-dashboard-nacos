@@ -47,22 +47,12 @@ jobs:
         run: |
           echo "FRONTEND_IMAGE=ghcr.io/${{ github.repository }}/sentinel-frontend:latest" >> $GITHUB_ENV
 
-      - name: Cache Docker layers
-        uses: actions/cache@v4
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-
       - name: Build and push frontend image
         uses: docker/build-push-action@v5
         with:
           context: ./dashboard-frontend
           push: true
           tags: ${{ env.FRONTEND_IMAGE }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
       - name: Build dashboard image (local only)
         uses: docker/build-push-action@v5
@@ -74,8 +64,6 @@ jobs:
           build-args: |
             USE_CHINA_MIRROR=false
             FRONTEND_IMAGE=${{ env.FRONTEND_IMAGE }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
       - name: Build token-server image (local only)
         uses: docker/build-push-action@v5
@@ -86,13 +74,8 @@ jobs:
           tags: sentinel/token-server:local
           build-args: |
             USE_CHINA_MIRROR=false
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Start services
         run: |

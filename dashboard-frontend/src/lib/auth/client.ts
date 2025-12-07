@@ -50,6 +50,12 @@ class AuthClient {
         return { error: '用户名或密码错误' };
       }
 
+      // Parse response body to check success field
+      const data = await response.json();
+      if (!data.success) {
+        return { error: data.msg || '用户名或密码错误' };
+      }
+
       // Store login state in localStorage for client-side check
       localStorage.setItem('sentinel-auth', 'true');
       localStorage.setItem('sentinel-user', username);

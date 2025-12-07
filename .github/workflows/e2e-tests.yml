@@ -45,7 +45,7 @@ jobs:
       - name: Set image tags
         id: meta
         run: |
-          echo "FRONTEND_IMAGE=ghcr.io/${{ github.repository_owner }}/sentinel-frontend:latest" >> $GITHUB_ENV
+          echo "FRONTEND_IMAGE=ghcr.io/${{ github.repository }}/sentinel-frontend:latest" >> $GITHUB_ENV
 
       - name: Cache Docker layers
         uses: actions/cache@v4

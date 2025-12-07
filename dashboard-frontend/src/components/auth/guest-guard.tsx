@@ -24,7 +24,7 @@ export function GuestGuard({ children }: GuestGuardProps): React.JSX.Element | n
   const { user, error, isLoading } = useUser();
   const [isChecking, setIsChecking] = React.useState<boolean>(true);
 
-  const checkPermissions = async (): Promise<void> => {
+  const checkPermissions = React.useCallback(async (): Promise<void> => {
     if (isLoading) {
       return;
     }
@@ -41,13 +41,16 @@ export function GuestGuard({ children }: GuestGuardProps): React.JSX.Element | n
     }
 
     setIsChecking(false);
-  };
+  }, [isLoading, error, user, navigate]);
 
   React.useEffect(() => {
-    checkPermissions().catch(() => {
-      // noop
-    });
-  }, [user, error, isLoading]);
+    // 只在初始加载时检查，避免登录失败后重复触发
+    if (isChecking) {
+      checkPermissions().catch(() => {
+        // noop
+      });
+    }
+  }, [user, error, isLoading, checkPermissions, isChecking]);
 
   if (isChecking) {
     // 避免闪烁：直接渲染子组件而不是返回 null

@@ -16,8 +16,56 @@ env:
   JAVA_VERSION: ${{ github.event.inputs.java_version || '17' }}
 
 jobs:
-  build-and-push:
+  # 第一步：构建并推送前端镜像
+  build-frontend:
+    name: Build & Push Frontend
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      frontend-image: ${{ steps.meta.outputs.tags }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/sentinel-frontend
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: dashboard-frontend
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # 第二步：构建并推送后端镜像（依赖前端镜像）
+  build-backend:
     name: Build & Push ${{ matrix.image }}
+    needs: build-frontend
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -28,7 +76,7 @@ jobs:
         include:
           - image: sentinel-dashboard
             context: sentinel-dashboard
-          - image: token-server
+          - image: sentinel-token-server
             context: token-server
 
     steps:
@@ -69,12 +117,13 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             JAVA_VERSION=${{ env.JAVA_VERSION }}
+            FRONTEND_IMAGE=${{ env.REGISTRY }}/${{ github.repository }}/sentinel-frontend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
   create-release:
     name: Create GitHub Release
-    needs: build-and-push
+    needs: [build-frontend, build-backend]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     permissions:
@@ -93,6 +142,11 @@ jobs:
           body: |
             ## 🐳 Docker Images
 
+            ### Sentinel Frontend
+            ```bash
+            docker pull ${{ env.REGISTRY }}/${{ github.repository }}/sentinel-frontend:${{ github.ref_name }}
+            ```
+
             ### Sentinel Dashboard
             ```bash
             docker pull ${{ env.REGISTRY }}/${{ github.repository }}/sentinel-dashboard:${{ github.ref_name }}
@@ -100,7 +154,7 @@ jobs:
 
             ### Token Server
             ```bash
-            docker pull ${{ env.REGISTRY }}/${{ github.repository }}/token-server:${{ github.ref_name }}
+            docker pull ${{ env.REGISTRY }}/${{ github.repository }}/sentinel-token-server:${{ github.ref_name }}
             ```
 
             ## 📦 Supported Architectures

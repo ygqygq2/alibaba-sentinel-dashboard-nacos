@@ -27,7 +27,7 @@ services:
 
   # 前端构建镜像
   frontend:
-    image: sentinel/frontend:local
+    image: ${FRONTEND_IMAGE:-sentinel/frontend:local}
     build:
       context: ./dashboard-frontend
     container_name: sentinel-frontend-builder
@@ -35,13 +35,13 @@ services:
     command: ["echo", "Frontend build complete"]
 
   sentinel-dashboard:
-    image: sentinel/dashboard:local
+    image: ${DASHBOARD_IMAGE:-sentinel/dashboard:local}
     restart: always
     build:
       context: ./sentinel-dashboard
       args:
         - USE_CHINA_MIRROR=${USE_CHINA_MIRROR:-false}
-        - FRONTEND_IMAGE=sentinel/frontend:local
+        - FRONTEND_IMAGE=${FRONTEND_IMAGE:-sentinel/frontend:local}
     container_name: sentinel-dashboard
     depends_on:
       nacos:
@@ -70,7 +70,7 @@ services:
       start_period: 60s
 
   token-server:
-    image: sentinel/token-server:local
+    image: ${TOKEN_SERVER_IMAGE:-sentinel/token-server:local}
     restart: always
     build:
       context: ./token-server

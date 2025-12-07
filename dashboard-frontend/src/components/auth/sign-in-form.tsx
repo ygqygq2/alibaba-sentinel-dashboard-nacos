@@ -7,6 +7,7 @@ import { z as zod } from 'zod';
 
 import { RouterLink } from '@/components/core/link';
 import { DynamicLogo } from '@/components/core/logo';
+import { toaster } from '@/components/ui/toaster';
 import { useSettings } from '@/hooks/use-settings';
 import { useUser } from '@/hooks/use-user';
 import { authClient } from '@/lib/auth/client';
@@ -46,7 +47,13 @@ export function SignInForm(): React.JSX.Element {
       const { error } = await authClient.signInWithPassword(values);
 
       if (error) {
-        setError('root', { type: 'server', message: error });
+        // 使用 Toast 显示错误，不影响布局
+        toaster.create({
+          title: '登录失败',
+          description: error,
+          type: 'error',
+          duration: 4000,
+        });
         setIsPending(false);
         return;
       }
@@ -54,7 +61,7 @@ export function SignInForm(): React.JSX.Element {
       // Refresh the auth state
       await checkSession?.();
     },
-    [checkSession, setError]
+    [checkSession]
   );
 
   return (
@@ -140,13 +147,6 @@ export function SignInForm(): React.JSX.Element {
                   </Field.Root>
                 )}
               />
-
-              {errors.root && (
-                <Alert.Root status="error">
-                  <Alert.Indicator />
-                  <Alert.Title>{errors.root.message}</Alert.Title>
-                </Alert.Root>
-              )}
               <Button
                 loading={isPending}
                 type="submit"

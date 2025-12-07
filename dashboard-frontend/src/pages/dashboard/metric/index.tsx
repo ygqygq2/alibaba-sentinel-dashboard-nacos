@@ -2,14 +2,158 @@
  * 实时监控页面
  */
 
-import { Badge, Box, Button, Card, Flex, Grid, Heading, Skeleton, Stack, Table, Text } from '@chakra-ui/react';
+import {
+  Badge,
+  Box,
+  Button,
+  Card,
+  Collapsible,
+  Flex,
+  Grid,
+  Heading,
+  Skeleton,
+  Stack,
+  Table,
+  Text,
+} from '@chakra-ui/react';
 import { Icon } from '@iconify/react';
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { useParams } from 'react-router-dom';
 
 import { useTopResourceMetric } from '@/hooks/api';
+import { useGlobalSearch } from '@/contexts/search-context';
 import type { MetricData } from '@/types/sentinel';
+
+const ITEMS_PER_PAGE = 2; // 每页显示2个图表
+
+/** 资源监控图表组件 */
+interface ResourceChartProps {
+  resource: string;
+  data: MetricData[];
+  isExpanded?: boolean;
+  onToggle?: () => void;
+}
+
+function ResourceChart({ resource, data, isExpanded = false, onToggle }: ResourceChartProps) {
+  // 格式化数据用于图表
+  const chartData = React.useMemo(() => {
+    return data.map((d) => ({
+      time: new Date(d.timestamp).toLocaleTimeString('zh-CN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      }),
+      passQps: d.passQps,
+      blockQps: d.blockQps,
+      successQps: d.successQps,
+      exceptionQps: d.exceptionQps,
+      rt: d.rt,
+    }));
+  }, [data]);
+
+  // 最近 6 条数据用于表格
+  const recentData = React.useMemo(() => {
+    return chartData.slice(-6).reverse();
+  }, [chartData]);
+
+  return (
+    <Card.Root>
+      <Card.Header
+        cursor="pointer"
+        onClick={onToggle}
+        _hover={{ bg: 'bg.subtle' }}
+        transition="background 0.2s"
+      >
+        <Flex
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          <Heading
+            size="sm"
+            fontWeight="medium"
+          >
+            {resource}
+          </Heading>
+          <Icon
+            icon={isExpanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}
+            fontSize="20px"
+          />
+        </Flex>
+      </Card.Header>
+      <Collapsible.Root open={isExpanded}>
+        <Collapsible.Content>
+          <Card.Body pt={0}>
+            {/* 单列图表 */}
+            <Box>
+              {chartData.length > 0 ? (
+                <ResponsiveContainer
+                  width="100%"
+                  height={220}
+                >
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="time"
+                      tick={{ fontSize: 12 }}
+                    />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="passQps"
+                      stroke="#10b981"
+                      strokeWidth={2}
+                      dot={false}
+                      name="通过 QPS"
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="blockQps"
+                      stroke="#3b82f6"
+                      strokeWidth={2}
+                      dot={false}
+                      name="拒绝 QPS"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <Box
+                  height="220px"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  bg="bg.subtle"
+                  borderRadius="md"
+                >
+                  <Text
+                    color="fg.muted"
+                    fontSize="sm"
+                  >
+                    暂无数据
+                  </Text>
+                </Box>
+              )}
+            </Box>
+          </Card.Body>
+        </Collapsible.Content>
+      </Collapsible.Root>
+    </Card.Root>
+  );
+}
 
 /** 统计卡片组件 */
 interface StatCardProps {
@@ -25,7 +169,7 @@ function StatCard({ label, value, colorPalette = 'blue', icon }: StatCardProps) 
       <Card.Body>
         <Flex
           alignItems="center"
-          gap={4}
+          gap="card.gap"
         >
           <Box
             bg={`${colorPalette}.100`}
@@ -61,17 +205,68 @@ function StatCard({ label, value, colorPalette = 'blue', icon }: StatCardProps) 
 
 export function Page(): React.JSX.Element {
   const { app } = useParams<{ app: string }>();
-  const { data: metrics, isLoading, error, refetch } = useTopResourceMetric(app ?? '');
+  const { searchKey } = useGlobalSearch(); // 使用全局搜索
   const [autoRefresh, setAutoRefresh] = React.useState(false);
+  const [expandedResources, setExpandedResources] = React.useState<Set<string>>(new Set());
+  const [currentPage, setCurrentPage] = React.useState(1); // 分页状态
+  const [historyData, setHistoryData] = React.useState<
+    Array<{
+      time: string;
+      passQps: number;
+      blockQps: number;
+      successQps: number;
+      exceptionQps: number;
+      rt: number;
+    }>
+  >([]);
 
-  // 自动刷新
+  // 按资源分组的历史数据
+  const [resourceHistory, setResourceHistory] = React.useState<Map<string, MetricData[]>>(new Map());
+
+  const { data, isLoading, error, refetch } = useTopResourceMetric(app ?? '', {
+    refetchInterval: autoRefresh ? 10000 : false,
+  });
+
+  // 从返回数据中提取当前值和历史数据
+  const metrics = data?.current || [];
+  const historyFromApi = data?.history || new Map();
+
+  // 更新资源历史数据
   React.useEffect(() => {
-    if (!autoRefresh) return;
-    const interval = setInterval(() => {
-      refetch();
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [autoRefresh, refetch]);
+    if (historyFromApi.size > 0) {
+      setResourceHistory(historyFromApi);
+    }
+  }, [historyFromApi]);
+
+  // 更新汇总历史数据用于总览图表
+  React.useEffect(() => {
+    if (metrics?.length) {
+      const now = new Date();
+      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+
+      const totalPassQps = metrics.reduce((sum, m) => sum + m.passQps, 0);
+      const totalBlockQps = metrics.reduce((sum, m) => sum + m.blockQps, 0);
+      const totalSuccessQps = metrics.reduce((sum, m) => sum + m.successQps, 0);
+      const totalExceptionQps = metrics.reduce((sum, m) => sum + m.exceptionQps, 0);
+      const avgRt = metrics.length > 0 ? metrics.reduce((sum, m) => sum + m.rt, 0) / metrics.length : 0;
+
+      setHistoryData((prev) => {
+        const newData = [
+          ...prev,
+          {
+            time: timeStr,
+            passQps: totalPassQps,
+            blockQps: totalBlockQps,
+            successQps: totalSuccessQps,
+            exceptionQps: totalExceptionQps,
+            rt: avgRt,
+          },
+        ];
+        // 保留最近 20 个数据点
+        return newData.slice(-20);
+      });
+    }
+  }, [metrics]);
 
   const handleRefresh = () => {
     refetch();
@@ -80,6 +275,62 @@ export function Page(): React.JSX.Element {
   const toggleAutoRefresh = () => {
     setAutoRefresh(!autoRefresh);
   };
+
+  const toggleResource = (resource: string) => {
+    setExpandedResources((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(resource)) {
+        newSet.delete(resource);
+      } else {
+        newSet.add(resource);
+      }
+      return newSet;
+    });
+  };
+
+  // 按资源分组并过滤搜索
+  const resourceGroups = React.useMemo(() => {
+    if (!metrics) return [];
+
+    // 按资源名分组
+    const groups = new Map<string, MetricData[]>();
+    metrics.forEach((metric) => {
+      const existing = groups.get(metric.resource) || [];
+      groups.set(metric.resource, [...existing, metric]);
+    });
+
+    let filtered = Array.from(groups.entries()).map(([resource, data]) => ({
+      resource,
+      data: resourceHistory.get(resource) || data,
+      latest: data[data.length - 1] || data[0],
+    }));
+
+    // 应用搜索过滤
+    if (searchKey) {
+      filtered = filtered.filter((group) => group.resource.toLowerCase().includes(searchKey.toLowerCase()));
+    }
+
+    return filtered;
+  }, [metrics, resourceHistory, searchKey]);
+
+  // 计算分页
+  const totalPages = Math.ceil(resourceGroups.length / ITEMS_PER_PAGE);
+  const paginatedGroups = React.useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return resourceGroups.slice(startIndex, endIndex);
+  }, [resourceGroups, currentPage]);
+
+  // 过滤监控表格数据（也应用搜索）
+  const filteredMetrics = React.useMemo(() => {
+    if (!searchKey) return metrics;
+    return metrics.filter((m) => m.resource.toLowerCase().includes(searchKey.toLowerCase()));
+  }, [metrics, searchKey]);
+
+  // 当搜索关键词变化时，重置到第1页
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchKey]);
 
   // 计算汇总数据
   const summary = React.useMemo(() => {
@@ -107,8 +358,8 @@ export function Page(): React.JSX.Element {
       <Helmet>
         <title>实时监控 - {app} | Sentinel Dashboard</title>
       </Helmet>
-      <Box p={6}>
-        <Stack gap={6}>
+      <Box p="page.gap">
+        <Stack gap="section.gap">
           <Flex
             justifyContent="space-between"
             alignItems="center"
@@ -123,18 +374,45 @@ export function Page(): React.JSX.Element {
                 应用：{app}
               </Text>
             </Box>
-            <Flex gap={2}>
+            <Flex
+              gap="card.gap"
+              alignItems="center"
+            >
+              {autoRefresh && (
+                <Badge colorPalette="green">
+                  <Icon icon="mdi:sync" />
+                  自动刷新中 (10s)
+                </Badge>
+              )}
               <Button
                 variant={autoRefresh ? 'solid' : 'outline'}
-                colorPalette={autoRefresh ? 'green' : 'gray'}
+                colorPalette={autoRefresh ? 'blue' : 'gray'}
                 onClick={toggleAutoRefresh}
+                _dark={{
+                  bg: autoRefresh ? 'blue.600' : 'transparent',
+                  borderColor: autoRefresh ? 'blue.600' : 'gray.600',
+                  color: autoRefresh ? 'white' : 'gray.300',
+                  _hover: {
+                    bg: autoRefresh ? 'blue.700' : 'gray.700',
+                    borderColor: autoRefresh ? 'blue.700' : 'gray.500',
+                  },
+                }}
               >
                 <Icon icon={autoRefresh ? 'mdi:pause' : 'mdi:play'} />
                 {autoRefresh ? '停止刷新' : '自动刷新'}
               </Button>
               <Button
                 variant="outline"
+                colorPalette="blue"
                 onClick={handleRefresh}
+                _dark={{
+                  borderColor: 'gray.600',
+                  color: 'gray.300',
+                  _hover: {
+                    bg: 'gray.700',
+                    borderColor: 'gray.500',
+                  },
+                }}
               >
                 <Icon icon="mdi:refresh" />
                 刷新
@@ -145,7 +423,7 @@ export function Page(): React.JSX.Element {
           {/* 汇总统计 */}
           <Grid
             templateColumns="repeat(4, 1fr)"
-            gap={4}
+            gap="card.gap"
           >
             <StatCard
               label="通过 QPS"
@@ -173,27 +451,287 @@ export function Page(): React.JSX.Element {
             />
           </Grid>
 
+          {/* QPS 趋势图 */}
+          <Card.Root>
+            <Card.Header>
+              <Heading size="md">QPS 趋势</Heading>
+            </Card.Header>
+            <Card.Body>
+              {historyData.length > 0 ? (
+                <ResponsiveContainer
+                  width="100%"
+                  height={200}
+                >
+                  <AreaChart data={historyData}>
+                    <defs>
+                      <linearGradient
+                        id="colorPass"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="#10b981"
+                          stopOpacity={0.8}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#10b981"
+                          stopOpacity={0}
+                        />
+                      </linearGradient>
+                      <linearGradient
+                        id="colorBlock"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="#ef4444"
+                          stopOpacity={0.8}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#ef4444"
+                          stopOpacity={0}
+                        />
+                      </linearGradient>
+                      <linearGradient
+                        id="colorSuccess"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="#3b82f6"
+                          stopOpacity={0.8}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#3b82f6"
+                          stopOpacity={0}
+                        />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="time"
+                      tick={{ fontSize: 12 }}
+                    />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip />
+                    <Legend />
+                    <Area
+                      type="monotone"
+                      dataKey="passQps"
+                      stroke="#10b981"
+                      fillOpacity={1}
+                      fill="url(#colorPass)"
+                      name="通过 QPS"
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="blockQps"
+                      stroke="#ef4444"
+                      fillOpacity={1}
+                      fill="url(#colorBlock)"
+                      name="拒绝 QPS"
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="successQps"
+                      stroke="#3b82f6"
+                      fillOpacity={1}
+                      fill="url(#colorSuccess)"
+                      name="成功 QPS"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <Box
+                  height="200px"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  bg="bg.subtle"
+                  borderRadius="md"
+                >
+                  <Stack
+                    gap="card.gap"
+                    textAlign="center"
+                  >
+                    <Icon
+                      icon="mdi:chart-line"
+                      fontSize="48px"
+                      color="fg.muted"
+                    />
+                    <Text
+                      color="fg.muted"
+                      fontSize="sm"
+                    >
+                      暂无趋势数据，请等待数据采集...
+                    </Text>
+                  </Stack>
+                </Box>
+              )}
+            </Card.Body>
+          </Card.Root>
+
+          {/* RT 趋势图 */}
+          <Card.Root>
+            <Card.Header>
+              <Heading size="md">RT 趋势</Heading>
+            </Card.Header>
+            <Card.Body>
+              {historyData.length > 0 ? (
+                <ResponsiveContainer
+                  width="100%"
+                  height={200}
+                >
+                  <AreaChart data={historyData}>
+                    <defs>
+                      <linearGradient
+                        id="colorRt"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="#f59e0b"
+                          stopOpacity={0.8}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#f59e0b"
+                          stopOpacity={0}
+                        />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="time"
+                      tick={{ fontSize: 12 }}
+                    />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip />
+                    <Legend />
+                    <Area
+                      type="monotone"
+                      dataKey="rt"
+                      stroke="#f59e0b"
+                      fillOpacity={1}
+                      fill="url(#colorRt)"
+                      name="平均响应时间 (ms)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <Box
+                  height="200px"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  bg="bg.subtle"
+                  borderRadius="md"
+                >
+                  <Stack
+                    gap="card.gap"
+                    textAlign="center"
+                  >
+                    <Icon
+                      icon="mdi:timer-outline"
+                      fontSize="48px"
+                      color="fg.muted"
+                    />
+                    <Text
+                      color="fg.muted"
+                      fontSize="sm"
+                    >
+                      暂无趋势数据，请等待数据采集...
+                    </Text>
+                  </Stack>
+                </Box>
+              )}
+            </Card.Body>
+          </Card.Root>
+
+          {/* 按资源展示的详细图表 */}
+          {resourceGroups.length > 0 && (
+            <Card.Root>
+              <Card.Header>
+                <Flex
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Heading size="md">资源详情</Heading>
+                  {/* 分页控件 */}
+                  <Flex
+                    gap="card.gap"
+                    alignItems="center"
+                  >
+                    <Text fontSize="sm">共 {resourceGroups.length} 个资源</Text>
+                    <Flex gap={1}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                      >
+                        <Icon icon="mdi:chevron-left" />
+                      </Button>
+                      <Text
+                        fontSize="sm"
+                        px="card.gap"
+                        alignSelf="center"
+                      >
+                        {currentPage} / {totalPages || 1}
+                      </Text>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={currentPage >= totalPages}
+                      >
+                        <Icon icon="mdi:chevron-right" />
+                      </Button>
+                    </Flex>
+                  </Flex>
+                </Flex>
+              </Card.Header>
+              <Card.Body>
+                <Stack gap="card.gap">
+                  {paginatedGroups.map((group) => (
+                    <ResourceChart
+                      key={group.resource}
+                      resource={group.resource}
+                      data={group.data}
+                      isExpanded={expandedResources.has(group.resource)}
+                      onToggle={() => toggleResource(group.resource)}
+                    />
+                  ))}
+                </Stack>
+              </Card.Body>
+            </Card.Root>
+          )}
+
           {/* 资源列表 */}
           <Card.Root>
             <Card.Header>
-              <Flex
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <Heading size="md">资源监控</Heading>
-                {autoRefresh && (
-                  <Badge colorPalette="green">
-                    <Icon icon="mdi:sync" />
-                    自动刷新中 (5s)
-                  </Badge>
-                )}
-              </Flex>
+              <Heading size="md">资源监控</Heading>
             </Card.Header>
             <Card.Body p={0}>
               {isLoading ? (
                 <Stack
-                  p={4}
-                  gap={3}
+                  p="card.gap"
+                  gap="card.gap"
                 >
                   {[1, 2, 3, 4, 5].map((i) => (
                     <Skeleton
@@ -203,22 +741,24 @@ export function Page(): React.JSX.Element {
                   ))}
                 </Stack>
               ) : error ? (
-                <Box p={4}>
+                <Box p="card.gap">
                   <Text color="red.500">加载失败：{String(error)}</Text>
                 </Box>
-              ) : !metrics?.length ? (
+              ) : !filteredMetrics?.length ? (
                 <Box
-                  p={8}
+                  p="section.gap"
                   textAlign="center"
                 >
-                  <Text color="fg.muted">暂无监控数据</Text>
-                  <Text
-                    color="fg.muted"
-                    fontSize="sm"
-                    mt={2}
-                  >
-                    请确保应用已接入 Sentinel 并有流量访问
-                  </Text>
+                  <Text color="fg.muted">{searchKey ? '未找到匹配的资源' : '暂无监控数据'}</Text>
+                  {!searchKey && (
+                    <Text
+                      color="fg.muted"
+                      fontSize="sm"
+                      mt="card.gap"
+                    >
+                      请确保应用已接入 Sentinel 并有流量访问
+                    </Text>
+                  )}
                 </Box>
               ) : (
                 <Table.Root>
@@ -234,7 +774,7 @@ export function Page(): React.JSX.Element {
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
-                    {metrics.map((metric: MetricData, index: number) => (
+                    {filteredMetrics.map((metric: MetricData, index: number) => (
                       <Table.Row key={`${metric.resource}-${index}`}>
                         <Table.Cell>
                           <Text

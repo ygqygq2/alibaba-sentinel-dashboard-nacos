@@ -46,3 +46,8 @@ sentinel-dashboard/src/main/webapp/resources/
 *~
 
 resources-old/
+
+# Official Sentinel source code for reference (cloned from GitHub)
+sentinel-official/
+sentinel-dashboard-official/
+sentinel-dashboard-*.jar

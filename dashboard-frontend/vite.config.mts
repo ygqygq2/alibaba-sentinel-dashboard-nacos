@@ -31,6 +31,7 @@ export default defineConfig(({ command, mode }) => {
     },
     server: {
       port: parseInt(env.VITE_APP_PORT || '3000'),
+      strictPort: true, // 严格使用指定端口，如果被占用则报错而不是切换端口
       proxy: {
         // Sentinel Dashboard API 代理
         '/api': {

@@ -8,7 +8,7 @@ import { z as zod } from 'zod';
 
 import { RouterLink } from '@/components/core/link';
 import { DynamicLogo } from '@/components/core/logo';
-import { toast } from '@/components/core/toaster';
+import { toaster } from '@/components/ui/toaster';
 import { useSettings } from '@/hooks/use-settings';
 import { useUser } from '@/hooks/use-user';
 import { authClient } from '@/lib/auth/client';
@@ -57,7 +57,12 @@ export function SignUpForm(): React.JSX.Element {
 
     if (error) {
       setIsPending(false);
-      toast.error(error);
+      toaster.create({
+        title: '认证失败',
+        description: error,
+        type: 'error',
+        duration: 4000,
+      });
       return;
     }
 

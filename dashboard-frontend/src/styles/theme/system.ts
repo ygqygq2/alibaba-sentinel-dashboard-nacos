@@ -104,6 +104,12 @@ const config = defineConfig({
         royalBlue: generateSemanticTokens('royalBlue'),
         tomatoOrange: generateSemanticTokens('tomatoOrange'),
       },
+      spacing: {
+        // 页面布局间隙 - 统一定义
+        'page.gap': { value: '{spacing.3}' }, // 页面主要间隙 0.75rem (12px)
+        'card.gap': { value: '{spacing.2}' }, // 卡片内部间隙 0.5rem (8px)
+        'section.gap': { value: '{spacing.4}' }, // 区块间隙 1rem (16px) - 原 gap={6} 的一半
+      },
     },
     recipes: components,
   },

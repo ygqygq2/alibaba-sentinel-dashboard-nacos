@@ -19,6 +19,23 @@ docker-compose logs -f
 
 访问 http://localhost:8080，用户名/密码: sentinel/sentinel
 
+### 生成监控数据（可选）
+
+监控页面需要实际流量才能显示图表。可以使用以下方式快速生成测试数据：
+
+```bash
+# 使用测试脚本生成流量
+./scripts/generate-metric-data.sh
+
+# 或手动访问 token-server 接口
+for i in {1..50}; do
+  curl http://localhost:8081/api/hello
+  sleep 0.1
+done
+```
+
+然后访问监控页面查看图表：http://localhost:3000/dashboard/metric?app=sentinel-token-server
+
 ### 本地编译运行
 
 ```bash

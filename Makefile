@@ -4,7 +4,7 @@
 
 .PHONY: help build up up-build down restart restart-build logs ps clean \
         test test-api test-ui test-smoke test-all test-dev test-dev-ui \
-        fe-check fe-type fe-lint fe-test dev-fe
+        fe-check fe-type fe-lint fe-test dev-fe gen-metric
 
 # 目录定义
 SCRIPTS := ./scripts
@@ -47,6 +47,7 @@ help:
 	@echo ""
 	@echo "💻 本地开发:"
 	@echo "  make dev-fe     - 启动前端开发服务器（需要本地 pnpm）"
+	@echo "  make gen-metric - 生成监控数据（访问 token-server 接口）"
 	@echo ""
 	@echo "环境变量:"
 	@echo "  USE_CHINA_MIRROR=true  使用中国镜像加速（默认开启）"
@@ -128,3 +129,10 @@ fe-test:
 dev-fe:
 	@echo "🚀 启动前端开发服务器..."
 	@cd dashboard-frontend && pnpm dev
+
+# ========================================
+# 监控数据生成
+# ========================================
+gen-metric:
+	@echo "📊 生成监控数据..."
+	@$(SCRIPTS)/generate-metric-data.sh

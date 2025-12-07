@@ -23,10 +23,10 @@ export function useTopResourceMetric(
     startTime?: number;
     endTime?: number;
     maxPoints?: number;
-    refetchInterval?: number;
+    refetchInterval?: number | false;
   }
 ) {
-  const { startTime, endTime, maxPoints, refetchInterval = 5000 } = options ?? {};
+  const { startTime, endTime, maxPoints, refetchInterval = false } = options ?? {};
 
   return useQuery({
     queryKey: metricKeys.topResource(app),
@@ -48,7 +48,7 @@ export function useResourceMetric(
     refetchInterval?: number;
   }
 ) {
-  const { startTime, endTime, refetchInterval = 5000 } = options ?? {};
+  const { startTime, endTime, refetchInterval = 10000 } = options ?? {};
 
   return useQuery({
     queryKey: metricKeys.byResource(app, resource),
@@ -71,7 +71,7 @@ export function useMachineMetric(
     refetchInterval?: number;
   }
 ) {
-  const { startTime, endTime, refetchInterval = 5000 } = options ?? {};
+  const { startTime, endTime, refetchInterval = 10000 } = options ?? {};
 
   return useQuery({
     queryKey: metricKeys.byMachine(app, ip, port),

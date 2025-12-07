@@ -23,47 +23,33 @@ export function GuestGuard({ children }: GuestGuardProps): React.JSX.Element | n
   const navigate = useNavigate();
   const { user, error, isLoading } = useUser();
   const [isChecking, setIsChecking] = React.useState<boolean>(true);
-
-  const checkPermissions = React.useCallback(async (): Promise<void> => {
-    if (isLoading) {
-      return;
-    }
-
-    if (error) {
-      setIsChecking(false);
-      return;
-    }
-
-    if (user) {
-      logger.debug('[GuestGuard]: User is logged in, redirecting to dashboard');
-      navigate(paths.dashboard.overview, { replace: true });
-      return;
-    }
-
-    setIsChecking(false);
-  }, [isLoading, error, user, navigate]);
+  const hasCheckedRef = React.useRef<boolean>(false);
 
   React.useEffect(() => {
-    // 只在初始加载时检查，避免登录失败后重复触发
-    if (isChecking) {
-      checkPermissions().catch(() => {
-        // noop
-      });
-    }
-  }, [user, error, isLoading, checkPermissions, isChecking]);
+    // 初始检查
+    if (!hasCheckedRef.current && !isLoading) {
+      hasCheckedRef.current = true;
+      setIsChecking(false);
 
-  if (isChecking) {
-    // 避免闪烁：直接渲染子组件而不是返回 null
+      if (user) {
+        logger.debug('[GuestGuard]: User is logged in, redirecting to dashboard');
+        navigate(paths.dashboard.overview, { replace: true });
+      }
+    }
+
+    // 登录成功后的跳转（user 从 null 变为有值）
+    if (hasCheckedRef.current && user && !isLoading) {
+      logger.debug('[GuestGuard]: User logged in, redirecting to dashboard');
+      navigate(paths.dashboard.overview, { replace: true });
+    }
+  }, [user, isLoading, navigate]);
+
+  if (isLoading || isChecking) {
     return <React.Fragment>{children}</React.Fragment>;
   }
 
-  if (error) {
-    return (
-      <Alert.Root status="error">
-        <Alert.Indicator />
-        <Alert.Title>{error}</Alert.Title>
-      </Alert.Root>
-    );
+  if (error && !user) {
+    logger.debug('[GuestGuard]: Auth error, but user can still access login page');
   }
 
   return <React.Fragment>{children}</React.Fragment>;

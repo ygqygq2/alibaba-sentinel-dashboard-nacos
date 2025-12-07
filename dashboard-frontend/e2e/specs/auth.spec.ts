@@ -24,8 +24,7 @@ test.describe('认证', () => {
     await dashboardPage.expectLoaded();
   });
 
-  test.skip('使用无效凭据显示错误', async ({ page }) => {
-    // TODO: 后端默认接受任何凭据，需要实现真实认证后启用此测试
+  test('使用无效凭据显示错误', async ({ page }) => {
     await loginPage.login('invalid', 'invalid');
     await loginPage.expectLoginError();
   });

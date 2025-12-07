@@ -50,7 +50,8 @@ export function GuestGuard({ children }: GuestGuardProps): React.JSX.Element | n
   }, [user, error, isLoading]);
 
   if (isChecking) {
-    return null;
+    // 避免闪烁：直接渲染子组件而不是返回 null
+    return <React.Fragment>{children}</React.Fragment>;
   }
 
   if (error) {

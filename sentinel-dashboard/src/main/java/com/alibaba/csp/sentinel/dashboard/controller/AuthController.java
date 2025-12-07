@@ -62,12 +62,12 @@ public class AuthController {
         // Validate username and password - both must match
         if (StringUtils.isBlank(username) || StringUtils.isBlank(password)) {
             LOGGER.error("Login failed: Username or password is blank");
-            return Result.ofFail(-1, "Username and password cannot be blank");
+            return Result.ofFail(-1, "用户名和密码不能为空");
         }
 
         if (!authUsername.equals(username) || !authPassword.equals(password)) {
             LOGGER.error("Login failed: Invalid username or password, username=" + username);
-            return Result.ofFail(-1, "Invalid username or password");
+            return Result.ofFail(-1, "用户名或密码错误");
         }
 
         AuthService.AuthUser authUser = new SimpleWebAuthServiceImpl.SimpleWebAuthUserImpl(username);

@@ -26,11 +26,11 @@ export interface ResetPasswordParams {
 
 class AuthClient {
   async signUp(_: SignUpParams): Promise<{ error?: string }> {
-    return { error: 'Sign up not supported' };
+    return { error: '不支持注册功能' };
   }
 
   async signInWithOAuth(_: SignInWithOAuthParams): Promise<{ error?: string }> {
-    return { error: 'Social authentication not implemented' };
+    return { error: '社交账号登录未实现' };
   }
 
   async signInWithPassword(params: SignInWithPasswordParams): Promise<{ error?: string }> {
@@ -68,11 +68,11 @@ class AuthClient {
   }
 
   async resetPassword(_: ResetPasswordParams): Promise<{ error?: string }> {
-    return { error: 'Password reset not implemented' };
+    return { error: '密码重置功能未实现' };
   }
 
   async updatePassword(_: ResetPasswordParams): Promise<{ error?: string }> {
-    return { error: 'Update reset not implemented' };
+    return { error: '密码更新功能未实现' };
   }
 
   async getUser(): Promise<{ data?: User | null; error?: string }> {

@@ -23,8 +23,7 @@ test.describe('Authentication', () => {
     await dashboardPage.expectLoaded();
   });
 
-  test.skip('should show error with invalid credentials', async ({ page }) => {
-    // TODO: 等待前端实现错误提示功能后再启用此测试
+  test('should show error with invalid credentials', async ({ page }) => {
     await loginPage.login('invalid', 'invalid');
     // 应该显示错误信息
     await loginPage.expectLoginError();

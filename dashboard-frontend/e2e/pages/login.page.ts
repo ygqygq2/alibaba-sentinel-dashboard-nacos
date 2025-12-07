@@ -27,7 +27,7 @@ export class LoginPage {
   }
 
   async expectLoginError() {
-    // 登录失败应该显示错误提示
-    await expect(this.page.locator('[role="alert"], .error-message')).toBeVisible();
+    // 登录失败应该显示 Chakra UI Alert 错误提示
+    await expect(this.page.locator('[role="alert"]')).toBeVisible({ timeout: 5000 });
   }
 }

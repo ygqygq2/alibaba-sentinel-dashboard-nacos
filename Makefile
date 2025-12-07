@@ -2,7 +2,7 @@
 # ================================
 # 所有构建和测试都通过 Docker 容器执行，无需本地安装 mvn/node 等工具
 
-.PHONY: help build up down restart logs ps clean \
+.PHONY: help build up up-build down restart restart-build logs ps clean \
         test test-api test-ui test-smoke test-all \
         fe-check fe-type fe-lint fe-test dev-fe
 
@@ -20,13 +20,15 @@ help:
 	@echo "=================================================="
 	@echo ""
 	@echo "🐳 服务管理:"
-	@echo "  make build      - 构建所有镜像（前端 + Dashboard + Token Server）"
-	@echo "  make up         - 构建并启动所有服务"
-	@echo "  make down       - 停止并删除服务"
-	@echo "  make restart    - 重新构建并启动"
-	@echo "  make logs       - 查看服务日志"
-	@echo "  make ps         - 查看服务状态"
-	@echo "  make clean      - 清理所有（包括卷和镜像）"
+	@echo "  make build         - 构建所有镜像（前端 + Dashboard + Token Server）"
+	@echo "  make up            - 启动所有服务（不构建）"
+	@echo "  make up-build      - 构建并启动所有服务"
+	@echo "  make down          - 停止并删除服务"
+	@echo "  make restart       - 重启服务（不构建）"
+	@echo "  make restart-build - 重新构建并启动"
+	@echo "  make logs          - 查看服务日志"
+	@echo "  make ps            - 查看服务状态"
+	@echo "  make clean         - 清理所有（包括卷和镜像）"
 	@echo ""
 	@echo "🧪 E2E 测试:"
 	@echo "  make test       - 运行 API 测试（默认）"
@@ -56,11 +58,17 @@ build:
 up:
 	@$(SCRIPTS)/dev.sh up
 
+up-build:
+	@$(SCRIPTS)/dev.sh up-build
+
 down:
 	@$(SCRIPTS)/dev.sh down
 
 restart:
 	@$(SCRIPTS)/dev.sh restart
+
+restart-build:
+	@$(SCRIPTS)/dev.sh restart-build
 
 logs:
 	@$(SCRIPTS)/dev.sh logs

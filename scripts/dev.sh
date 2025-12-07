@@ -87,13 +87,17 @@ do_build() {
 }
 
 do_up() {
-    do_build
     info "启动服务..."
     docker compose up -d
     info "等待服务就绪..."
     sleep 5
     do_ps
     info "Dashboard: http://localhost:8080 (sentinel/sentinel)"
+}
+
+do_up_build() {
+    do_build
+    do_up
 }
 
 do_down() {
@@ -104,6 +108,11 @@ do_down() {
 do_restart() {
     do_down
     do_up
+}
+
+do_restart_build() {
+    do_build
+    do_restart
 }
 
 do_logs() {
@@ -183,9 +192,9 @@ do_test() {
     # 检查后端服务
     info "检查后端服务..."
     curl -sf -X POST "http://localhost:8080/auth/login?username=sentinel&password=sentinel" > /dev/null 2>&1 \
-        || error "Dashboard 未运行，请先: ./scripts/dev.sh up"
+        || error "Dashboard 未运行，请先: make up"
     curl -sf "http://localhost:8081/actuator/health" > /dev/null 2>&1 \
-        || error "Token Server 未运行"
+        || error "Token Server 未运行，请先: make up"
     info "后端服务正常"
     
     # 检查前端服务（UI 测试需要，仅本地模式）
@@ -227,9 +236,11 @@ show_help() {
     echo ""
     echo "🐳 服务管理:"
     echo "  build          仅构建镜像"
-    echo "  up             构建并启动服务 (默认)"
+    echo "  up             启动服务 (默认，不构建)"
+    echo "  up-build       构建并启动服务"
     echo "  down           停止并删除服务"
-    echo "  restart        重新构建并启动"
+    echo "  restart        重启服务（不构建）"
+    echo "  restart-build  重新构建并启动"
     echo "  logs [service] 查看日志"
     echo "  ps             查看服务状态"
     echo "  clean          清理所有（包括卷和镜像）"
@@ -255,15 +266,17 @@ show_help() {
 # ========================================
 
 case "${1:-up}" in
-    build)   do_build ;;
-    up)      do_up ;;
-    down)    do_down ;;
-    restart) do_restart ;;
-    logs)    do_logs "$2" ;;
-    ps)      do_ps ;;
-    clean)   do_clean ;;
-    check)   do_check "$2" ;;
-    test)    shift; do_test "$@" ;;
+    build)         do_build ;;
+    up)            do_up ;;
+    up-build)      do_up_build ;;
+    down)          do_down ;;
+    restart)       do_restart ;;
+    restart-build) do_restart_build ;;
+    logs)          do_logs "$2" ;;
+    ps)            do_ps ;;
+    clean)         do_clean ;;
+    check)         do_check "$2" ;;
+    test)          shift; do_test "$@" ;;
     help|--help|-h) show_help ;;
     *)
         error "未知命令: $1"

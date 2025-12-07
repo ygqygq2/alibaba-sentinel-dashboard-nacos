@@ -23,9 +23,9 @@ test.describe('Dashboard', () => {
     await dashboardPage.goto();
     await dashboardPage.expectLoaded();
 
-    // 侧边栏应该可见
-    const sidebar = page.locator('nav, [data-testid="sidebar"], aside');
-    await expect(sidebar.first()).toBeVisible();
+    // 检查侧边栏导航是否可见（桌面版，使用 Box as="nav"）
+    const sidebar = page.locator('nav:has-text("首页"), nav >> text=首页');
+    await expect(sidebar.first()).toBeVisible({ timeout: 10000 });
   });
 
   test('should search apps', async () => {

@@ -4,14 +4,21 @@ export class LoginPage {
   constructor(private page: Page) {}
 
   async goto() {
-    await this.page.goto('/auth/sign-in');
+    await this.page.goto('/');
+    // 等待页面加载完成
     await this.page.waitForLoadState('networkidle');
+    // 如果不在登录页，导航到登录页
+    if (!(await this.page.url().includes('sign-in'))) {
+      await this.page.goto('/#/auth/sign-in');
+      await this.page.waitForLoadState('networkidle');
+    }
   }
 
   async login(username: string, password: string) {
-    await this.page.fill('[name="username"]', username);
-    await this.page.fill('[name="password"]', password);
-    await this.page.click('button[type="submit"]');
+    // Chakra UI Input 组件使用 name 属性
+    await this.page.locator('input[name="username"]').fill(username);
+    await this.page.locator('input[name="password"]').fill(password);
+    await this.page.locator('button[type="submit"]').click();
   }
 
   async expectLoginSuccess() {

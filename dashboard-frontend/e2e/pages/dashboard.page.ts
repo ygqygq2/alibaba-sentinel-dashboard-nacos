@@ -9,17 +9,19 @@ export class DashboardPage {
   }
 
   async expectLoaded() {
-    // 等待 dashboard 加载完成
-    await expect(this.page.locator('[data-testid="dashboard"], .dashboard-container, main')).toBeVisible({
+    // 等待 dashboard 加载完成 - 检查 main 元素或应用列表标题
+    await expect(this.page.locator('main').first()).toBeVisible({
       timeout: 10000,
     });
   }
 
   async searchApp(appName: string) {
-    const searchInput = this.page.locator(
-      '[data-testid="app-search"], input[placeholder*="搜索"], input[placeholder*="search"]'
-    );
+    // 使用全局搜索框（SearchInput 组件，仅桌面可见）
+    const searchInput = this.page.locator('input[placeholder*="搜索"]').first();
+    await searchInput.waitFor({ state: 'visible', timeout: 5000 });
     await searchInput.fill(appName);
+    // 等待搜索结果更新（防抖 200ms）
+    await this.page.waitForTimeout(300);
   }
 
   async selectApp(appName: string) {
@@ -31,9 +33,9 @@ export class DashboardPage {
   }
 
   async logout() {
-    // 点击用户菜单
-    await this.page.click('[data-testid="user-menu"], .user-avatar, [aria-label="用户菜单"]');
-    // 点击退出
-    await this.page.click('text=退出登录, text=Logout, text=登出');
+    // 直接点击退出登录按钮（带有 aria-label）
+    await this.page.locator('[aria-label="退出登录"]').click();
+    // 等待跳转
+    await this.page.waitForLoadState('networkidle');
   }
 }

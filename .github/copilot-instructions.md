@@ -17,30 +17,32 @@
 ### 常用一键命令
 
 ```bash
-# 服务管理（推荐使用一键脚本）
-./scripts/dev.sh up             # 构建并启动所有服务
-./scripts/dev.sh down           # 停止服务
-./scripts/dev.sh restart        # 重新构建并启动
-./scripts/dev.sh logs           # 查看日志
-./scripts/dev.sh ps             # 查看服务状态
-./scripts/dev.sh clean          # 清理所有
+# 服务管理（推荐使用 make 命令）
+make build              # 仅构建镜像
+make up                 # 启动所有服务（不构建）
+make up-build           # 构建并启动所有服务
+make down               # 停止服务
+make restart            # 重启服务（不构建）
+make restart-build      # 重新构建并启动
+make logs               # 查看日志
+make ps                 # 查看服务状态
+make clean              # 清理所有
 
 # E2E 测试
-./scripts/dev.sh test api              # API 测试（默认）
-./scripts/dev.sh test ui               # UI 测试（无头模式）
-./scripts/dev.sh test ui --headed      # UI 测试（有头模式，开发者可见）
-./scripts/dev.sh test smoke            # 冒烟测试
-./scripts/dev.sh test all              # 全部测试
-./scripts/dev.sh test all --ci         # 全部测试（CI 模式）
+make test               # API 测试（默认）
+make test-api           # API 测试
+make test-ui            # UI 测试（CI 模式）
+make test-smoke         # 冒烟测试
+make test-all           # 全部测试
 
 # 前端检查
-./scripts/dev.sh check all      # 类型 + lint + 单元测试
-./scripts/dev.sh check type     # 类型检查
-./scripts/dev.sh check lint     # Lint 检查
-./scripts/dev.sh check test     # 单元测试
+make fe-check           # 类型 + lint + 单元测试
+make fe-type            # 类型检查
+make fe-lint            # Lint 检查
+make fe-test            # 单元测试
 
 # 前端开发（需要本地 pnpm）
-cd dashboard-frontend && pnpm dev         # 启动前端开发服务器
+make dev-fe             # 启动前端开发服务器
 cd dashboard-frontend && pnpm test:e2e:report  # 查看测试报告
 ```
 

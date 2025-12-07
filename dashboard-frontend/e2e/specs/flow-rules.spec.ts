@@ -10,23 +10,23 @@ test.describe('流控规则管理', () => {
     await flowRulesPage.goto();
   });
 
-  test('should display flow rules page', async () => {
+  test('显示流控规则页面', async () => {
     await flowRulesPage.expectLoaded();
   });
 
-  test('should display existing flow rules', async () => {
+  test('显示现有流控规则', async () => {
     await flowRulesPage.expectLoaded();
     const count = await flowRulesPage.getRuleCount();
     expect(count).toBeGreaterThanOrEqual(0);
   });
 
-  test('should have new rule button', async ({ page }) => {
+  test('有新增规则按钮', async ({ page }) => {
     await flowRulesPage.expectLoaded();
     // 只验证按钮存在，不测试创建功能（表单可能未完整实现）
     await expect(page.getByRole('button', { name: /新增/ })).toBeVisible();
   });
 
-  test('should display rule table', async ({ page }) => {
+  test('显示规则表格', async ({ page }) => {
     await flowRulesPage.expectLoaded();
     const hasTable = await page.locator('table').count();
 

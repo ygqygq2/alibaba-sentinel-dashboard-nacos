@@ -9,14 +9,14 @@ test.describe('认证', () => {
     await loginPage.goto();
   });
 
-  test('should display login page', async ({ page }) => {
+  test('显示登录页面', async ({ page }) => {
     await page.waitForLoadState('networkidle');
     await expect(page.locator('input[name="username"]')).toBeVisible({ timeout: 10000 });
     await expect(page.locator('input[name="password"]')).toBeVisible();
     await expect(page.locator('button[type="submit"]')).toBeVisible();
   });
 
-  test('should login with valid credentials', async ({ page }) => {
+  test('使用有效凭据登录', async ({ page }) => {
     await loginPage.login('sentinel', 'sentinel');
     await loginPage.expectLoginSuccess();
 
@@ -24,13 +24,13 @@ test.describe('认证', () => {
     await dashboardPage.expectLoaded();
   });
 
-  test.skip('should show error with invalid credentials', async ({ page }) => {
+  test.skip('使用无效凭据显示错误', async ({ page }) => {
     // TODO: 后端默认接受任何凭据，需要实现真实认证后启用此测试
     await loginPage.login('invalid', 'invalid');
     await loginPage.expectLoginError();
   });
 
-  test('should logout successfully', async ({ page }) => {
+  test('成功退出登录', async ({ page }) => {
     // 先登录
     await loginPage.login('sentinel', 'sentinel');
     await loginPage.expectLoginSuccess();

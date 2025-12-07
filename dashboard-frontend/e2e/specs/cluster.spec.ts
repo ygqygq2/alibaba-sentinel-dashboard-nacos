@@ -7,17 +7,17 @@ test.describe('集群管理', () => {
   test.beforeEach(async ({ page }) => {
     clusterPage = new ClusterPage(page);
   });
-  test('should display token server list', async () => {
+  test('显示 Token Server 列表', async () => {
     await clusterPage.gotoServerList();
     await clusterPage.expectServerListLoaded();
   });
 
-  test('should display token client list', async () => {
+  test('显示 Token Client 列表', async () => {
     await clusterPage.gotoClientList();
     await clusterPage.expectClientListLoaded();
   });
 
-  test('should show server count', async () => {
+  test('显示 Server 数量', async () => {
     await clusterPage.gotoServerList();
     await clusterPage.expectServerListLoaded();
 
@@ -25,7 +25,7 @@ test.describe('集群管理', () => {
     expect(count).toBeGreaterThanOrEqual(0);
   });
 
-  test('should show client count', async () => {
+  test('显示 Client 数量', async () => {
     await clusterPage.gotoClientList();
     await clusterPage.expectClientListLoaded();
 

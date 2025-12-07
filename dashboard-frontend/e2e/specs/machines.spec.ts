@@ -10,17 +10,17 @@ test.describe('机器管理', () => {
     await machinesPage.goto();
   });
 
-  test('should display machines page', async () => {
+  test('显示机器管理页面', async () => {
     await machinesPage.expectLoaded();
   });
 
-  test('should display registered machines', async () => {
+  test('显示已注册机器', async () => {
     await machinesPage.expectLoaded();
     const count = await machinesPage.getMachineCount();
     expect(count).toBeGreaterThanOrEqual(1); // 至少有 token-server 的机器
   });
 
-  test('should show machine with healthy status', async ({ page }) => {
+  test('显示健康状态的机器', async ({ page }) => {
     await machinesPage.expectLoaded();
 
     // 检查是否有机器在列表中

@@ -8,12 +8,12 @@ test.describe('仪表盘', () => {
     dashboardPage = new DashboardPage(page);
   });
 
-  test('should display dashboard home', async () => {
+  test('显示仪表盘首页', async () => {
     await dashboardPage.goto();
     await dashboardPage.expectLoaded();
   });
 
-  test('should display sidebar navigation', async ({ page }) => {
+  test('显示侧边栏导航', async ({ page }) => {
     await dashboardPage.goto();
     await dashboardPage.expectLoaded();
 
@@ -22,7 +22,7 @@ test.describe('仪表盘', () => {
     await expect(sidebar.first()).toBeVisible({ timeout: 10000 });
   });
 
-  test('should search apps', async () => {
+  test('搜索应用', async () => {
     await dashboardPage.goto();
     await dashboardPage.expectLoaded();
 

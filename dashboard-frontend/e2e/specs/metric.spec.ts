@@ -10,17 +10,17 @@ test.describe('实时监控', () => {
     await metricPage.goto();
   });
 
-  test('should display metric page', async () => {
+  test('显示实时监控页面', async () => {
     await metricPage.expectLoaded();
   });
 
-  test('should display metric table', async ({ page }) => {
+  test('显示监控数据表格', async ({ page }) => {
     await metricPage.expectLoaded();
     // 验证页面标题（使用 heading 而不是 text 避免重复匹配）
     await expect(page.getByRole('heading', { name: '实时监控' })).toBeVisible();
   });
 
-  test('should have refresh button', async ({ page }) => {
+  test('有刷新按钮', async ({ page }) => {
     await metricPage.expectLoaded();
     await expect(page.getByRole('button', { name: '刷新', exact: true })).toBeVisible();
   });

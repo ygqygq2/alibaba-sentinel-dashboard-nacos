@@ -5,7 +5,7 @@ import { login, authHeaders } from '../helpers';
 /**
  * Dashboard 认证 API 测试
  */
-test.describe('Auth API', () => {
+test.describe('认证 API', () => {
   test('登录成功', async ({ request }) => {
     const response = await request.post(`${DASHBOARD_URL}${API.dashboard.login}`, {
       params: TEST_USER,

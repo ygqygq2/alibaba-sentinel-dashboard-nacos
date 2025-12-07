@@ -1,16 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { LoginPage, DashboardPage } from '../pages';
+import { DashboardPage } from '../pages';
 
-test.describe('Dashboard', () => {
+test.describe('仪表盘', () => {
   let dashboardPage: DashboardPage;
 
   test.beforeEach(async ({ page }) => {
-    // 先登录
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-    await loginPage.login('sentinel', 'sentinel');
-    await loginPage.expectLoginSuccess();
-
     dashboardPage = new DashboardPage(page);
   });
 

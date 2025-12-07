@@ -4,7 +4,7 @@ import { DASHBOARD_URL, TOKEN_SERVER_URL, APP_NAME, API, TEST_USER } from '../co
 /**
  * 冒烟测试 - 快速验证核心功能
  */
-test.describe('Smoke Tests', () => {
+test.describe('冒烟测试', () => {
   test('Dashboard 可访问', async ({ request }) => {
     const response = await request.get(`${DASHBOARD_URL}/`);
     expect(response.status()).toBeLessThan(500);

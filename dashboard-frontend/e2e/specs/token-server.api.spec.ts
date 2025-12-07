@@ -4,7 +4,7 @@ import { TOKEN_SERVER_URL, API } from '../config';
 /**
  * Token Server API 测试
  */
-test.describe('Token Server - Basic', () => {
+test.describe('Token Server - 基础接口', () => {
   test('hello 接口', async ({ request }) => {
     const response = await request.get(`${TOKEN_SERVER_URL}${API.tokenServer.hello}`);
     expect(response.ok()).toBeTruthy();
@@ -22,7 +22,7 @@ test.describe('Token Server - Basic', () => {
   });
 });
 
-test.describe('Token Server - Flow Control', () => {
+test.describe('Token Server - 流控', () => {
   test('QPS 流控接口', async ({ request }) => {
     const response = await request.get(`${TOKEN_SERVER_URL}${API.tokenServer.flowQps}`);
     expect(response.ok()).toBeTruthy();
@@ -36,7 +36,7 @@ test.describe('Token Server - Flow Control', () => {
   });
 });
 
-test.describe('Token Server - Degrade', () => {
+test.describe('Token Server - 降级', () => {
   test('慢调用接口', async ({ request }) => {
     const response = await request.get(`${TOKEN_SERVER_URL}${API.tokenServer.degradeSlow}`, {
       params: { delay: 100 },
@@ -54,7 +54,7 @@ test.describe('Token Server - Degrade', () => {
   });
 });
 
-test.describe('Token Server - Hotspot', () => {
+test.describe('Token Server - 热点', () => {
   test('单参数热点接口', async ({ request }) => {
     const response = await request.get(`${TOKEN_SERVER_URL}${API.tokenServer.hotspot(123)}`);
     expect(response.ok()).toBeTruthy();
@@ -73,7 +73,7 @@ test.describe('Token Server - Hotspot', () => {
   });
 });
 
-test.describe('Token Server - Business', () => {
+test.describe('Token Server - 业务', () => {
   test('创建订单', async ({ request }) => {
     const response = await request.post(`${TOKEN_SERVER_URL}${API.tokenServer.orderCreate}`, {
       params: { userId: 1, productId: 100, quantity: 2 },

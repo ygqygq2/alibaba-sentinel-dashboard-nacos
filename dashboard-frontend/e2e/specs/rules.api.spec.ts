@@ -5,7 +5,7 @@ import { login, authHeaders, getMachineInfo } from '../helpers';
 /**
  * 规则 API 测试
  */
-test.describe('Flow Rule API', () => {
+test.describe('流控规则 API', () => {
   let cookies: string;
   let testRuleId: string;
 
@@ -62,7 +62,7 @@ test.describe('Flow Rule API', () => {
   });
 });
 
-test.describe('Other Rule APIs (v1)', () => {
+test.describe('其他规则 API (v1)', () => {
   let cookies: string;
   let machineIp: string;
   let machinePort: number;

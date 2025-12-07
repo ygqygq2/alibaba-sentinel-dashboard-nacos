@@ -7,7 +7,7 @@ import { SplitLayout } from '@/components/auth/split-layout';
 import { config } from '@/config';
 import type { Metadata } from '@/types/metadata';
 
-const metadata: Metadata = { title: `Sign up | Custom | Auth | ${config.site.name}` };
+const metadata: Metadata = { title: `Sign up | Auth | ${config.site.name}` };
 
 export function Page(): React.JSX.Element {
   return (

@@ -159,25 +159,27 @@ export function SignInForm(): React.JSX.Element {
           </form>
         </Stack>
       </Stack>
-      <Alert.Root status="info">
-        <Alert.Indicator />
-        <Alert.Description>
-          默认账号：{' '}
-          <Text
-            as="span"
-            fontWeight="bold"
-          >
-            sentinel
-          </Text>
-          ，密码：{' '}
-          <Text
-            as="span"
-            fontWeight="bold"
-          >
-            sentinel
-          </Text>
-        </Alert.Description>
-      </Alert.Root>
+      {import.meta.env.DEV && (
+        <Alert.Root status="info">
+          <Alert.Indicator />
+          <Alert.Description>
+            默认账号：{' '}
+            <Text
+              as="span"
+              fontWeight="bold"
+            >
+              sentinel
+            </Text>
+            ，密码：{' '}
+            <Text
+              as="span"
+              fontWeight="bold"
+            >
+              sentinel
+            </Text>
+          </Alert.Description>
+        </Alert.Root>
+      )}
     </Stack>
   );
 }

@@ -5,7 +5,7 @@ import { login, authHeaders, triggerResourceData } from '../helpers';
 /**
  * Dashboard 应用和资源 API 测试
  */
-test.describe('App API', () => {
+test.describe('应用 API', () => {
   let cookies: string;
 
   test.beforeAll(async ({ request }) => {
@@ -46,7 +46,7 @@ test.describe('App API', () => {
   });
 });
 
-test.describe('Resource API', () => {
+test.describe('资源 API', () => {
   let cookies: string;
 
   test.beforeAll(async ({ request }) => {

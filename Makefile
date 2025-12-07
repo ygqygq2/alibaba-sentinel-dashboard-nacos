@@ -3,7 +3,7 @@
 # 所有构建和测试都通过 Docker 容器执行，无需本地安装 mvn/node 等工具
 
 .PHONY: help build up up-build down restart restart-build logs ps clean \
-        test test-api test-ui test-smoke test-all \
+        test test-api test-ui test-smoke test-all test-dev test-dev-ui \
         fe-check fe-type fe-lint fe-test dev-fe
 
 # 目录定义
@@ -31,11 +31,13 @@ help:
 	@echo "  make clean         - 清理所有（包括卷和镜像）"
 	@echo ""
 	@echo "🧪 E2E 测试:"
-	@echo "  make test       - 运行 API 测试（默认）"
-	@echo "  make test-api   - 运行 API 测试"
-	@echo "  make test-ui    - 运行 UI 测试（CI 模式，访问 8080）"
-	@echo "  make test-smoke - 运行冒烟测试"
-	@echo "  make test-all   - 运行全部测试"
+	@echo "  make test          - 运行 API 测试（默认）"
+	@echo "  make test-api      - 运行 API 测试"
+	@echo "  make test-ui       - 运行 UI 测试（CI 模式，访问 8080）"
+	@echo "  make test-smoke    - 运行冒烟测试"
+	@echo "  make test-all      - 运行全部测试"
+	@echo "  make test-dev      - 开发模式测试（需先 make dev-fe）"
+	@echo "  make test-dev-ui   - 开发模式 UI 测试（有头）"
 	@echo ""
 	@echo "🔍 前端检查:"
 	@echo "  make fe-check   - 运行所有前端检查（type + lint + test）"
@@ -95,6 +97,15 @@ test-smoke:
 
 test-all:
 	@$(SCRIPTS)/dev.sh test all --ci
+
+# 开发模式测试（测试前端开发服务器 :3000）
+test-dev:
+	@echo "📋 开发模式测试（前端 :3000 + 后端 :8080）"
+	@cd dashboard-frontend && DEV_MODE=1 pnpm test:e2e
+
+test-dev-ui:
+	@echo "🎭 开发模式 UI 测试（有头模式）"
+	@cd dashboard-frontend && DEV_MODE=1 pnpm test:e2e:headed
 
 # ========================================
 # 前端检查（调用 scripts/dev.sh check）

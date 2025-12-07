@@ -38,9 +38,7 @@ yarn-error.log*
 
 # Playwright E2E test results
 e2e/test-results/
+e2e/.auth/
 playwright-report/
 test-results/
 
-# Turbo AI Rules - Auto-generated files
-.github/copilot-instructions.md
-.trae/rules/project_rules.md

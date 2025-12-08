@@ -35,6 +35,7 @@ import { useParams } from 'react-router-dom';
 
 import { useTopResourceMetric } from '@/hooks/api';
 import { useGlobalSearch } from '@/contexts/search-context';
+import { useColorMode } from '@/hooks/use-color-mode';
 import { ChartContainer, CHART_COLORS } from '@/components/dashboard/chart-container';
 import { CHART_SERIES } from '@/lib/theme/chart-colors';
 import type { MetricData } from '@/types/sentinel';
@@ -188,6 +189,115 @@ function StatCard({ label, value, colorPalette = 'blue', icon }: StatCardProps) 
             </Text>
           </Box>
         </Flex>
+      </Card.Body>
+    </Card.Root>
+  );
+}
+
+/** QPS 趋势图组件 */
+interface TrendChartData {
+  time: string;
+  passQps: number;
+  blockQps: number;
+  successQps: number;
+  exceptionQps: number;
+  rt: number;
+}
+
+function QpsTrendChart({ data }: { data: TrendChartData[] }) {
+  const { colorMode } = useColorMode();
+  const series = CHART_SERIES.qpsArea(colorMode);
+
+  return (
+    <Card.Root>
+      <Card.Header>
+        <Heading size="md">QPS 趋势</Heading>
+      </Card.Header>
+      <Card.Body>
+        {data.length > 0 ? (
+          <ChartContainer
+            data={data}
+            height={200}
+            type="area"
+            series={series}
+          />
+        ) : (
+          <Box
+            height="200px"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            bg="bg.subtle"
+            borderRadius="md"
+          >
+            <Stack
+              gap="card.gap"
+              textAlign="center"
+            >
+              <Icon
+                icon="mdi:chart-line"
+                fontSize="48px"
+                color="fg.muted"
+              />
+              <Text
+                color="fg.muted"
+                fontSize="sm"
+              >
+                暂无趋势数据，请等待数据采集...
+              </Text>
+            </Stack>
+          </Box>
+        )}
+      </Card.Body>
+    </Card.Root>
+  );
+}
+
+/** RT 趋势图组件 */
+function RtTrendChart({ data }: { data: TrendChartData[] }) {
+  const { colorMode } = useColorMode();
+  const series = CHART_SERIES.rtArea(colorMode);
+
+  return (
+    <Card.Root>
+      <Card.Header>
+        <Heading size="md">RT 趋势</Heading>
+      </Card.Header>
+      <Card.Body>
+        {data.length > 0 ? (
+          <ChartContainer
+            data={data}
+            height={200}
+            type="area"
+            series={series}
+          />
+        ) : (
+          <Box
+            height="200px"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            bg="bg.subtle"
+            borderRadius="md"
+          >
+            <Stack
+              gap="card.gap"
+              textAlign="center"
+            >
+              <Icon
+                icon="mdi:timer-outline"
+                fontSize="48px"
+                color="fg.muted"
+              />
+              <Text
+                color="fg.muted"
+                fontSize="sm"
+              >
+                暂无趋势数据，请等待数据采集...
+              </Text>
+            </Stack>
+          </Box>
+        )}
       </Card.Body>
     </Card.Root>
   );
@@ -442,216 +552,10 @@ export function Page(): React.JSX.Element {
           </Grid>
 
           {/* QPS 趋势图 */}
-          <Card.Root>
-            <Card.Header>
-              <Heading size="md">QPS 趋势</Heading>
-            </Card.Header>
-            <Card.Body>
-              {historyData.length > 0 ? (
-                <ResponsiveContainer
-                  width="100%"
-                  height={200}
-                >
-                  <AreaChart data={historyData}>
-                    <defs>
-                      <linearGradient
-                        id="colorPass"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor="#10b981"
-                          stopOpacity={0.8}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor="#10b981"
-                          stopOpacity={0}
-                        />
-                      </linearGradient>
-                      <linearGradient
-                        id="colorBlock"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor="#ef4444"
-                          stopOpacity={0.8}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor="#ef4444"
-                          stopOpacity={0}
-                        />
-                      </linearGradient>
-                      <linearGradient
-                        id="colorSuccess"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor="#3b82f6"
-                          stopOpacity={0.8}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor="#3b82f6"
-                          stopOpacity={0}
-                        />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="time"
-                      tick={{ fontSize: 12 }}
-                    />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip />
-                    <Legend />
-                    <Area
-                      type="monotone"
-                      dataKey="passQps"
-                      stroke="#10b981"
-                      fillOpacity={1}
-                      fill="url(#colorPass)"
-                      name="通过 QPS"
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="blockQps"
-                      stroke="#ef4444"
-                      fillOpacity={1}
-                      fill="url(#colorBlock)"
-                      name="拒绝 QPS"
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="successQps"
-                      stroke="#3b82f6"
-                      fillOpacity={1}
-                      fill="url(#colorSuccess)"
-                      name="成功 QPS"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              ) : (
-                <Box
-                  height="200px"
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  bg="bg.subtle"
-                  borderRadius="md"
-                >
-                  <Stack
-                    gap="card.gap"
-                    textAlign="center"
-                  >
-                    <Icon
-                      icon="mdi:chart-line"
-                      fontSize="48px"
-                      color="fg.muted"
-                    />
-                    <Text
-                      color="fg.muted"
-                      fontSize="sm"
-                    >
-                      暂无趋势数据，请等待数据采集...
-                    </Text>
-                  </Stack>
-                </Box>
-              )}
-            </Card.Body>
-          </Card.Root>
+          <QpsTrendChart data={historyData} />
 
           {/* RT 趋势图 */}
-          <Card.Root>
-            <Card.Header>
-              <Heading size="md">RT 趋势</Heading>
-            </Card.Header>
-            <Card.Body>
-              {historyData.length > 0 ? (
-                <ResponsiveContainer
-                  width="100%"
-                  height={200}
-                >
-                  <AreaChart data={historyData}>
-                    <defs>
-                      <linearGradient
-                        id="colorRt"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor="#f59e0b"
-                          stopOpacity={0.8}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor="#f59e0b"
-                          stopOpacity={0}
-                        />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="time"
-                      tick={{ fontSize: 12 }}
-                    />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip />
-                    <Legend />
-                    <Area
-                      type="monotone"
-                      dataKey="rt"
-                      stroke="#f59e0b"
-                      fillOpacity={1}
-                      fill="url(#colorRt)"
-                      name="平均响应时间 (ms)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              ) : (
-                <Box
-                  height="200px"
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  bg="bg.subtle"
-                  borderRadius="md"
-                >
-                  <Stack
-                    gap="card.gap"
-                    textAlign="center"
-                  >
-                    <Icon
-                      icon="mdi:timer-outline"
-                      fontSize="48px"
-                      color="fg.muted"
-                    />
-                    <Text
-                      color="fg.muted"
-                      fontSize="sm"
-                    >
-                      暂无趋势数据，请等待数据采集...
-                    </Text>
-                  </Stack>
-                </Box>
-              )}
-            </Card.Body>
-          </Card.Root>
+          <RtTrendChart data={historyData} />
 
           {/* 按资源展示的详细图表 */}
           {resourceGroups.length > 0 && (

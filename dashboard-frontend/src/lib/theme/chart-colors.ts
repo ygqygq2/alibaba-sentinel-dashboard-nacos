@@ -54,6 +54,55 @@ export function getChartTheme(colorMode: ColorMode) {
 }
 
 /**
+ * 图表数据序列配置基础接口
+ */
+export interface LineSeriesConfig {
+  dataKey: string;
+  stroke: string;
+  name: string;
+  strokeWidth?: number;
+  type?: 'monotone' | 'linear' | 'natural' | 'stepBefore' | 'stepAfter';
+  dot?: boolean | object;
+}
+
+/**
+ * Area 图表序列配置（支持渐变）
+ */
+export interface AreaSeriesConfig extends LineSeriesConfig {
+  fill?: string; // 可以是颜色或渐变 ID
+  fillOpacity?: number;
+}
+
+/**
+ * 图表渐变配置 - 用于 Area 图表
+ */
+export const CHART_GRADIENTS = {
+  light: {
+    passQps: '#10b98108', // 绿色
+    blockQps: '#ef444408', // 红色
+    successQps: '#06b6d408', // 青色
+    exceptionQps: '#f9731608', // 橙色
+    rt: '#8b5cf608', // 紫色
+    count: '#6366f108', // 靛蓝
+  },
+  dark: {
+    passQps: '#10b98110', // 绿色 - 深色模式亮度更高
+    blockQps: '#ef444410', // 红色
+    successQps: '#06b6d410', // 青色
+    exceptionQps: '#f9731610', // 橙色
+    rt: '#8b5cf610', // 紫色
+    count: '#6366f110', // 靛蓝
+  },
+} as const;
+
+/**
+ * 获取图表渐变配置
+ */
+export function getChartGradients(colorMode: ColorMode) {
+  return CHART_GRADIENTS[colorMode];
+}
+
+/**
  * 获取 Tooltip 样式
  */
 export function getTooltipStyle(colorMode: ColorMode) {
@@ -111,18 +160,6 @@ export function getGridConfig(colorMode: ColorMode) {
 }
 
 /**
- * 图表数据序列配置
- */
-export interface LineSeriesConfig {
-  dataKey: string;
-  stroke: string;
-  name: string;
-  strokeWidth?: number;
-  type?: 'monotone' | 'linear' | 'natural' | 'stepBefore' | 'stepAfter';
-  dot?: boolean | object;
-}
-
-/**
  * 常用图表序列配置
  */
 export const CHART_SERIES = {
@@ -153,6 +190,44 @@ export const CHART_SERIES = {
     },
   ] as LineSeriesConfig[],
 
+  qpsArea: (colorMode: ColorMode) => {
+    const gradients = getChartGradients(colorMode);
+    return [
+      {
+        dataKey: 'passQps',
+        stroke: CHART_COLORS.passQps,
+        name: '通过 QPS',
+        strokeWidth: 2,
+        fill: gradients.passQps,
+        fillOpacity: 1,
+      },
+      {
+        dataKey: 'blockQps',
+        stroke: CHART_COLORS.blockQps,
+        name: '拒绝 QPS',
+        strokeWidth: 2,
+        fill: gradients.blockQps,
+        fillOpacity: 1,
+      },
+      {
+        dataKey: 'successQps',
+        stroke: CHART_COLORS.successQps,
+        name: '成功 QPS',
+        strokeWidth: 2,
+        fill: gradients.successQps,
+        fillOpacity: 1,
+      },
+      {
+        dataKey: 'exceptionQps',
+        stroke: CHART_COLORS.exceptionQps,
+        name: '异常 QPS',
+        strokeWidth: 2,
+        fill: gradients.exceptionQps,
+        fillOpacity: 1,
+      },
+    ] as AreaSeriesConfig[];
+  },
+
   rt: [
     {
       dataKey: 'rt',
@@ -161,6 +236,20 @@ export const CHART_SERIES = {
       strokeWidth: 2,
     },
   ] as LineSeriesConfig[],
+
+  rtArea: (colorMode: ColorMode) => {
+    const gradients = getChartGradients(colorMode);
+    return [
+      {
+        dataKey: 'rt',
+        stroke: CHART_COLORS.rt,
+        name: '平均响应时间 (ms)',
+        strokeWidth: 2,
+        fill: gradients.rt,
+        fillOpacity: 1,
+      },
+    ] as AreaSeriesConfig[];
+  },
 
   concurrency: [
     {

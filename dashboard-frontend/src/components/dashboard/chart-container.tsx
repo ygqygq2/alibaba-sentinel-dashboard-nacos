@@ -25,13 +25,14 @@ import {
   getAxisConfig,
   getGridConfig,
   type LineSeriesConfig,
+  type AreaSeriesConfig,
 } from '@/lib/theme/chart-colors';
 
 interface ChartContainerProps {
   data: any[];
   height?: number;
   type?: 'line' | 'area';
-  series: LineSeriesConfig[];
+  series: (LineSeriesConfig | AreaSeriesConfig)[];
   showLegend?: boolean;
   showGrid?: boolean;
   showTooltip?: boolean;
@@ -71,18 +72,26 @@ export function ChartContainer({
         <YAxis {...axisConfig} />
         {showTooltip && <Tooltip {...tooltipStyle} />}
         {showLegend && <Legend wrapperStyle={{ color: theme.textColor }} />}
-        {series.map((s) => (
-          <DataComponent
-            key={s.dataKey}
-            type={s.type || 'monotone'}
-            dataKey={s.dataKey}
-            stroke={s.stroke}
-            name={s.name}
-            strokeWidth={s.strokeWidth}
-            dot={s.dot}
-            isAnimationActive={false}
-          />
-        ))}
+        {series.map((s) => {
+          const areaProps = type === 'area' && 'fill' in s ? {
+            fill: s.fill,
+            fillOpacity: s.fillOpacity,
+          } : {};
+          
+          return (
+            <DataComponent
+              key={s.dataKey}
+              type={s.type || 'monotone'}
+              dataKey={s.dataKey}
+              stroke={s.stroke}
+              name={s.name}
+              strokeWidth={s.strokeWidth}
+              dot={s.dot}
+              {...areaProps}
+              isAnimationActive={false}
+            />
+          );
+        })}
         {children}
       </ChartComponent>
     </ResponsiveContainer>

@@ -33,6 +33,18 @@ cd "$PROJECT_ROOT"
 export USE_CHINA_MIRROR="${USE_CHINA_MIRROR:-true}"
 
 # ========================================
+# Docker Compose 命令兼容性检测
+# ========================================
+if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+    DOCKER_COMPOSE="docker compose"
+elif command -v docker-compose >/dev/null 2>&1; then
+    DOCKER_COMPOSE="docker-compose"
+else
+    echo "错误: 未找到 docker compose 或 docker-compose 命令"
+    exit 1
+fi
+
+# ========================================
 # 颜色输出
 # ========================================
 RED='\033[0;31m'
@@ -53,7 +65,7 @@ do_build() {
     local log_file="/tmp/docker-build-$$.log"
     
     info "Step 1/3: 构建前端镜像..."
-    if ! docker compose build frontend >> "$log_file" 2>&1; then
+    if ! $DOCKER_COMPOSE build frontend >> "$log_file" 2>&1; then
         error "前端构建失败，查看日志: $log_file"
         tail -50 "$log_file"
         exit 1
@@ -67,7 +79,7 @@ do_build() {
     info "✓ 前端镜像已准备: sentinel/frontend:local"
     
     info "Step 2/3: 构建 Dashboard 镜像..."
-    if ! docker compose build sentinel-dashboard >> "$log_file" 2>&1; then
+    if ! $DOCKER_COMPOSE build sentinel-dashboard >> "$log_file" 2>&1; then
         error "Dashboard 构建失败，查看日志: $log_file"
         tail -50 "$log_file"
         exit 1
@@ -75,7 +87,7 @@ do_build() {
     info "✓ Dashboard 镜像已准备: sentinel/dashboard:local"
     
     info "Step 3/3: 构建 Token Server 镜像..."
-    if ! docker compose build token-server >> "$log_file" 2>&1; then
+    if ! $DOCKER_COMPOSE build token-server >> "$log_file" 2>&1; then
         error "Token Server 构建失败，查看日志: $log_file"
         tail -50 "$log_file"
         exit 1
@@ -88,7 +100,7 @@ do_build() {
 
 do_up() {
     info "启动服务..."
-    docker compose up -d
+    $DOCKER_COMPOSE up -d
     info "等待服务就绪..."
     sleep 5
     do_ps
@@ -102,7 +114,7 @@ do_up_build() {
 
 do_down() {
     info "停止服务..."
-    docker compose down
+    $DOCKER_COMPOSE down
 }
 
 do_restart() {
@@ -118,14 +130,14 @@ do_restart_build() {
 do_logs() {
     local service="${1:-}"
     if [ -n "$service" ]; then
-        docker compose logs -f "$service"
+        $DOCKER_COMPOSE logs -f "$service"
     else
-        docker compose logs -f
+        $DOCKER_COMPOSE logs -f
     fi
 }
 
 do_ps() {
-    docker compose ps
+    $DOCKER_COMPOSE ps
 }
 
 do_clean() {
@@ -133,7 +145,7 @@ do_clean() {
     read -p "确认继续？(y/N) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        docker compose down -v --rmi local
+        $DOCKER_COMPOSE down -v --rmi local
         info "清理完成"
     else
         info "已取消"

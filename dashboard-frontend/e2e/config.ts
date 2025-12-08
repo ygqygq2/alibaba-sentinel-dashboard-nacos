@@ -4,12 +4,12 @@
  */
 
 // 服务地址
-// - 开发模式（DEV_MODE=1）：前端开发服务器 3000 + 后端 8080
-// - 生产模式（默认）：打包后的前端在 8080
-const isDev = process.env.DEV_MODE === '1';
-export const DASHBOARD_URL = isDev
-  ? process.env.DASHBOARD_URL || 'http://localhost:3000'
-  : process.env.DASHBOARD_URL || 'http://localhost:8080';
+// - 本地开发（CI 未设置）：前端开发服务器 3000 + 后端 8080
+// - CI 环境（CI=true）：打包后的前端在 8080
+const isCI = process.env.CI === 'true';
+export const DASHBOARD_URL = isCI
+  ? process.env.DASHBOARD_URL || 'http://localhost:8080'
+  : process.env.DASHBOARD_URL || 'http://localhost:3000';
 export const TOKEN_SERVER_URL = process.env.TOKEN_SERVER_URL || 'http://localhost:8081';
 
 // 测试应用名称

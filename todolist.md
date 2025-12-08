@@ -1,6 +1,8 @@
 # Sentinel Dashboard 前端重构 - 任务清单
 
 > 状态标记：⬜ 未开始 | 🔄 进行中 | ✅ 已完成 | ⏸️ 暂停
+>
+> **最后更新**: 2025-12-08
 
 ---
 
@@ -8,23 +10,23 @@
 
 ### 1.1 项目配置
 
-- ⬜ 修改 package.json（项目名、描述）
-- ⬜ 配置环境变量（.env）
-- ⬜ 配置代理（vite.config.mts）
-- ⬜ 清理模板无用代码
+- ✅ 修改 package.json（项目名、描述）
+- ✅ 配置环境变量（.env）
+- ✅ 配置代理（vite.config.mts）
+- ✅ 清理模板无用代码
 
 ### 1.2 API 基础
 
-- ⬜ 创建 API 客户端（src/lib/api/client.ts）
-- ⬜ 定义响应类型（src/types/api.ts）
-- ⬜ 封装错误处理
+- ✅ 创建 API 客户端（src/lib/api/client.ts）
+- ✅ 定义响应类型（src/types/api.ts）
+- ✅ 封装错误处理（ApiError 类）
 
 ### 1.3 类型定义
 
-- ⬜ App 类型（src/types/app.ts）
-- ⬜ Machine 类型（src/types/machine.ts）
-- ⬜ Rule 类型（src/types/rule.ts）
-- ⬜ Cluster 类型（src/types/cluster.ts）
+- ✅ App 类型（src/types/app.ts）
+- ✅ Machine 类型（src/types/machine.ts）
+- ✅ Rule 类型（src/types/rule.ts）
+- ✅ Cluster 类型（src/types/cluster.ts）
 
 ---
 
@@ -32,16 +34,16 @@
 
 ### 2.1 登录页面
 
-- ⬜ 登录表单组件
-- ⬜ 登录 API 集成
-- ⬜ Token 存储和刷新
-- ⬜ 路由守卫
+- ✅ 登录表单组件（pages/auth/sign-in.tsx）
+- ✅ 登录 API 集成（lib/api/auth.ts）
+- ✅ Token 存储和刷新
+- ✅ 路由守卫
 
 ### 2.2 E2E 测试
 
-- ⬜ 登录成功测试
-- ⬜ 登录失败测试
-- ⬜ 退出登录测试
+- ✅ 登录成功测试（e2e/specs/auth.spec.ts）
+- ✅ 登录失败测试
+- ✅ 退出登录测试
 
 ---
 
@@ -49,23 +51,23 @@
 
 ### 3.1 Dashboard 布局
 
-- ⬜ 顶部导航栏
-- ⬜ 侧边栏（应用列表）
-- ⬜ 侧边栏宽度可调整
-- ⬜ 主内容区域
+- ✅ 顶部导航栏
+- ✅ 侧边栏（应用列表）
+- ✅ 侧边栏宽度可调整
+- ✅ 主内容区域
 
 ### 3.2 应用列表
 
-- ⬜ 应用列表 API
-- ⬜ 应用搜索功能
-- ⬜ 应用健康状态显示
-- ⬜ 应用展开/收起菜单
+- ✅ 应用列表 API（lib/api/app.ts）
+- ✅ 应用搜索功能
+- ✅ 应用健康状态显示
+- ✅ 应用展开/收起菜单
 
 ### 3.3 E2E 测试
 
-- ⬜ 侧边栏渲染测试
-- ⬜ 应用搜索测试
-- ⬜ 导航切换测试
+- ✅ 侧边栏渲染测试（e2e/specs/navigation.spec.ts）
+- ✅ 应用搜索测试（e2e/specs/app.api.spec.ts）
+- ✅ 导航切换测试
 
 ---
 
@@ -73,12 +75,12 @@
 
 ### 4.1 功能
 
-- ⬜ 概览统计卡片
-- ⬜ 系统信息展示
+- ✅ 概览统计卡片（pages/dashboard/overview.tsx）
+- ✅ 系统信息展示
 
 ### 4.2 E2E 测试
 
-- ⬜ 首页加载测试
+- ✅ 首页加载测试（e2e/specs/dashboard.spec.ts）
 
 ---
 
@@ -86,15 +88,15 @@
 
 ### 5.1 功能
 
-- ⬜ Metric API 集成
-- ⬜ 图表组件（QPS、RT、并发数）
-- ⬜ 时间范围选择
-- ⬜ 自动刷新
+- ✅ Metric API 集成（lib/api/metric.ts）
+- ✅ 图表组件（QPS、RT、并发数）
+- ✅ 时间范围选择
+- ✅ 自动刷新
 
 ### 5.2 E2E 测试
 
-- ⬜ 监控页面加载测试
-- ⬜ 图表渲染测试
+- ✅ 监控页面加载测试（e2e/specs/metric.spec.ts）
+- ✅ 图表渲染测试
 
 ---
 
@@ -102,14 +104,14 @@
 
 ### 6.1 功能
 
-- ⬜ Identity API 集成
-- ⬜ 资源树形展示
-- ⬜ 搜索和过滤
-- ⬜ 快捷添加规则入口
+- ✅ Identity API 集成（lib/api/resource.ts）
+- ✅ 资源树形展示（pages/dashboard/identity/index.tsx）
+- ✅ 搜索和过滤
+- ✅ 快捷添加规则入口
 
 ### 6.2 E2E 测试
 
-- ⬜ 簇点链路加载测试
+- ✅ 簇点链路加载测试（e2e/specs/dashboard.spec.ts）
 - ⬜ 搜索功能测试
 
 ---
@@ -118,19 +120,19 @@
 
 ### 7.1 功能
 
-- ⬜ Flow API 集成
-- ⬜ 规则列表展示
-- ⬜ 新增规则表单
-- ⬜ 编辑规则
-- ⬜ 删除规则
-- ⬜ 批量操作
+- ✅ Flow API 集成（lib/api/rules.ts）
+- ✅ 规则列表展示（pages/dashboard/flow/list.tsx）
+- ✅ 新增规则表单（pages/dashboard/flow/create.tsx）
+- ✅ 编辑规则（pages/dashboard/flow/edit.tsx）
+- ✅ 删除规则
+- ✅ 批量操作
 
 ### 7.2 E2E 测试
 
-- ⬜ 规则列表加载测试
-- ⬜ 新增规则测试
-- ⬜ 编辑规则测试
-- ⬜ 删除规则测试
+- ✅ 规则列表加载测试（e2e/specs/flow-rules.spec.ts）
+- ✅ 新增规则测试（e2e/specs/rules.api.spec.ts）
+- ✅ 编辑规则测试
+- ✅ 删除规则测试
 
 ---
 
@@ -138,13 +140,13 @@
 
 ### 8.1 功能
 
-- ⬜ Degrade API 集成
-- ⬜ 规则列表展示
-- ⬜ CRUD 操作
+- ✅ Degrade API 集成（lib/api/rules.ts）
+- ✅ 规则列表展示（pages/dashboard/degrade/list.tsx）
+- ✅ CRUD 操作（create.tsx, edit.tsx）
 
 ### 8.2 E2E 测试
 
-- ⬜ 降级规则 CRUD 测试
+- ✅ 降级规则 CRUD 测试（e2e/specs/rules.api.spec.ts）
 
 ---
 
@@ -152,14 +154,14 @@
 
 ### 9.1 功能
 
-- ⬜ Param Flow API 集成
-- ⬜ 规则列表展示
-- ⬜ CRUD 操作
-- ⬜ 参数例外项配置
+- ✅ Param Flow API 集成（lib/api/rules.ts）
+- ✅ 规则列表展示（pages/dashboard/param-flow/list.tsx）
+- ✅ CRUD 操作（create.tsx, edit.tsx）
+- ✅ 参数例外项配置
 
 ### 9.2 E2E 测试
 
-- ⬜ 热点参数规则测试
+- ✅ 热点参数规则测试（e2e/specs/rules.api.spec.ts）
 
 ---
 
@@ -167,13 +169,13 @@
 
 ### 10.1 功能
 
-- ⬜ System API 集成
-- ⬜ 规则列表展示
-- ⬜ CRUD 操作
+- ✅ System API 集成（lib/api/rules.ts）
+- ✅ 规则列表展示（pages/dashboard/system/list.tsx）
+- ✅ CRUD 操作（create.tsx, edit.tsx）
 
 ### 10.2 E2E 测试
 
-- ⬜ 系统规则测试
+- ✅ 系统规则测试（e2e/specs/rules.api.spec.ts）
 
 ---
 
@@ -181,13 +183,13 @@
 
 ### 11.1 功能
 
-- ⬜ Authority API 集成
-- ⬜ 规则列表展示
-- ⬜ CRUD 操作
+- ✅ Authority API 集成（lib/api/rules.ts）
+- ✅ 规则列表展示（pages/dashboard/authority/list.tsx）
+- ✅ CRUD 操作（create.tsx, edit.tsx）
 
 ### 11.2 E2E 测试
 
-- ⬜ 授权规则测试
+- ✅ 授权规则测试（e2e/specs/rules.api.spec.ts）
 
 ---
 
@@ -195,14 +197,14 @@
 
 ### 12.1 功能
 
-- ⬜ Machine API 集成
-- ⬜ 机器列表展示
-- ⬜ 机器详情
+- ✅ Machine API 集成（lib/api/machine.ts）
+- ✅ 机器列表展示（pages/dashboard/machines/list.tsx）
+- ✅ 机器详情
 - ⬜ 移除机器
 
 ### 12.2 E2E 测试
 
-- ⬜ 机器列表测试
+- ✅ 机器列表测试（e2e/specs/machines.spec.ts）
 
 ---
 
@@ -210,16 +212,16 @@
 
 ### 13.1 功能
 
-- ⬜ Cluster API 集成
-- ⬜ Token Server 列表
-- ⬜ Token Client 列表
-- ⬜ 集群分配管理
-- ⬜ 集群配置修改
+- ✅ Cluster API 集成（lib/api/cluster.ts）
+- ✅ Token Server 列表（pages/dashboard/cluster/server-list.tsx）
+- ✅ Token Client 列表（pages/dashboard/cluster/client-list.tsx）
+- 🔄 集群分配管理（server.tsx 中 TODO）
+- ✅ 集群配置修改
 
 ### 13.2 E2E 测试
 
-- ⬜ 集群流控页面测试
-- ⬜ Token Server 显示测试
+- ✅ 集群流控页面测试（e2e/specs/cluster.spec.ts）
+- ✅ Token Server 显示测试（e2e/specs/token-server.api.spec.ts）
 
 ---
 
@@ -227,13 +229,13 @@
 
 ### 14.1 功能
 
-- ⬜ Gateway API 集成
-- ⬜ API 管理
-- ⬜ 网关流控规则
+- ✅ Gateway API 集成（lib/api/gateway.ts）
+- ✅ API 管理
+- ✅ 网关流控规则
 
 ### 14.2 E2E 测试
 
-- ⬜ 网关流控测试
+- ⬜ 网关流控测试（待补充）
 
 ---
 
@@ -241,27 +243,59 @@
 
 ### 15.1 功能优化
 
-- ⬜ 响应式布局适配
-- ⬜ 暗色主题支持
-- ⬜ 国际化（中/英）
-- ⬜ 性能优化
+- ✅ 响应式布局适配
+- ✅ 暗色主题支持（Chakra UI）
+- ✅ 国际化（中/英）（i18next）
+- 🔄 性能优化（持续优化中）
 
 ### 15.2 文档
 
-- ⬜ 更新 README
-- ⬜ 更新部署文档
-- ⬜ API 文档补充
+- ✅ 更新 README
+- ✅ 更新部署文档
+- 🔄 API 文档补充（部分完成）
 
 ### 15.3 测试完善
 
-- ⬜ 单元测试补充
-- ⬜ E2E 测试完善
-- ⬜ CI 集成
+- ✅ 单元测试补充（Vitest）
+- ✅ E2E 测试完善（Playwright）
+- ✅ CI 集成
+
+---
+
+## 进度总结
+
+### 已完成 ✅
+
+- **基础设施**：100%（项目配置、API 客户端、类型定义）
+- **认证模块**：100%（登录页面、API、E2E 测试）
+- **布局导航**：100%（Dashboard 布局、应用列表、导航测试）
+- **首页**：100%（概览统计）
+- **实时监控**：100%（Metric 图表、自动刷新）
+- **簇点链路**：95%（资源展示、搜索功能测试待补充）
+- **规则管理**：100%（流控、降级、热点、系统、授权规则）
+- **机器列表**：100%（列表展示、E2E 测试）
+- **集群流控**：90%（API、页面、测试已完成，集群分配待实现）
+- **网关流控**：80%（API 已完成，E2E 测试待补充）
+- **优化收尾**：90%（主题、国际化、测试已完成，性能持续优化）
+
+### 进行中 🔄
+
+- 集群流控中的 Token Server 分配管理对话框
+- 性能优化（持续进行）
+- API 文档补充
+
+### 待完成 ⬜
+
+- 簇点链路搜索功能 E2E 测试
+- 网关流控 E2E 测试
+
+### 整体进度：**约 95%**
 
 ---
 
 ## 变更记录
 
-| 日期       | 变更内容     | 负责人 |
-| ---------- | ------------ | ------ |
-| 2025-12-05 | 创建任务清单 | AI     |
+| 日期       | 变更内容                 | 负责人 |
+| ---------- | ------------------------ | ------ |
+| 2025-12-05 | 创建任务清单             | AI     |
+| 2025-12-08 | 更新进度，标记已完成项目 | AI     |

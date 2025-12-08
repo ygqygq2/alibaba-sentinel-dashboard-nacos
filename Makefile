@@ -102,11 +102,11 @@ test-all:
 # 开发模式测试（测试前端开发服务器 :3000）
 test-dev:
 	@echo "📋 开发模式测试（前端 :3000 + 后端 :8080）"
-	@cd dashboard-frontend && DEV_MODE=1 pnpm test:e2e
+	@cd dashboard-frontend && pnpm test:e2e
 
 test-dev-ui:
 	@echo "🎭 开发模式 UI 测试（有头模式）"
-	@cd dashboard-frontend && DEV_MODE=1 pnpm test:e2e:headed
+	@cd dashboard-frontend && pnpm test:e2e:headed
 
 # ========================================
 # 前端检查（调用 scripts/dev.sh check）

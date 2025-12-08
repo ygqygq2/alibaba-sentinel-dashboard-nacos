@@ -67,7 +67,18 @@ export const metricApi = {
 
         // 取最新的一条数据作为当前资源的指标
         const latest = metrics[metrics.length - 1];
-        current.push({ ...latest, resource });
+        if (latest) {
+          current.push({
+            resource,
+            timestamp: latest.timestamp ?? Date.now(),
+            passQps: latest.passQps ?? 0,
+            successQps: latest.successQps ?? 0,
+            blockQps: latest.blockQps ?? 0,
+            exceptionQps: latest.exceptionQps ?? 0,
+            rt: latest.rt ?? 0,
+            count: latest.count ?? 0,
+          });
+        }
       }
     });
 

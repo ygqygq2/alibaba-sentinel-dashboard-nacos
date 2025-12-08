@@ -6,7 +6,9 @@ test.describe('导航', () => {
 
   test.beforeEach(async ({ page }) => {
     dashboardPage = new DashboardPage(page);
+    await dashboardPage.goto(); // 先进入 dashboard 页面
   });
+
   test('导航到概览页面', async ({ page }) => {
     await page.click('nav a:has-text("首页")');
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 5000 });

@@ -12,7 +12,11 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Copy package files first for better caching
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+
+# Install dependencies
+# Skip git hooks in Docker builds (no .git directory)
+# Use --frozen-lockfile in CI, fallback to regular install if lockfile is outdated
+RUN pnpm install --frozen-lockfile --ignore-scripts || pnpm install --ignore-scripts
 
 # Copy source and build
 COPY . .

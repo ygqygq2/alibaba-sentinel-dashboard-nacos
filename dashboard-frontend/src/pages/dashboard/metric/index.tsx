@@ -35,6 +35,8 @@ import { useParams } from 'react-router-dom';
 
 import { useTopResourceMetric } from '@/hooks/api';
 import { useGlobalSearch } from '@/contexts/search-context';
+import { ChartContainer, CHART_COLORS } from '@/components/dashboard/chart-container';
+import { CHART_SERIES } from '@/lib/theme/chart-colors';
 import type { MetricData } from '@/types/sentinel';
 
 const ITEMS_PER_PAGE = 2; // 每页显示2个图表
@@ -99,37 +101,25 @@ function ResourceChart({ resource, data, isExpanded = false, onToggle }: Resourc
             {/* 单列图表 */}
             <Box>
               {chartData.length > 0 ? (
-                <ResponsiveContainer
-                  width="100%"
+                <ChartContainer
+                  data={chartData}
                   height={220}
-                >
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="time"
-                      tick={{ fontSize: 12 }}
-                    />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="passQps"
-                      stroke="#10b981"
-                      strokeWidth={2}
-                      dot={false}
-                      name="通过 QPS"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="blockQps"
-                      stroke="#3b82f6"
-                      strokeWidth={2}
-                      dot={false}
-                      name="拒绝 QPS"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                  type="line"
+                  series={[
+                    {
+                      dataKey: 'passQps',
+                      stroke: CHART_COLORS.passQps,
+                      name: '通过 QPS',
+                      strokeWidth: 2,
+                    },
+                    {
+                      dataKey: 'blockQps',
+                      stroke: CHART_COLORS.blockQps,
+                      name: '拒绝 QPS',
+                      strokeWidth: 2,
+                    },
+                  ]}
+                />
               ) : (
                 <Box
                   height="220px"

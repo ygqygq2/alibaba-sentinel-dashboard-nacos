@@ -556,7 +556,7 @@ export function Page(): React.JSX.Element {
           {/* 按资源展示的详细图表 */}
           {resourceGroups.length > 0 && (
             <Card.Root>
-              <Card.Header py={2}>
+              <Card.Header py={2.5}>
                 <Flex
                   justifyContent="space-between"
                   alignItems="center"

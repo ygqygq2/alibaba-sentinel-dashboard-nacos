@@ -62,7 +62,7 @@ function ResourceChart({ resource, data, isExpanded = false, onToggle }: Resourc
         onClick={onToggle}
         _hover={{ bg: 'bg.subtle' }}
         transition="background 0.2s"
-        py={3}
+        py={2.5}
       >
         <Flex
           justifyContent="space-between"
@@ -84,7 +84,7 @@ function ResourceChart({ resource, data, isExpanded = false, onToggle }: Resourc
         <Collapsible.Content>
           <Card.Body
             pt={0}
-            pb={4}
+            pb={3}
           >
             {/* 单列图表 */}
             <Box>
@@ -200,12 +200,12 @@ function QpsTrendChart({ data }: { data: TrendChartData[] }) {
 
   return (
     <Card.Root>
-      <Card.Header pb={2}>
+      <Card.Header py={2.5}>
         <Heading size="md">QPS 趋势</Heading>
       </Card.Header>
       <Card.Body
         pt={0}
-        pb={4}
+        pb={3}
       >
         {data.length > 0 ? (
           <ChartContainer
@@ -253,12 +253,12 @@ function RtTrendChart({ data }: { data: TrendChartData[] }) {
 
   return (
     <Card.Root>
-      <Card.Header pb={2}>
+      <Card.Header py={2.5}>
         <Heading size="md">RT 趋势</Heading>
       </Card.Header>
       <Card.Body
         pt={0}
-        pb={4}
+        pb={3}
       >
         {data.length > 0 ? (
           <ChartContainer
@@ -556,7 +556,7 @@ export function Page(): React.JSX.Element {
           {/* 按资源展示的详细图表 */}
           {resourceGroups.length > 0 && (
             <Card.Root>
-              <Card.Header pb={2}>
+              <Card.Header py={2.5}>
                 <Flex
                   justifyContent="space-between"
                   alignItems="center"
@@ -596,7 +596,10 @@ export function Page(): React.JSX.Element {
                   </Flex>
                 </Flex>
               </Card.Header>
-              <Card.Body pt={0} pb={4}>
+              <Card.Body
+                pt={0}
+                pb={3}
+              >
                 <Stack gap={2}>
                   {paginatedGroups.map((group) => (
                     <ResourceChart
@@ -614,7 +617,7 @@ export function Page(): React.JSX.Element {
 
           {/* 资源列表 */}
           <Card.Root>
-            <Card.Header pb={2}>
+            <Card.Header py={2.5}>
               <Heading size="md">资源监控</Heading>
             </Card.Header>
             <Card.Body p={0}>

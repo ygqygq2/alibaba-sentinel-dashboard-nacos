@@ -3,19 +3,21 @@
  * 显示应用的资源调用链路，支持快速添加规则
  */
 
-import { Box, Button, ButtonGroup, Card, Flex, Heading, HStack, Input, Stack, Text } from '@chakra-ui/react';
+import { Box, Button, ButtonGroup, Card, Flex, Heading, HStack, Stack, Text } from '@chakra-ui/react';
 import { Icon } from '@iconify/react';
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router-dom';
 
 import { MachineSelector, ResourceTable } from '@/components/dashboard/identity';
+import { useGlobalSearch } from '@/contexts/search-context';
 import { useMachineResources } from '@/hooks/api';
 
 type ViewMode = 'tree' | 'list';
 
 export function Page(): React.JSX.Element {
   const { app } = useParams<{ app: string }>();
+  const { searchKey } = useGlobalSearch(); // 使用全局搜索
 
   // 状态
   const [selectedMachine, setSelectedMachine] = React.useState<{
@@ -23,16 +25,6 @@ export function Page(): React.JSX.Element {
     port: number;
   } | null>(null);
   const [viewMode, setViewMode] = React.useState<ViewMode>('list');
-  const [searchKey, setSearchKey] = React.useState('');
-  const [debouncedSearchKey, setDebouncedSearchKey] = React.useState('');
-
-  // 防抖搜索
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchKey(searchKey);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchKey]);
 
   // 获取资源数据
   const {
@@ -44,7 +36,7 @@ export function Page(): React.JSX.Element {
     ip: selectedMachine?.ip ?? '',
     port: selectedMachine?.port ?? 0,
     type: viewMode === 'tree' ? 'root' : 'cluster',
-    searchKey: debouncedSearchKey || undefined,
+    searchKey: searchKey || undefined,
     enabled: !!selectedMachine,
     refetchInterval: 10000, // 10秒自动刷新
   });
@@ -116,40 +108,21 @@ export function Page(): React.JSX.Element {
               <Flex
                 justifyContent="space-between"
                 alignItems="center"
-                flexWrap="wrap"
                 gap={3}
               >
-                <HStack gap={4}>
-                  <HStack gap={2}>
-                    <Text
-                      fontSize="sm"
-                      color="fg.muted"
-                      whiteSpace="nowrap"
-                    >
-                      机器:
-                    </Text>
-                    <MachineSelector
-                      app={app}
-                      value={selectedMachine ? `${selectedMachine.ip}:${selectedMachine.port}` : undefined}
-                      onChange={handleMachineChange}
-                    />
-                  </HStack>
-                  <HStack gap={2}>
-                    <Text
-                      fontSize="sm"
-                      color="fg.muted"
-                      whiteSpace="nowrap"
-                    >
-                      关键字:
-                    </Text>
-                    <Input
-                      size="sm"
-                      width="200px"
-                      placeholder="搜索资源名"
-                      value={searchKey}
-                      onChange={(e) => setSearchKey(e.target.value)}
-                    />
-                  </HStack>
+                <HStack gap={2}>
+                  <Text
+                    fontSize="sm"
+                    color="fg.muted"
+                    whiteSpace="nowrap"
+                  >
+                    机器:
+                  </Text>
+                  <MachineSelector
+                    app={app}
+                    value={selectedMachine ? `${selectedMachine.ip}:${selectedMachine.port}` : undefined}
+                    onChange={handleMachineChange}
+                  />
                 </HStack>
                 <Button
                   size="sm"

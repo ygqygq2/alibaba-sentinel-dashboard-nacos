@@ -23,6 +23,14 @@ export function MachineSelector({ app, value, onChange }: MachineSelectorProps):
   // 只显示健康的机器
   const healthyMachines = React.useMemo(() => machines.filter((m: MachineInfo) => m.healthy), [machines]);
 
+  // 自动选中第一台机器（如果当前没有选中）
+  React.useEffect(() => {
+    if (!isLoading && healthyMachines.length > 0 && !value) {
+      const first = healthyMachines[0];
+      onChange({ ip: first.ip, port: first.port });
+    }
+  }, [healthyMachines, isLoading, value, onChange]);
+
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = e.target.value;
     if (!selected) {

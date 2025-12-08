@@ -145,23 +145,23 @@ function StatCard({ label, value, colorPalette = 'blue', icon }: StatCardProps) 
   return (
     <Card.Root>
       <Card.Body
-        py={4}
-        px={4}
+        py={3}
+        px={3.5}
       >
         <Flex
           alignItems="center"
-          gap={3}
+          gap={2.5}
         >
           <Box
             bg={`${colorPalette}.100`}
             color={`${colorPalette}.600`}
-            p={3}
+            p={2.5}
             borderRadius="lg"
           >
             <Icon
               icon={icon}
-              width={24}
-              height={24}
+              width={20}
+              height={20}
             />
           </Box>
           <Box>
@@ -172,7 +172,7 @@ function StatCard({ label, value, colorPalette = 'blue', icon }: StatCardProps) 
               {label}
             </Text>
             <Text
-              fontSize="2xl"
+              fontSize="xl"
               fontWeight="bold"
             >
               {value}
@@ -556,7 +556,7 @@ export function Page(): React.JSX.Element {
           {/* 按资源展示的详细图表 */}
           {resourceGroups.length > 0 && (
             <Card.Root>
-              <Card.Header py={2.5}>
+              <Card.Header py={2}>
                 <Flex
                   justifyContent="space-between"
                   alignItems="center"

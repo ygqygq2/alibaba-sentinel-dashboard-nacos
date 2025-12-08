@@ -71,6 +71,12 @@ function ResourceChart({ resource, data, isExpanded = false, onToggle }: Resourc
           <Heading
             size="sm"
             fontWeight="medium"
+            fontFamily="mono"
+            fontSize="md"
+            flex="1"
+            mr={2}
+            title={resource}
+            truncate
           >
             {resource}
           </Heading>
@@ -302,7 +308,13 @@ function RtTrendChart({ data }: { data: TrendChartData[] }) {
 export function Page(): React.JSX.Element {
   const { app } = useParams<{ app: string }>();
   const { searchKey } = useGlobalSearch(); // 使用全局搜索
-  const [autoRefresh, setAutoRefresh] = React.useState(false);
+
+  // 从 localStorage 读取自动刷新状态
+  const [autoRefresh, setAutoRefresh] = React.useState(() => {
+    const stored = localStorage.getItem('metric-auto-refresh');
+    return stored ? JSON.parse(stored) : false;
+  });
+
   const [expandedResources, setExpandedResources] = React.useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = React.useState(1); // 分页状态
   const [historyData, setHistoryData] = React.useState<
@@ -369,7 +381,10 @@ export function Page(): React.JSX.Element {
   };
 
   const toggleAutoRefresh = () => {
-    setAutoRefresh(!autoRefresh);
+    const newValue = !autoRefresh;
+    setAutoRefresh(newValue);
+    // 持久化到 localStorage
+    localStorage.setItem('metric-auto-refresh', JSON.stringify(newValue));
   };
 
   const toggleResource = (resource: string) => {
@@ -406,6 +421,9 @@ export function Page(): React.JSX.Element {
       filtered = filtered.filter((group) => group.resource.toLowerCase().includes(searchKey.toLowerCase()));
     }
 
+    // 按资源名称排序
+    filtered.sort((a, b) => a.resource.localeCompare(b.resource));
+
     return filtered;
   }, [metrics, resourceHistory, searchKey]);
 
@@ -417,10 +435,14 @@ export function Page(): React.JSX.Element {
     return resourceGroups.slice(startIndex, endIndex);
   }, [resourceGroups, currentPage]);
 
-  // 过滤监控表格数据（也应用搜索）
+  // 过滤监控表格数据（也应用搜索）并排序
   const filteredMetrics = React.useMemo(() => {
-    if (!searchKey) return metrics;
-    return metrics.filter((m) => m.resource.toLowerCase().includes(searchKey.toLowerCase()));
+    let result = searchKey
+      ? metrics.filter((m) => m.resource.toLowerCase().includes(searchKey.toLowerCase()))
+      : metrics;
+
+    // 按资源名称排序
+    return result.sort((a, b) => a.resource.localeCompare(b.resource));
   }, [metrics, searchKey]);
 
   // 当搜索关键词变化时，重置到第1页
@@ -672,8 +694,11 @@ export function Page(): React.JSX.Element {
                         <Table.Cell>
                           <Text
                             fontWeight="medium"
-                            maxW="200px"
+                            maxW="300px"
+                            fontSize="sm"
+                            fontFamily="mono"
                             truncate
+                            title={metric.resource}
                           >
                             {metric.resource}
                           </Text>

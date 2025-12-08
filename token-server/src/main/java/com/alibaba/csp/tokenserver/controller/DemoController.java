@@ -37,9 +37,10 @@ public class DemoController {
 
     /**
      * 简单接口 - 用于簇点链路展示
+     * 资源名使用路径风格，便于在监控页面识别
      */
     @GetMapping("/hello")
-    @SentinelResource(value = "hello", blockHandler = "helloBlockHandler")
+    @SentinelResource(value = "/api/hello", blockHandler = "helloBlockHandler")
     public ResponseEntity<Map<String, Object>> hello() {
         Map<String, Object> result = new HashMap<>();
         result.put("message", "Hello, Sentinel!");
@@ -56,28 +57,29 @@ public class DemoController {
 
     /**
      * 链路调用接口 - 模拟调用链
-     * /api/chain -> resourceA -> resourceB -> resourceC
+     * /api/chain -> /service/user/query -> /service/order/list -> /service/payment/check
+     * 使用路径风格的资源名，模拟真实的微服务调用链路
      */
     @GetMapping("/chain")
     public ResponseEntity<Map<String, Object>> chain() {
         Map<String, Object> result = new HashMap<>();
         
-        try (Entry entry = SphU.entry("resourceA")) {
-            result.put("resourceA", "success");
+        try (Entry entry = SphU.entry("/service/user/query")) {
+            result.put("userService", "success");
             
-            try (Entry entryB = SphU.entry("resourceB")) {
-                result.put("resourceB", "success");
+            try (Entry entryB = SphU.entry("/service/order/list")) {
+                result.put("orderService", "success");
                 
-                try (Entry entryC = SphU.entry("resourceC")) {
-                    result.put("resourceC", "success");
+                try (Entry entryC = SphU.entry("/service/payment/check")) {
+                    result.put("paymentService", "success");
                 } catch (BlockException e) {
-                    result.put("resourceC", "blocked");
+                    result.put("paymentService", "blocked");
                 }
             } catch (BlockException e) {
-                result.put("resourceB", "blocked");
+                result.put("orderService", "blocked");
             }
         } catch (BlockException e) {
-            result.put("resourceA", "blocked");
+            result.put("userService", "blocked");
         }
         
         result.put("timestamp", System.currentTimeMillis());
@@ -89,9 +91,10 @@ public class DemoController {
     /**
      * QPS 流控测试接口
      * 配置 QPS 阈值后，超过阈值的请求会被限流
+     * 资源名使用路径风格，便于识别
      */
     @GetMapping("/flow/qps")
-    @SentinelResource(value = "flowQps", blockHandler = "flowBlockHandler")
+    @SentinelResource(value = "/api/flow/qps", blockHandler = "flowBlockHandler")
     public ResponseEntity<Map<String, Object>> flowQps() {
         Map<String, Object> result = new HashMap<>();
         result.put("message", "Flow QPS test passed");
@@ -102,9 +105,10 @@ public class DemoController {
     /**
      * 线程数流控测试接口
      * 模拟耗时操作，用于测试并发线程数限流
+     * 资源名使用路径风格，便于识别
      */
     @GetMapping("/flow/thread")
-    @SentinelResource(value = "flowThread", blockHandler = "flowBlockHandler")
+    @SentinelResource(value = "/api/flow/thread", blockHandler = "flowBlockHandler")
     public ResponseEntity<Map<String, Object>> flowThread() throws InterruptedException {
         // 模拟耗时操作
         TimeUnit.MILLISECONDS.sleep(200);
@@ -120,7 +124,7 @@ public class DemoController {
      * 当资源B达到阈值时，限流资源A
      */
     @GetMapping("/flow/related/a")
-    @SentinelResource(value = "relatedResourceA", blockHandler = "flowBlockHandler")
+    @SentinelResource(value = "/api/flow/related/a", blockHandler = "flowBlockHandler")
     public ResponseEntity<Map<String, Object>> flowRelatedA() {
         Map<String, Object> result = new HashMap<>();
         result.put("message", "Related Resource A");
@@ -132,7 +136,7 @@ public class DemoController {
      * 关联流控测试 - 资源B
      */
     @GetMapping("/flow/related/b")
-    @SentinelResource(value = "relatedResourceB", blockHandler = "flowBlockHandler")
+    @SentinelResource(value = "/api/flow/related/b", blockHandler = "flowBlockHandler")
     public ResponseEntity<Map<String, Object>> flowRelatedB() {
         Map<String, Object> result = new HashMap<>();
         result.put("message", "Related Resource B");
@@ -155,7 +159,7 @@ public class DemoController {
      * @param delay 延迟时间(ms)，默认随机0-500ms
      */
     @GetMapping("/degrade/slow")
-    @SentinelResource(value = "degradeSlow", blockHandler = "degradeBlockHandler", 
+    @SentinelResource(value = "/api/degrade/slow", blockHandler = "degradeBlockHandler", 
                       fallback = "degradeSlowFallback")
     public ResponseEntity<Map<String, Object>> degradeSlow(
             @RequestParam(required = false) Integer delay) {
@@ -179,7 +183,7 @@ public class DemoController {
      * @param errorRate 错误率(0-100)，默认30%
      */
     @GetMapping("/degrade/error")
-    @SentinelResource(value = "degradeError", blockHandler = "degradeBlockHandler",
+    @SentinelResource(value = "/api/degrade/error", blockHandler = "degradeBlockHandler",
                       fallback = "degradeErrorFallback")
     public ResponseEntity<Map<String, Object>> degradeError(
             @RequestParam(required = false, defaultValue = "30") Integer errorRate) {
@@ -199,7 +203,7 @@ public class DemoController {
      * @param shouldError 是否抛出异常
      */
     @GetMapping("/degrade/exception")
-    @SentinelResource(value = "degradeException", blockHandler = "degradeBlockHandler",
+    @SentinelResource(value = "/api/degrade/exception", blockHandler = "degradeBlockHandler",
                       fallback = "degradeExceptionFallback")
     public ResponseEntity<Map<String, Object>> degradeException(
             @RequestParam(required = false, defaultValue = "false") Boolean shouldError) {
@@ -248,7 +252,7 @@ public class DemoController {
      * @param id 资源ID，可针对特定ID配置限流
      */
     @GetMapping("/hotspot/{id}")
-    @SentinelResource(value = "hotspotById", blockHandler = "hotspotBlockHandler")
+    @SentinelResource(value = "/api/hotspot/{id}", blockHandler = "hotspotBlockHandler")
     public ResponseEntity<Map<String, Object>> hotspotById(@PathVariable Long id) {
         Map<String, Object> result = new HashMap<>();
         result.put("message", "Hotspot param test");
@@ -263,7 +267,7 @@ public class DemoController {
      * @param productId 商品ID
      */
     @GetMapping("/hotspot/multi")
-    @SentinelResource(value = "hotspotMulti", blockHandler = "hotspotMultiBlockHandler")
+    @SentinelResource(value = "/api/hotspot/multi", blockHandler = "hotspotMultiBlockHandler")
     public ResponseEntity<Map<String, Object>> hotspotMulti(
             @RequestParam Long userId,
             @RequestParam Long productId) {
@@ -280,7 +284,7 @@ public class DemoController {
      * @param type 类型参数
      */
     @GetMapping("/hotspot/type")
-    @SentinelResource(value = "hotspotType", blockHandler = "hotspotTypeBlockHandler")
+    @SentinelResource(value = "/api/hotspot/type", blockHandler = "hotspotTypeBlockHandler")
     public ResponseEntity<Map<String, Object>> hotspotType(@RequestParam String type) {
         Map<String, Object> result = new HashMap<>();
         result.put("message", "Hotspot type test");
@@ -320,7 +324,7 @@ public class DemoController {
      * @param iterations 计算迭代次数
      */
     @GetMapping("/system/cpu")
-    @SentinelResource(value = "systemCpu", blockHandler = "systemBlockHandler")
+    @SentinelResource(value = "/api/system/cpu", blockHandler = "systemBlockHandler")
     public ResponseEntity<Map<String, Object>> systemCpu(
             @RequestParam(required = false, defaultValue = "1000000") Integer iterations) {
         // CPU 密集计算
@@ -341,7 +345,7 @@ public class DemoController {
      * 高 QPS 接口 - 测试系统 QPS 保护
      */
     @GetMapping("/system/qps")
-    @SentinelResource(value = "systemQps", blockHandler = "systemBlockHandler")
+    @SentinelResource(value = "/api/system/qps", blockHandler = "systemBlockHandler")
     public ResponseEntity<Map<String, Object>> systemQps() {
         Map<String, Object> result = new HashMap<>();
         result.put("message", "System QPS test");
@@ -353,7 +357,7 @@ public class DemoController {
      * 高并发接口 - 测试系统并发线程数保护
      */
     @GetMapping("/system/thread")
-    @SentinelResource(value = "systemThread", blockHandler = "systemBlockHandler")
+    @SentinelResource(value = "/api/system/thread", blockHandler = "systemBlockHandler")
     public ResponseEntity<Map<String, Object>> systemThread() throws InterruptedException {
         // 模拟耗时操作增加并发线程
         TimeUnit.MILLISECONDS.sleep(100);
@@ -370,7 +374,7 @@ public class DemoController {
      * @param delay 延迟时间
      */
     @GetMapping("/system/rt")
-    @SentinelResource(value = "systemRt", blockHandler = "systemBlockHandler")
+    @SentinelResource(value = "/api/system/rt", blockHandler = "systemBlockHandler")
     public ResponseEntity<Map<String, Object>> systemRt(
             @RequestParam(required = false, defaultValue = "50") Integer delay) 
             throws InterruptedException {
@@ -397,7 +401,7 @@ public class DemoController {
      * 需要配合请求头 X-Sentinel-Origin 使用
      */
     @GetMapping("/auth/resource")
-    @SentinelResource(value = "authResource", blockHandler = "authBlockHandler")
+    @SentinelResource(value = "/api/auth/resource", blockHandler = "authBlockHandler")
     public ResponseEntity<Map<String, Object>> authResource(
             @RequestHeader(value = "X-Sentinel-Origin", required = false) String origin) {
         Map<String, Object> result = new HashMap<>();
@@ -411,7 +415,7 @@ public class DemoController {
      * 白名单测试接口
      */
     @GetMapping("/auth/whitelist")
-    @SentinelResource(value = "authWhitelist", blockHandler = "authBlockHandler")
+    @SentinelResource(value = "/api/auth/whitelist", blockHandler = "authBlockHandler")
     public ResponseEntity<Map<String, Object>> authWhitelist(
             @RequestHeader(value = "X-Sentinel-Origin", required = false) String origin) {
         Map<String, Object> result = new HashMap<>();
@@ -425,7 +429,7 @@ public class DemoController {
      * 黑名单测试接口
      */
     @GetMapping("/auth/blacklist")
-    @SentinelResource(value = "authBlacklist", blockHandler = "authBlockHandler")
+    @SentinelResource(value = "/api/auth/blacklist", blockHandler = "authBlockHandler")
     public ResponseEntity<Map<String, Object>> authBlacklist(
             @RequestHeader(value = "X-Sentinel-Origin", required = false) String origin) {
         Map<String, Object> result = new HashMap<>();

@@ -31,11 +31,15 @@ function AppListItem({ app, isSelected, onSelect }: AppListItemProps): React.JSX
       py={2}
       textAlign="left"
       cursor="pointer"
-      bg={isSelected ? 'bg.muted' : 'transparent'}
+      bg={isSelected ? 'var(--NavItem-hover-background)' : 'transparent'}
       borderRadius="sm"
-      _hover={{ bg: 'bg.muted' }}
+      color="var(--NavItem-color)"
+      _hover={{ bg: 'var(--NavItem-hover-background)' }}
       transition="background 0.15s"
       onClick={onSelect}
+      style={{
+        border: 'none',
+      }}
     >
       <Box
         flex={1}
@@ -45,13 +49,14 @@ function AppListItem({ app, isSelected, onSelect }: AppListItemProps): React.JSX
         <Text
           fontSize="sm"
           fontWeight={isSelected ? 600 : 500}
+          color="inherit"
           truncate
         >
           {app.app}
         </Text>
         <Text
           fontSize="xs"
-          color="fg.muted"
+          color="var(--NavGroup-title-color)"
         >
           {app.healthCount}/{app.healthCount + app.unhealthyCount} 机器
         </Text>
@@ -99,8 +104,12 @@ export function AppSelector(): React.JSX.Element {
         borderRadius="md"
         cursor="pointer"
         transition="all 0.2s"
-        _hover={{ bg: 'bg.muted' }}
+        color="var(--NavItem-color)"
+        _hover={{ bg: 'var(--NavItem-hover-background)' }}
         onClick={() => setIsOpen(!isOpen)}
+        style={{
+          border: 'none',
+        }}
       >
         <Box
           display="flex"
@@ -109,18 +118,19 @@ export function AppSelector(): React.JSX.Element {
         >
           <Icon
             icon="ph:cube"
-            style={{ fontSize: '1rem' }}
+            style={{ fontSize: '1rem', color: 'var(--NavItem-icon-color)' }}
           />
           <Text
             fontSize="sm"
             fontWeight={600}
+            color="inherit"
           >
             选择服务
           </Text>
         </Box>
         <Icon
           icon={isOpen ? 'ph:caret-up' : 'ph:caret-down'}
-          style={{ fontSize: '0.875rem' }}
+          style={{ fontSize: '0.875rem', color: 'var(--NavItem-expand-color)' }}
         />
       </Box>
 
@@ -145,7 +155,7 @@ export function AppSelector(): React.JSX.Element {
             >
               <Text
                 fontSize="sm"
-                color="fg.muted"
+                color="var(--NavGroup-title-color)"
               >
                 加载中...
               </Text>
@@ -157,7 +167,7 @@ export function AppSelector(): React.JSX.Element {
             >
               <Text
                 fontSize="sm"
-                color="fg.muted"
+                color="var(--NavGroup-title-color)"
               >
                 暂无应用
               </Text>

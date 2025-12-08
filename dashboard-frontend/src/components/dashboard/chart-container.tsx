@@ -4,32 +4,30 @@
 
 import * as React from 'react';
 import {
-  ResponsiveContainer,
-  LineChart,
+  Area,
   AreaChart,
-  Tooltip,
-  Legend,
   CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  Line,
-  Area,
 } from 'recharts';
-import { Box } from '@chakra-ui/react';
 
 import { useColorMode } from '@/hooks/use-color-mode';
 import {
-  CHART_COLORS,
-  getChartTheme,
-  getTooltipStyle,
-  getAxisConfig,
-  getGridConfig,
-  type LineSeriesConfig,
   type AreaSeriesConfig,
+  getAxisConfig,
+  getChartTheme,
+  getGridConfig,
+  getTooltipStyle,
+  type LineSeriesConfig,
 } from '@/lib/theme/chart-colors';
 
 interface ChartContainerProps {
-  data: any[];
+  data: unknown[];
   height?: number;
   type?: 'line' | 'area';
   series: (LineSeriesConfig | AreaSeriesConfig)[];
@@ -73,11 +71,14 @@ export function ChartContainer({
         {showTooltip && <Tooltip {...tooltipStyle} />}
         {showLegend && <Legend wrapperStyle={{ color: theme.textColor }} />}
         {series.map((s) => {
-          const areaProps = type === 'area' && 'fill' in s ? {
-            fill: s.fill,
-            fillOpacity: s.fillOpacity,
-          } : {};
-          
+          const areaProps =
+            type === 'area' && 'fill' in s
+              ? {
+                  fill: s.fill,
+                  fillOpacity: s.fillOpacity,
+                }
+              : {};
+
           return (
             <DataComponent
               key={s.dataKey}

@@ -8,8 +8,8 @@ import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { I18nProvider } from '@/components/core/i18n-provider';
 import { QueryProvider } from '@/components/core/query-provider';
 import { SettingsButton } from '@/components/core/settings/settings-button';
-import { Toaster } from '@/components/ui/toaster';
 import { Provider } from '@/components/ui/provider';
+import { Toaster } from '@/components/ui/toaster';
 import { UserProvider } from '@/contexts/auth/user-context';
 import { getSettings as getPersistedSettings } from '@/lib/settings/get-settings';
 

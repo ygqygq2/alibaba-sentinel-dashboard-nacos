@@ -19,24 +19,12 @@ import {
 import { Icon } from '@iconify/react';
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
 import { useParams } from 'react-router-dom';
 
-import { useTopResourceMetric } from '@/hooks/api';
+import { CHART_COLORS, ChartContainer } from '@/components/dashboard/chart-container';
 import { useGlobalSearch } from '@/contexts/search-context';
+import { useTopResourceMetric } from '@/hooks/api';
 import { useColorMode } from '@/hooks/use-color-mode';
-import { ChartContainer, CHART_COLORS } from '@/components/dashboard/chart-container';
 import { CHART_SERIES } from '@/lib/theme/chart-colors';
 import type { MetricData } from '@/types/sentinel';
 
@@ -66,11 +54,6 @@ function ResourceChart({ resource, data, isExpanded = false, onToggle }: Resourc
       rt: d.rt,
     }));
   }, [data]);
-
-  // 最近 6 条数据用于表格
-  const recentData = React.useMemo(() => {
-    return chartData.slice(-6).reverse();
-  }, [chartData]);
 
   return (
     <Card.Root>

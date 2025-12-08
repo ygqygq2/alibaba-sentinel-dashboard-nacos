@@ -4,13 +4,13 @@ import { Field, Stack } from '@chakra-ui/react';
 import { Icon } from '@iconify/react';
 import * as React from 'react';
 
-import type { ColorMode } from '@/styles/theme/types';
+import type { ColorModeWithSystem } from '@/styles/theme/types';
 
 import { Option } from './option';
 
 export interface OptionsColorSchemeProps {
-  onChange?: (value: ColorMode) => void;
-  value?: ColorMode;
+  onChange?: (value: ColorModeWithSystem) => void;
+  value?: ColorModeWithSystem;
 }
 
 export function OptionsColorScheme({ onChange, value }: OptionsColorSchemeProps): React.JSX.Element {
@@ -40,7 +40,7 @@ export function OptionsColorScheme({ onChange, value }: OptionsColorSchemeProps)
               key={option.value}
               label={option.label}
               onClick={() => {
-                onChange?.(option.value as ColorMode);
+                onChange?.(option.value as ColorModeWithSystem);
               }}
               selected={option.value === value}
             />

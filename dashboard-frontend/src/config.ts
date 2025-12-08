@@ -2,13 +2,13 @@ import { AuthStrategy } from '@/lib/auth/strategy';
 
 import { getSiteURL } from './lib/get-site-url';
 import { LogLevel } from './lib/logger';
-import type { ColorMode, PrimaryColor } from './styles/theme/types';
+import type { ColorModeWithSystem, PrimaryColor } from './styles/theme/types';
 
 export interface Config {
   site: {
     name: string;
     description: string;
-    colorScheme: ColorMode;
+    colorScheme: ColorModeWithSystem;
     primaryColor: PrimaryColor;
     themeColor: string;
     url: string;

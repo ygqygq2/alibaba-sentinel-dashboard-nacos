@@ -6,7 +6,6 @@ import { Drawer } from '@/components/ui/drawer';
 import type { Settings } from '@/types/settings';
 
 import { OptionsColorScheme } from './options-color-scheme';
-import { OptionsLayout } from './options-layout';
 import { OptionsNavColor } from './options-nav-color';
 import { OptionsPrimaryColor } from './options-primary-color';
 
@@ -136,12 +135,6 @@ export function SettingsDrawer({
                 handleChange('navColor', value);
               }}
               value={values.navColor}
-            />
-            <OptionsLayout
-              onChange={(value) => {
-                handleChange('layout', value);
-              }}
-              value={values.layout}
             />
           </Stack>
         </Drawer.Body>

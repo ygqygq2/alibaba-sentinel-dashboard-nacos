@@ -5,11 +5,11 @@ import type { ColorMode, ColorSystemOptions } from '@/styles/theme/types';
 
 // 返回当前设置(primaryColor + light/dark)所对应的完整 palette
 export function useColors(): ColorSystemOptions {
-  const { colorMode } = useColorMode();
+  const { resolvedColorMode } = useColorMode();
   const { settings } = useSettings();
 
   const schemes = colorSchemes({ primaryColor: settings.primaryColor });
-  const current = schemes[colorMode as ColorMode];
+  const current = schemes[resolvedColorMode as ColorMode];
 
   if (current?.palette) {
     return current as ColorSystemOptions;

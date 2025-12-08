@@ -8,8 +8,8 @@ export interface SplitLayoutProps {
 }
 
 export function SplitLayout({ children }: SplitLayoutProps): React.JSX.Element {
-  const { colorMode } = useColorMode();
-  const isDark = colorMode === 'dark';
+  const { resolvedColorMode } = useColorMode();
+  const isDark = resolvedColorMode === 'dark';
 
   return (
     <Box

@@ -195,8 +195,8 @@ interface TrendChartData {
 }
 
 function QpsTrendChart({ data }: { data: TrendChartData[] }) {
-  const { colorMode } = useColorMode();
-  const series = CHART_SERIES.qpsArea(colorMode);
+  const { resolvedColorMode } = useColorMode();
+  const series = CHART_SERIES.qpsArea(resolvedColorMode);
 
   return (
     <Card.Root>
@@ -248,8 +248,8 @@ function QpsTrendChart({ data }: { data: TrendChartData[] }) {
 
 /** RT 趋势图组件 */
 function RtTrendChart({ data }: { data: TrendChartData[] }) {
-  const { colorMode } = useColorMode();
-  const series = CHART_SERIES.rtArea(colorMode);
+  const { resolvedColorMode } = useColorMode();
+  const series = CHART_SERIES.rtArea(resolvedColorMode);
 
   return (
     <Card.Root>

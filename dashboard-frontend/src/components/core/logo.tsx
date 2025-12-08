@@ -52,8 +52,8 @@ export function DynamicLogo({
   width = WIDTH,
   ...props
 }: DynamicLogoProps): React.JSX.Element {
-  const { colorMode } = useColorMode();
-  const color = colorMode === 'dark' ? colorDark : colorLight;
+  const { resolvedColorMode } = useColorMode();
+  const color = resolvedColorMode === 'dark' ? colorDark : colorLight;
 
   return (
     <NoSsr

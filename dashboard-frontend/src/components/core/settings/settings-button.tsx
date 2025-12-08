@@ -22,10 +22,7 @@ export function SettingsButton(): React.JSX.Element {
   const handleUpdate = async (values: Partial<Settings>): Promise<void> => {
     // 如果颜色模式改变,直接设置为新的颜色模式
     if (values.colorScheme && values.colorScheme !== settings.colorScheme) {
-      if (values.colorScheme === 'light' || values.colorScheme === 'dark') {
-        setColorMode(values.colorScheme);
-      }
-      // 'system' 模式会自动处理
+      setColorMode(values.colorScheme);
     }
 
     const updatedSettings = { ...settings, ...values } satisfies Settings;
@@ -38,9 +35,7 @@ export function SettingsButton(): React.JSX.Element {
     const defaultSettings = applyDefaultSettings({});
 
     // 重置时设置为默认的颜色模式
-    if (defaultSettings.colorScheme === 'light' || defaultSettings.colorScheme === 'dark') {
-      setColorMode(defaultSettings.colorScheme);
-    }
+    setColorMode(defaultSettings.colorScheme);
 
     setPersistedSettings({});
     setSettings(defaultSettings);

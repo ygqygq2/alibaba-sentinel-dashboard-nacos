@@ -52,16 +52,16 @@ export function SideNav({ color = 'evident', items = [] }: SideNavProps): React.
   const currentApp = useCurrentApp();
   const { data: _apps = [] } = useApps();
   const { settings } = useSettings();
-  const { colorMode } = useColorMode(); // 使用 resolvedTheme,会将 'system' 解析为 'light' 或 'dark'
+  const { resolvedColorMode } = useColorMode(); // 使用 resolvedColorMode,会将 'system' 解析为 'light' 或 'dark'
 
-  const _styles = navColorStyles[colorMode][color];
-  const logoColor = logoColors[colorMode][color];
+  const _styles = navColorStyles[resolvedColorMode][color];
+  const logoColor = logoColors[resolvedColorMode][color];
 
   // 获取当前 primary color 的实际颜色值 (dark 模式使用 400, light 模式使用 500)
   const activeBackgroundColor = React.useMemo(() => {
-    const level = colorMode === 'dark' ? '400' : '500';
+    const level = resolvedColorMode === 'dark' ? '400' : '500';
     return `${settings.primaryColor}.${level}`;
-  }, [settings.primaryColor, colorMode]);
+  }, [settings.primaryColor, resolvedColorMode]);
 
   // 获取当前应用的功能菜单
   const appFunctionItems = React.useMemo(() => {
@@ -70,10 +70,10 @@ export function SideNav({ color = 'evident', items = [] }: SideNavProps): React.
 
   return (
     <Box
-      bg="bg.canvas"
-      borderRightWidth="1px"
+      bg={_styles['--SideNav-background']}
+      borderRightWidth={_styles['--SideNav-border'] !== 'none' ? '1px' : '0'}
       borderRightColor="border.default"
-      color="fg.default"
+      color={_styles['--SideNav-color']}
       display={{ base: 'none', lg: 'flex' }}
       flexDirection="column"
       h="100%"
@@ -82,18 +82,7 @@ export function SideNav({ color = 'evident', items = [] }: SideNavProps): React.
       top={0}
       w="280px"
       zIndex="sidebar"
-      style={
-        {
-          '--SideNav-background': 'var(--chakra-colors-bg-canvas)',
-          '--SideNav-color': 'var(--chakra-colors-fg-default)',
-          '--NavGroup-title-color': 'var(--chakra-colors-fg-muted)',
-          '--NavItem-color': 'var(--chakra-colors-fg-default)',
-          '--NavItem-hover-background': 'var(--chakra-colors-bg-muted)',
-          '--NavItem-active-color': 'white',
-          '--NavItem-icon-color': 'var(--chakra-colors-fg-default)',
-          '--NavItem-icon-active-color': 'white',
-        } as React.CSSProperties
-      }
+      style={_styles as React.CSSProperties}
     >
       <Stack
         gap={2}

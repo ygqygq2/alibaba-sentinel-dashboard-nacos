@@ -23,7 +23,10 @@ export function Provider(props: ColorModeProviderProps) {
           name="color-scheme"
         />
       </Helmet>
-      <ColorModeProvider {...props}>
+      <ColorModeProvider
+        defaultTheme={settings.colorScheme}
+        {...props}
+      >
         {/* 使用 Box 设置全局 colorPalette */}
         <Box
           colorPalette={colorPalette}

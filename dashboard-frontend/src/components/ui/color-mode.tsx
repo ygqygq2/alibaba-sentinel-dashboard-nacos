@@ -22,8 +22,8 @@ export function ColorModeProvider(props: ColorModeProviderProps) {
 }
 
 export function ColorModeIcon() {
-  const { colorMode } = useColorMode();
-  return colorMode === 'dark' ? (
+  const { resolvedColorMode } = useColorMode();
+  return resolvedColorMode === 'dark' ? (
     <Icon
       icon="mdi:moon-waning-crescent"
       width="24"

@@ -47,11 +47,11 @@ export function ChartContainer({
   showTooltip = true,
   children,
 }: ChartContainerProps) {
-  const { colorMode } = useColorMode();
-  const theme = getChartTheme(colorMode);
-  const axisConfig = getAxisConfig(colorMode);
-  const gridConfig = getGridConfig(colorMode);
-  const tooltipStyle = getTooltipStyle(colorMode);
+  const { resolvedColorMode } = useColorMode();
+  const theme = getChartTheme(resolvedColorMode);
+  const axisConfig = getAxisConfig(resolvedColorMode);
+  const gridConfig = getGridConfig(resolvedColorMode);
+  const tooltipStyle = getTooltipStyle(resolvedColorMode);
 
   const ChartComponent = type === 'area' ? AreaChart : LineChart;
   const DataComponent = type === 'area' ? Area : Line;

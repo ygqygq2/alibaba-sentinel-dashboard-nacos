@@ -62,6 +62,7 @@ function ResourceChart({ resource, data, isExpanded = false, onToggle }: Resourc
         onClick={onToggle}
         _hover={{ bg: 'bg.subtle' }}
         transition="background 0.2s"
+        py={3}
       >
         <Flex
           justifyContent="space-between"
@@ -81,7 +82,10 @@ function ResourceChart({ resource, data, isExpanded = false, onToggle }: Resourc
       </Card.Header>
       <Collapsible.Root open={isExpanded}>
         <Collapsible.Content>
-          <Card.Body pt={0}>
+          <Card.Body
+            pt={0}
+            pb={4}
+          >
             {/* 单列图表 */}
             <Box>
               {chartData.length > 0 ? (
@@ -140,10 +144,13 @@ interface StatCardProps {
 function StatCard({ label, value, colorPalette = 'blue', icon }: StatCardProps) {
   return (
     <Card.Root>
-      <Card.Body>
+      <Card.Body
+        py={4}
+        px={4}
+      >
         <Flex
           alignItems="center"
-          gap="card.gap"
+          gap={3}
         >
           <Box
             bg={`${colorPalette}.100`}
@@ -193,20 +200,23 @@ function QpsTrendChart({ data }: { data: TrendChartData[] }) {
 
   return (
     <Card.Root>
-      <Card.Header>
+      <Card.Header pb={2}>
         <Heading size="md">QPS 趋势</Heading>
       </Card.Header>
-      <Card.Body>
+      <Card.Body
+        pt={0}
+        pb={4}
+      >
         {data.length > 0 ? (
           <ChartContainer
             data={data}
-            height={200}
+            height={240}
             type="area"
             series={series}
           />
         ) : (
           <Box
-            height="200px"
+            height="240px"
             display="flex"
             alignItems="center"
             justifyContent="center"
@@ -214,12 +224,12 @@ function QpsTrendChart({ data }: { data: TrendChartData[] }) {
             borderRadius="md"
           >
             <Stack
-              gap="card.gap"
+              gap={2}
               textAlign="center"
             >
               <Icon
                 icon="mdi:chart-line"
-                fontSize="48px"
+                fontSize="40px"
                 color="fg.muted"
               />
               <Text
@@ -243,20 +253,23 @@ function RtTrendChart({ data }: { data: TrendChartData[] }) {
 
   return (
     <Card.Root>
-      <Card.Header>
+      <Card.Header pb={2}>
         <Heading size="md">RT 趋势</Heading>
       </Card.Header>
-      <Card.Body>
+      <Card.Body
+        pt={0}
+        pb={4}
+      >
         {data.length > 0 ? (
           <ChartContainer
             data={data}
-            height={200}
+            height={240}
             type="area"
             series={series}
           />
         ) : (
           <Box
-            height="200px"
+            height="240px"
             display="flex"
             alignItems="center"
             justifyContent="center"
@@ -264,12 +277,12 @@ function RtTrendChart({ data }: { data: TrendChartData[] }) {
             borderRadius="md"
           >
             <Stack
-              gap="card.gap"
+              gap={2}
               textAlign="center"
             >
               <Icon
                 icon="mdi:timer-outline"
-                fontSize="48px"
+                fontSize="40px"
                 color="fg.muted"
               />
               <Text
@@ -441,8 +454,8 @@ export function Page(): React.JSX.Element {
       <Helmet>
         <title>实时监控 - {app} | Sentinel Dashboard</title>
       </Helmet>
-      <Box p="page.gap">
-        <Stack gap="section.gap">
+      <Box p={6}>
+        <Stack gap={4}>
           <Flex
             justifyContent="space-between"
             alignItems="center"
@@ -458,7 +471,7 @@ export function Page(): React.JSX.Element {
               </Text>
             </Box>
             <Flex
-              gap="card.gap"
+              gap={2}
               alignItems="center"
             >
               {autoRefresh && (
@@ -506,7 +519,7 @@ export function Page(): React.JSX.Element {
           {/* 汇总统计 */}
           <Grid
             templateColumns="repeat(4, 1fr)"
-            gap="card.gap"
+            gap={3}
           >
             <StatCard
               label="通过 QPS"
@@ -543,7 +556,7 @@ export function Page(): React.JSX.Element {
           {/* 按资源展示的详细图表 */}
           {resourceGroups.length > 0 && (
             <Card.Root>
-              <Card.Header>
+              <Card.Header pb={2}>
                 <Flex
                   justifyContent="space-between"
                   alignItems="center"
@@ -551,7 +564,7 @@ export function Page(): React.JSX.Element {
                   <Heading size="md">资源详情</Heading>
                   {/* 分页控件 */}
                   <Flex
-                    gap="card.gap"
+                    gap={2}
                     alignItems="center"
                   >
                     <Text fontSize="sm">共 {resourceGroups.length} 个资源</Text>
@@ -566,7 +579,7 @@ export function Page(): React.JSX.Element {
                       </Button>
                       <Text
                         fontSize="sm"
-                        px="card.gap"
+                        px={2}
                         alignSelf="center"
                       >
                         {currentPage} / {totalPages || 1}
@@ -583,8 +596,8 @@ export function Page(): React.JSX.Element {
                   </Flex>
                 </Flex>
               </Card.Header>
-              <Card.Body>
-                <Stack gap="card.gap">
+              <Card.Body pt={0} pb={4}>
+                <Stack gap={2}>
                   {paginatedGroups.map((group) => (
                     <ResourceChart
                       key={group.resource}
@@ -601,14 +614,14 @@ export function Page(): React.JSX.Element {
 
           {/* 资源列表 */}
           <Card.Root>
-            <Card.Header>
+            <Card.Header pb={2}>
               <Heading size="md">资源监控</Heading>
             </Card.Header>
             <Card.Body p={0}>
               {isLoading ? (
                 <Stack
-                  p="card.gap"
-                  gap="card.gap"
+                  p={4}
+                  gap={2}
                 >
                   {[1, 2, 3, 4, 5].map((i) => (
                     <Skeleton
@@ -618,12 +631,12 @@ export function Page(): React.JSX.Element {
                   ))}
                 </Stack>
               ) : error ? (
-                <Box p="card.gap">
+                <Box p={4}>
                   <Text color="red.500">加载失败：{String(error)}</Text>
                 </Box>
               ) : !filteredMetrics?.length ? (
                 <Box
-                  p="section.gap"
+                  p={6}
                   textAlign="center"
                 >
                   <Text color="fg.muted">{searchKey ? '未找到匹配的资源' : '暂无监控数据'}</Text>
@@ -631,7 +644,7 @@ export function Page(): React.JSX.Element {
                     <Text
                       color="fg.muted"
                       fontSize="sm"
-                      mt="card.gap"
+                      mt={2}
                     >
                       请确保应用已接入 Sentinel 并有流量访问
                     </Text>

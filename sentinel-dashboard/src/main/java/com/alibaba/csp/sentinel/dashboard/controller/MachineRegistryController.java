@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller;
 
+import com.alibaba.csp.sentinel.dashboard.config.AuthProperties;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
@@ -38,6 +39,9 @@ import java.util.regex.Pattern;
 public class MachineRegistryController {
 
     private final Logger logger = LoggerFactory.getLogger(MachineRegistryController.class);
+
+    @Autowired
+    private AuthProperties authProperties;
 
     /**
      * 域名/服务名正则：支持 K8s 服务名格式，如 service-name, service-name.namespace, service-name.namespace.svc.cluster.local
@@ -70,7 +74,21 @@ public class MachineRegistryController {
     public Result<?> receiveHeartBeat(String app,
                                       @RequestParam(value = "app_type", required = false, defaultValue = "0")
                                           Integer appType, Long version, String v, String hostname, String ip,
-                                      Integer port) {
+                                      Integer port,
+                                      @RequestParam(value = "app_secret", required = false) String appSecret) {
+        // 验证应用密钥（如果启用鉴权）
+        if (authProperties.isEnabled() && StringUtil.isNotBlank(authProperties.getAppSecret())) {
+            if (StringUtil.isBlank(appSecret)) {
+                logger.warn("[Auth] Client {} attempted to connect without app_secret", ip);
+                return Result.ofFail(-1, "app_secret is required when auth is enabled");
+            }
+            if (!authProperties.getAppSecret().equals(appSecret)) {
+                logger.warn("[Auth] Client {} provided invalid app_secret for app: {}", ip, app);
+                return Result.ofFail(-1, "invalid app_secret");
+            }
+            logger.debug("[Auth] Client {} authenticated successfully for app: {}", ip, app);
+        }
+        
         if (StringUtil.isBlank(app) || app.length() > 256) {
             return Result.ofFail(-1, "invalid appName");
         }

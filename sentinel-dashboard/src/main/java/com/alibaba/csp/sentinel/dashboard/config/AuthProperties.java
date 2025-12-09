@@ -21,6 +21,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class AuthProperties {
 
     private boolean enabled = true;
+    
+    /**
+     * Application secret for client authentication.
+     * If set, clients must provide this secret when connecting to Dashboard.
+     */
+    private String appSecret;
 
     public boolean isEnabled() {
         return enabled;
@@ -28,6 +34,14 @@ public class AuthProperties {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public String getAppSecret() {
+        return appSecret;
+    }
+
+    public void setAppSecret(String appSecret) {
+        this.appSecret = appSecret;
     }
 
 }

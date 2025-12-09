@@ -114,7 +114,6 @@ export function RuleListPage<T>({
               </Text>
             </Box>
             <Button
-              colorPalette="blue"
               onClick={onCreate}
             >
               <Icon icon="mdi:plus" />

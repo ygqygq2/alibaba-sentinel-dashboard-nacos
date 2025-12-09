@@ -31,9 +31,16 @@ echo "Sentinel Version: ${SENTINEL_VER}"
 echo "Java Version: ${JAVA_VER}"
 echo "Server Port: ${SENTINEL_DASHBOARD_SERVER_PORT}"
 echo "Auth Username: ${SENTINEL_DASHBOARD_AUTH_USERNAME}"
+if [ -n "${AUTH_APP_SECRET}" ]; then
+  echo "Client Auth: Enabled (app_secret required)"
+else
+  echo "Client Auth: Warning - app_secret not set (not recommended for production)"
+fi
 echo "Nacos Server: ${NACOS_SERVER_ADDR}"
+echo "Nacos Username: ${NACOS_USERNAME:-not set}"
 echo "Nacos Namespace: ${NACOS_NAMESPACE}"
 echo "Nacos Group: ${NACOS_GROUP}"
+echo "Log Level: ${LOG_LEVEL:-INFO}"
 echo "JVM Options: ${JAVA_OPTS}"
 echo "========================================="
 
@@ -41,7 +48,11 @@ exec java ${JAVA_OPTS} ${EXTRA_OPTS} \
   -Dserver.port=${SENTINEL_DASHBOARD_SERVER_PORT} \
   -Dsentinel.dashboard.auth.username=${SENTINEL_DASHBOARD_AUTH_USERNAME} \
   -Dsentinel.dashboard.auth.password=${SENTINEL_DASHBOARD_AUTH_PASSWORD} \
-  -Dsentinel.nacos.serverAddr=${NACOS_SERVER_ADDR} \
-  -Dsentinel.nacos.namespace=${NACOS_NAMESPACE} \
-  -Dsentinel.nacos.groupId=${NACOS_GROUP} \
+  -Dauth.app.secret=${AUTH_APP_SECRET:-} \
+  -Dnacos.server-addr=${NACOS_SERVER_ADDR} \
+  -Dnacos.namespace=${NACOS_NAMESPACE} \
+  -Dnacos.group-id=${NACOS_GROUP} \
+  -Dnacos.username=${NACOS_USERNAME} \
+  -Dnacos.password=${NACOS_PASSWORD} \
+  -Dlogging.level.root=${LOG_LEVEL:-INFO} \
   -jar sentinel-dashboard.jar "$@"

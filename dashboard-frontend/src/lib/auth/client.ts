@@ -128,12 +128,13 @@ class AuthClient {
       });
 
       if (response.status === 401) {
-        // Session expired
+        // Session expired - only clear auth on explicit 401
         localStorage.removeItem('sentinel-auth');
         localStorage.removeItem('sentinel-user');
         return { data: null };
       }
 
+      // If response is OK or any other status (not 401), trust localStorage
       return {
         data: {
           id: username,
@@ -143,8 +144,19 @@ class AuthClient {
           avatar: '/assets/avatar.png',
         },
       };
-    } catch {
-      return { data: null };
+    } catch (err) {
+      // Network error or other failures - don't invalidate session
+      // Trust localStorage and let the user stay logged in
+      console.warn('[Auth] Failed to verify session, trusting localStorage:', err);
+      return {
+        data: {
+          id: username,
+          firstName: username.charAt(0).toUpperCase() + username.slice(1),
+          lastName: '',
+          email: `${username}@example.com`,
+          avatar: '/assets/avatar.png',
+        },
+      };
     }
   }
 

@@ -5,7 +5,7 @@
 import { Box, Stack } from '@chakra-ui/react';
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { SystemRuleForm } from '@/components/dashboard/rules';
 import { useCreateSystemRule } from '@/hooks/api';
@@ -14,15 +14,19 @@ import type { SystemRule } from '@/types/rule';
 
 export function Page(): React.JSX.Element {
   const { app } = useParams<{ app: string }>();
-  const createRule = useCreateSystemRule(app ?? '');
-
-  const handleSubmit = async (data: Omit<SystemRule, 'id'>) => {
-    await createRule.mutateAsync(data);
-  };
+  const navigate = useNavigate();
 
   if (!app) {
     return <Box p={6}>应用名称不能为空</Box>;
   }
+
+  const createRule = useCreateSystemRule(app);
+
+  const handleSubmit = async (data: Omit<SystemRule, 'id'>) => {
+    await createRule.mutateAsync(data);
+    // 创建成功后跳转回列表页
+    navigate(paths.dashboard.system.list(app));
+  };
 
   return (
     <>

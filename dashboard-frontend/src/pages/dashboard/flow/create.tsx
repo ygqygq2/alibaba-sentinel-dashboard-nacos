@@ -5,7 +5,7 @@
 import { Box, Stack } from '@chakra-ui/react';
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { FlowRuleForm } from '@/components/dashboard/rules';
 import { useCreateFlowRule } from '@/hooks/api';
@@ -14,10 +14,13 @@ import type { FlowRuleBase } from '@/types/rule';
 
 export function Page(): React.JSX.Element {
   const { app } = useParams<{ app: string }>();
+  const navigate = useNavigate();
   const createRule = useCreateFlowRule();
 
   const handleSubmit = async (data: FlowRuleBase) => {
     await createRule.mutateAsync(data);
+    // 创建成功后跳转回列表页
+    navigate(paths.dashboard.flow.list(app!));
   };
 
   if (!app) {

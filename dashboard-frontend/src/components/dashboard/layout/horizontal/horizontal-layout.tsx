@@ -29,6 +29,7 @@ export function HorizontalLayout({ children }: HorizontalLayoutProps): React.JSX
         `}
       />
       <Box
+        colorPalette={settings.primaryColor}
         bg="bg.canvas"
         display="flex"
         flexDirection="column"

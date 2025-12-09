@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class AuthorityRuleEntity extends AbstractRuleEntity<AuthorityRule> {
 
     public AuthorityRuleEntity() {
+        this.rule = new AuthorityRule();
     }
 
     public AuthorityRuleEntity(AuthorityRule authorityRule) {
@@ -48,15 +49,27 @@ public class AuthorityRuleEntity extends AbstractRuleEntity<AuthorityRule> {
         return rule.getLimitApp();
     }
 
+    public void setLimitApp(String limitApp) {
+        rule.setLimitApp(limitApp);
+    }
+
     @JsonIgnore
     @JSONField(serialize = false)
     public String getResource() {
         return rule.getResource();
     }
 
+    public void setResource(String resource) {
+        rule.setResource(resource);
+    }
+
     @JsonIgnore
     @JSONField(serialize = false)
     public int getStrategy() {
         return rule.getStrategy();
+    }
+
+    public void setStrategy(int strategy) {
+        rule.setStrategy(strategy);
     }
 }

@@ -151,7 +151,7 @@ export function SignInForm(): React.JSX.Element {
                 loading={isPending}
                 type="submit"
                 variant="solid"
-                colorPalette={settings.primaryColor}
+                
               >
                 登录
               </Button>

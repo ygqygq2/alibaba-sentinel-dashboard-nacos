@@ -5,7 +5,7 @@
 import { Box, Skeleton, Stack, Text } from '@chakra-ui/react';
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { DegradeRuleForm } from '@/components/dashboard/rules';
 import { useDegradeRules, useUpdateDegradeRule } from '@/hooks/api';
@@ -14,6 +14,7 @@ import type { DegradeRule } from '@/types/rule';
 
 export function Page(): React.JSX.Element {
   const { app, id } = useParams<{ app: string; id: string }>();
+  const navigate = useNavigate();
   const { data: rules, isLoading } = useDegradeRules(app ?? '');
   const updateRule = useUpdateDegradeRule();
 
@@ -25,6 +26,8 @@ export function Page(): React.JSX.Element {
   const handleSubmit = async (data: Omit<DegradeRule, 'id'>) => {
     if (!rule?.id) return;
     await updateRule.mutateAsync({ ...data, id: rule.id });
+    // 保存成功后跳转回列表页
+    navigate(paths.dashboard.degrade.list(app!));
   };
 
   if (!app || !id) {

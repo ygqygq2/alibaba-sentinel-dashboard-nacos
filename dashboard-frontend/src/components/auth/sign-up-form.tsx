@@ -120,7 +120,7 @@ export function SignUpForm(): React.JSX.Element {
           {oAuthProviders.map((provider) => (
             <Button
               variant="outline"
-              colorPalette={settings.primaryColor}
+              
               loading={isPending}
               key={provider.id}
               onClick={() => {

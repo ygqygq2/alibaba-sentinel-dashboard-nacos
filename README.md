@@ -7,92 +7,133 @@
 ### Docker Compose 方式（推荐）
 
 ```bash
-# 启动全栈服务（Nacos + Dashboard + Token Server）
-docker-compose up -d
+# 构建并启动全栈服务（Nacos + Dashboard + Token Server）
+make up-build
 
 # 查看服务状态
-docker-compose ps
+make ps
 
 # 查看日志
-docker-compose logs -f
+make logs
+
+# 停止服务
+make down
 ```
 
-访问 http://localhost:8080，用户名/密码: sentinel/sentinel
+访问：
+
+- Dashboard: http://localhost:8080（用户名/密码: sentinel/sentinel）
+- 前端开发服务器: http://localhost:3000
 
 ### 生成监控数据（可选）
 
 监控页面需要实际流量才能显示图表。可以使用以下方式快速生成测试数据：
 
 ```bash
-# 使用测试脚本生成流量
-./scripts/generate-metric-data.sh
-
-# 或手动访问 token-server 接口
-for i in {1..50}; do
-  curl http://localhost:8081/api/hello
-  sleep 0.1
-done
+# 持续生成监控数据（按 Ctrl+C 停止）
+make gen-metric
 ```
 
-然后访问监控页面查看图表：http://localhost:3000/dashboard/metric?app=sentinel-token-server
+然后访问监控页面查看实时图表：
 
-### 本地编译运行
+- 生产环境：http://localhost:8080/dashboard/apps/sentinel-token-server/metric
+- 开发环境：http://localhost:3000/dashboard/apps/sentinel-token-server/metric
+
+### 本地开发
 
 ```bash
-# 使用 Makefile 构建（推荐）
-make build        # 构建前端 + 后端
-make frontend     # 仅构建前端
-make backend      # 仅构建后端
-make dev          # 启动前端开发服务器
-make help         # 查看所有命令
+# 查看所有可用命令
+make help
 
-# 或手动编译
-cd sentinel-dashboard
-mvn clean package
+# 构建所有镜像
+make build
 
-# 运行
-java -Dserver.port=8080 \
-  -Dcsp.sentinel.dashboard.server=localhost:8080 \
-  -Dproject.name=sentinel-dashboard \
-  -Dnacos.server.addr=localhost:8848 \
-  -jar target/sentinel-dashboard.jar
+# 构建并启动所有服务
+make up-build
+
+# 启动前端开发服务器（需要本地安装 pnpm）
+make dev-fe
+
+# 重新构建并重启服务
+make restart-build
 ```
+
+前端开发服务器会在 http://localhost:3000 启动，支持热更新。
 
 ## 项目结构
 
 ```
 .
-├── dashboard-frontend/            # React 前端（独立目录）
-│   ├── src/                       # 前端源码
-│   ├── tests/                     # 前端单元测试
-│   └── dist/                      # 构建产物
-├── sentinel-dashboard/            # Dashboard 后端模块
+├── dashboard-frontend/            # React 19 前端（独立开发）
+│   ├── src/                       # 前端源码（TypeScript + React）
+│   │   ├── components/            # UI 组件
+│   │   ├── pages/                 # 页面组件
+│   │   ├── hooks/                 # 自定义 Hooks
+│   │   └── lib/                   # 工具库
+│   ├── e2e/                       # E2E 测试（Playwright）
+│   ├── tests/                     # 单元测试（Vitest）
+│   ├── Dockerfile                 # 前端构建镜像
+│   └── vite.config.mts            # Vite 配置
+├── sentinel-dashboard/            # Dashboard 后端（Spring Boot）
 │   ├── src/main/java/             # Java 后端源码
-│   ├── src/main/webapp/           # 前端构建输出（make frontend 生成）
-│   ├── Dockerfile                 # Dashboard Docker 镜像
+│   ├── src/main/webapp/           # 前端构建产物目录
+│   ├── Dockerfile                 # Dashboard 镜像
 │   └── pom.xml
-├── token-server/                  # Token Server 模块（集群流控）
+├── token-server/                  # Token Server（集群流控）
 │   ├── src/                       # Java 源码
-│   ├── Dockerfile                 # Token Server Docker 镜像
+│   ├── Dockerfile                 # Token Server 镜像
 │   └── pom.xml
-├── tests/e2e/                     # E2E 自动化测试
-├── scripts/                       # 构建脚本
-├── docs/                          # 文档
-├── Makefile                       # 构建入口（make help 查看命令）
-├── docker-compose.yml             # 全栈测试
+├── scripts/                       # 构建和测试脚本
+│   ├── dev.sh                     # 开发环境脚本
+│   ├── e2e-test.sh                # E2E 测试脚本
+│   └── generate-metric-data.sh    # 监控数据生成脚本
+├── docs/                          # 项目文档
+│   ├── 00-INDEX.md                # 文档索引
+│   ├── 01-QUICK-START.md          # 快速开始
+│   ├── 02-ARCHITECTURE.md         # 架构设计
+│   └── ...                        # 其他文档
+├── Makefile                       # 构建入口（make help）
+├── docker-compose.yml             # Docker Compose 配置
 └── README.md                      # 本文件
 ```
 
+## 版本支持
+
+| 组件         | 支持版本     | 测试版本 | 生产推荐 | 说明                   |
+| ------------ | ------------ | -------- | -------- | ---------------------- |
+| **Nacos**    | 2.2.0 ~ 3.x  | 2.3.0    | 2.4.3    | API 向后兼容，鉴权完善 |
+| **Sentinel** | 1.8.6+       | 1.8.9    | 1.8.9    | Dashboard 基于 1.8.6   |
+| **JDK**      | 8 / 11 / 17+ | 17       | 17       | 推荐使用 LTS 版本      |
+
+⚠️ **不支持的版本**：
+
+- Nacos 1.x：安全性不足，功能落后
+- Nacos 2.0.x / 2.1.x：鉴权功能不完善
+
+**版本说明**：
+
+- 测试版本：本地开发和 CI 测试使用，稳定可靠
+- 生产推荐：生产环境推荐版本，最新稳定特性
+
 ## 核心特性
+
+### 🎨 现代化前端
+
+- **技术栈**: React 19 + TypeScript + Vite
+- **UI 框架**: Chakra UI v3 + Tailwind CSS
+- **状态管理**: React Query + Zustand
+- **路由**: React Router v7
+- **图表**: Recharts
+- **测试**: Vitest + Playwright
 
 ### ✅ 支持的规则类型
 
-- [x] 流量规则 (Flow Rules)
+- [x] 流控规则 (Flow Rules)
+- [x] 熔断规则 (Degrade Rules)
 - [x] 热点参数规则 (Param Flow Rules)
 - [x] 系统规则 (System Rules)
 - [x] 授权规则 (Authority Rules)
-- [x] 黑白名单规则 (Degrade Rules)
-- [x] Gateway 流量规则 (Gateway Rules)
+- [x] 集群流控 (Cluster Flow Control)
 
 ### 📝 规则持久化
 
@@ -113,16 +154,18 @@ java -Dserver.port=8080 \
 
 ### 与官方 Sentinel Dashboard 的差异
 
-| 功能           | 官方版本      | 改造版本       |
-| -------------- | ------------- | -------------- |
-| 规则存储       | 内存/文件系统 | **Nacos**      |
-| 规则推送       | 需手动配置    | **自动推送**   |
-| 多应用支持     | 支持          | 支持           |
-| Dashboard 重启 | 规则丢失      | **规则保留**   |
-| 集群环境       | 不支持        | **支持**       |
-| JDK 版本       | JDK 8         | **JDK 17**     |
-| Docker 支持    | 无            | **多架构镜像** |
-| 自动化测试     | 无            | **E2E 测试**   |
+| 功能           | 官方版本           | 改造版本                      |
+| -------------- | ------------------ | ----------------------------- |
+| 前端技术栈     | jQuery + Bootstrap | **React 19 + Chakra UI**      |
+| 规则存储       | 内存/文件系统      | **Nacos**                     |
+| 规则推送       | 需手动配置         | **自动推送**                  |
+| 多应用支持     | 支持               | 支持                          |
+| Dashboard 重启 | 规则丢失           | **规则保留**                  |
+| 集群环境       | 不支持             | **支持**                      |
+| JDK 版本       | JDK 8              | **JDK 17**                    |
+| 主题           | 无                 | **Light/Dark/System 主题**    |
+| Docker 支持    | 无                 | **多架构镜像（amd64/arm64）** |
+| 自动化测试     | 无                 | **E2E + 单元测试**            |
 
 ### 改造的关键文件
 
@@ -144,17 +187,26 @@ java -Dserver.port=8080 \
 4. **application.properties**
    - 新增 Nacos 配置参数
 
-## 配置指南
+## 📚 文档导航
 
-详见 [Nacos 集成指南](docs/03-NACOS-INTEGRATION.md)
+### 用户指南
 
-## 集群流控指南
+- **[Nacos 集成配置](docs/user-guide/01-nacos-configuration.md)** ⭐ 必读
+  - Dashboard 如何配置 Nacos
+  - 应用服务如何配置 Nacos
+  - 为什么两边都要配置
+  - 配置验证和常见问题
 
-详见 [集群流控指南](docs/04-CLUSTER-FLOW-CONTROL.md)
+### 技术文档
 
-## 部署指南
-
-详见 [部署指南](docs/05-DEPLOYMENT.md)
+- [快速开始](docs/01-QUICK-START.md) - 5 分钟快速体验
+- [架构设计](docs/02-ARCHITECTURE.md) - 系统架构说明
+- [Nacos 集成](docs/03-NACOS-INTEGRATION.md) - 技术实现细节
+- [集群流控](docs/04-CLUSTER-FLOW-CONTROL.md) - 集群流控配置
+- [部署指南](docs/05-DEPLOYMENT.md) - 生产环境部署
+- [开发指南](docs/06-DEVELOPMENT.md) - 二次开发指引
+- [API 参考](docs/07-API-REFERENCE.md) - REST API 文档
+- [故障排查](docs/08-TROUBLESHOOTING.md) - 常见问题解决
 
 ## 开发指南
 
@@ -181,17 +233,23 @@ public class GatewayFlowRuleNacosProvider implements DynamicRuleProvider<Gateway
 ### 测试
 
 ```bash
-# 使用 Makefile
-make test         # 运行所有测试
-make test-fe      # 运行前端测试
-make test-be      # 运行后端测试
+# E2E 测试（自动启动服务）
+make test          # API 测试
+make test-ui       # UI 测试
+make test-smoke    # 冒烟测试
+make test-all      # 全部测试
 
-# 或手动运行
-cd dashboard-frontend && pnpm test   # 前端测试
-cd sentinel-dashboard && mvn test    # 后端测试
+# 前端检查
+make fe-check      # 类型检查 + Lint + 单元测试
+make fe-type       # TypeScript 类型检查
+make fe-lint       # ESLint 检查
+make fe-test       # Vitest 单元测试
 
-# E2E 自动化测试（需要先启动服务）
-cd tests/e2e && ./run_tests.sh
+# 前端 E2E 测试（需要先启动服务）
+cd dashboard-frontend
+pnpm test:e2e      # 无头模式
+pnpm test:e2e:headed  # 有头模式（可见浏览器）
+pnpm test:e2e:ui   # UI 调试模式
 ```
 
 ## Docker 镜像

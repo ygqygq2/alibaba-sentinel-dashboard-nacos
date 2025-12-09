@@ -22,9 +22,9 @@ export function Logo({ color = 'dark', emblem, height = HEIGHT, width = WIDTH }:
   let url: string;
 
   if (emblem) {
-    url = color === 'dark' ? '/assets/logo-emblem.svg' : '/assets/logo-emblem--dark.svg';
+    url = color === 'light' ? '/assets/logo-emblem.svg' : '/assets/logo-emblem--dark.svg';
   } else {
-    url = color === 'dark' ? '/assets/logo.svg' : '/assets/logo--dark.svg';
+    url = color === 'light' ? '/assets/logo.svg' : '/assets/logo--dark.svg';
   }
 
   return (

@@ -31,6 +31,7 @@ import java.util.List;
 public class ParamFlowRuleEntity extends AbstractRuleEntity<ParamFlowRule> {
 
     public ParamFlowRuleEntity() {
+        this.rule = new ParamFlowRule();
     }
 
     public ParamFlowRuleEntity(ParamFlowRule rule) {
@@ -52,10 +53,18 @@ public class ParamFlowRuleEntity extends AbstractRuleEntity<ParamFlowRule> {
         return rule.getLimitApp();
     }
 
+    public void setLimitApp(String limitApp) {
+        rule.setLimitApp(limitApp);
+    }
+
     @JsonIgnore
     @JSONField(serialize = false)
     public String getResource() {
         return rule.getResource();
+    }
+
+    public void setResource(String resource) {
+        rule.setResource(resource);
     }
 
     @JsonIgnore
@@ -64,10 +73,18 @@ public class ParamFlowRuleEntity extends AbstractRuleEntity<ParamFlowRule> {
         return rule.getGrade();
     }
 
+    public void setGrade(int grade) {
+        rule.setGrade(grade);
+    }
+
     @JsonIgnore
     @JSONField(serialize = false)
     public Integer getParamIdx() {
         return rule.getParamIdx();
+    }
+
+    public void setParamIdx(Integer paramIdx) {
+        rule.setParamIdx(paramIdx);
     }
 
     @JsonIgnore
@@ -76,10 +93,18 @@ public class ParamFlowRuleEntity extends AbstractRuleEntity<ParamFlowRule> {
         return rule.getCount();
     }
 
+    public void setCount(double count) {
+        rule.setCount(count);
+    }
+
     @JsonIgnore
     @JSONField(serialize = false)
     public List<ParamFlowItem> getParamFlowItemList() {
         return rule.getParamFlowItemList();
+    }
+
+    public void setParamFlowItemList(List<ParamFlowItem> paramFlowItemList) {
+        rule.setParamFlowItemList(paramFlowItemList);
     }
 
     @JsonIgnore
@@ -88,10 +113,18 @@ public class ParamFlowRuleEntity extends AbstractRuleEntity<ParamFlowRule> {
         return rule.getControlBehavior();
     }
 
+    public void setControlBehavior(int controlBehavior) {
+        rule.setControlBehavior(controlBehavior);
+    }
+
     @JsonIgnore
     @JSONField(serialize = false)
     public int getMaxQueueingTimeMs() {
         return rule.getMaxQueueingTimeMs();
+    }
+
+    public void setMaxQueueingTimeMs(int maxQueueingTimeMs) {
+        rule.setMaxQueueingTimeMs(maxQueueingTimeMs);
     }
 
     @JsonIgnore
@@ -100,10 +133,18 @@ public class ParamFlowRuleEntity extends AbstractRuleEntity<ParamFlowRule> {
         return rule.getBurstCount();
     }
 
+    public void setBurstCount(int burstCount) {
+        rule.setBurstCount(burstCount);
+    }
+
     @JsonIgnore
     @JSONField(serialize = false)
     public long getDurationInSec() {
         return rule.getDurationInSec();
+    }
+
+    public void setDurationInSec(long durationInSec) {
+        rule.setDurationInSec(durationInSec);
     }
 
     @JsonIgnore
@@ -112,9 +153,17 @@ public class ParamFlowRuleEntity extends AbstractRuleEntity<ParamFlowRule> {
         return rule.isClusterMode();
     }
 
+    public void setClusterMode(boolean clusterMode) {
+        rule.setClusterMode(clusterMode);
+    }
+
     @JsonIgnore
     @JSONField(serialize = false)
     public ParamFlowClusterConfig getClusterConfig() {
         return rule.getClusterConfig();
+    }
+
+    public void setClusterConfig(ParamFlowClusterConfig clusterConfig) {
+        rule.setClusterConfig(clusterConfig);
     }
 }

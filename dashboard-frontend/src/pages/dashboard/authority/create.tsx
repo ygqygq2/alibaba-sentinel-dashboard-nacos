@@ -5,7 +5,7 @@
 import { Box, Stack } from '@chakra-ui/react';
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { AuthorityRuleForm } from '@/components/dashboard/rules';
 import { useCreateAuthorityRule } from '@/hooks/api';
@@ -14,15 +14,19 @@ import type { AuthorityRule } from '@/types/rule';
 
 export function Page(): React.JSX.Element {
   const { app } = useParams<{ app: string }>();
-  const createRule = useCreateAuthorityRule(app ?? '');
-
-  const handleSubmit = async (data: Omit<AuthorityRule, 'id'>) => {
-    await createRule.mutateAsync(data);
-  };
+  const navigate = useNavigate();
 
   if (!app) {
     return <Box p={6}>应用名称不能为空</Box>;
   }
+
+  const createRule = useCreateAuthorityRule(app);
+
+  const handleSubmit = async (data: Omit<AuthorityRule, 'id'>) => {
+    await createRule.mutateAsync(data);
+    // 创建成功后跳转回列表页
+    navigate(paths.dashboard.authority.list(app));
+  };
 
   return (
     <>

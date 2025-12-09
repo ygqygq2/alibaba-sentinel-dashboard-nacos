@@ -20,6 +20,7 @@ export function Page(): React.JSX.Element {
         <title>{metadata.title}</title>
       </Helmet>
       <Box
+        colorPalette={settings.primaryColor}
         minH="100vh"
         display="flex"
         alignItems="center"
@@ -73,7 +74,6 @@ export function Page(): React.JSX.Element {
               <Button
                 asChild
                 variant="solid"
-                colorPalette={settings.primaryColor}
                 size="md"
               >
                 <ChakraLink

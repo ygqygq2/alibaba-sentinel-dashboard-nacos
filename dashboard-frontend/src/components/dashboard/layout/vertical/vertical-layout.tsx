@@ -45,6 +45,7 @@ export function VerticalLayout({ children }: VerticalLayoutProps): React.JSX.Ele
         `}
       />
       <Box
+        colorPalette={settings.primaryColor}
         display="flex"
         flexDirection="column"
         position="relative"

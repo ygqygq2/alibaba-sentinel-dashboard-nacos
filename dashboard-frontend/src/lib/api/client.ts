@@ -24,12 +24,26 @@ export class ApiError extends Error {
  * 处理 401 未授权错误，跳转到登录页
  */
 function handleUnauthorized(): void {
-  // 避免重复跳转
-  if (window.location.pathname !== '/auth/sign-in') {
-    // 保存当前路径，登录后可以跳回
-    const returnUrl = window.location.pathname + window.location.search;
-    window.location.href = `/auth/sign-in?returnUrl=${encodeURIComponent(returnUrl)}`;
+  // 检查是否已经在登录页或认证相关页面
+  if (window.location.pathname.startsWith('/auth/')) {
+    console.warn('[API] 401 error on auth page, ignoring');
+    return;
   }
+
+  // 检查 localStorage 中的认证状态
+  const isLoggedIn = localStorage.getItem('sentinel-auth') === 'true';
+
+  // 如果 localStorage 显示已登录，可能是后端 session 过期
+  // 先清除本地状态，然后跳转
+  if (isLoggedIn) {
+    console.warn('[API] Session expired (401), clearing local auth state');
+    localStorage.removeItem('sentinel-auth');
+    localStorage.removeItem('sentinel-user');
+  }
+
+  // 保存当前路径，登录后可以跳回
+  const returnUrl = window.location.pathname + window.location.search;
+  window.location.href = `/auth/sign-in?returnUrl=${encodeURIComponent(returnUrl)}`;
 }
 
 /**

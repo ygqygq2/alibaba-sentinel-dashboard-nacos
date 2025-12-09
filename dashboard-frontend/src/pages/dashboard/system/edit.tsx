@@ -5,7 +5,7 @@
 import { Box, Skeleton, Stack, Text } from '@chakra-ui/react';
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { SystemRuleForm } from '@/components/dashboard/rules';
 import { useSystemRules, useUpdateSystemRule } from '@/hooks/api';
@@ -14,6 +14,7 @@ import type { SystemRule } from '@/types/rule';
 
 export function Page(): React.JSX.Element {
   const { app, id } = useParams<{ app: string; id: string }>();
+  const navigate = useNavigate();
   const { data: rules, isLoading } = useSystemRules(app ?? '');
   const updateRule = useUpdateSystemRule(app ?? '');
 
@@ -25,6 +26,8 @@ export function Page(): React.JSX.Element {
   const handleSubmit = async (data: Omit<SystemRule, 'id'>) => {
     if (!rule) return;
     await updateRule.mutateAsync({ ...data, id: rule.id });
+    // 保存成功后跳转回列表页
+    navigate(paths.dashboard.system.list(app!));
   };
 
   if (!app || !id) {

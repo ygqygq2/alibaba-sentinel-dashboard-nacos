@@ -6,7 +6,10 @@ services:
     container_name: nacos-standalone
     environment:
       - MODE=standalone
-      - NACOS_AUTH_ENABLE=false
+      - NACOS_AUTH_ENABLE=true
+      - NACOS_AUTH_IDENTITY_KEY=sentinel
+      - NACOS_AUTH_IDENTITY_VALUE=sentinel_identity
+      - NACOS_AUTH_TOKEN=SecretKey012345678901234567890123456789012345678901234567890123456789
       - JVM_XMS=256m
       - JVM_XMX=256m
     ports:

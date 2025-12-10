@@ -43,7 +43,7 @@ export default defineConfig({
     // API 测试（无需浏览器）- 匹配 *.api.spec.ts 和 smoke.spec.ts
     {
       name: 'api',
-      testMatch: /\.(api|smoke)\.spec\.ts$/,
+      testMatch: /(\.(api)|smoke)\.spec\.ts$/,
       use: {
         baseURL: DASHBOARD_URL, // API 始终访问后端 8080
       },

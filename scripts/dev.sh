@@ -230,7 +230,7 @@ do_test() {
     
     info "运行 $test_type 测试 ($mode_hint)..."
     case "$test_type" in
-        smoke) pnpm exec playwright test --project=api --grep smoke ;;
+        smoke) pnpm exec playwright test --project=api e2e/specs/smoke.spec.ts ;;
         api)   pnpm exec playwright test --project=api ;;
         ui)    pnpm exec playwright test --project=chromium $headed ;;
         all)   pnpm exec playwright test $headed ;;

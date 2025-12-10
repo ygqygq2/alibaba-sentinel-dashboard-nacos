@@ -3,7 +3,7 @@ import { DASHBOARD_URL, TOKEN_SERVER_URL, APP_NAME, API, TEST_USER } from '../co
 
 /**
  * 冒烟测试 - 快速验证核心功能
- * 
+ *
  * 这些测试确保系统的关键功能正常工作：
  * - 服务可访问性
  * - 认证功能
@@ -19,7 +19,7 @@ test.describe('冒烟测试', () => {
 
     test('Dashboard 健康检查', async ({ request }) => {
       const response = await request.get(`${DASHBOARD_URL}/actuator/health`, {
-        failOnStatusCode: false
+        failOnStatusCode: false,
       });
       // 健康检查端点可能未配置，只验证不是 500 错误
       expect(response.status()).toBeLessThan(500);
@@ -34,7 +34,7 @@ test.describe('冒烟测试', () => {
     test('Token Server 健康检查详情', async ({ request }) => {
       const response = await request.get(`${TOKEN_SERVER_URL}${API.tokenServer.health}`);
       const health = await response.json();
-      
+
       expect(health.status).toBe('UP');
       // 验证响应结构
       expect(health).toHaveProperty('status');
@@ -54,7 +54,7 @@ test.describe('冒烟测试', () => {
       const response = await request.post(`${DASHBOARD_URL}${API.dashboard.login}`, {
         params: TEST_USER,
       });
-      
+
       const setCookie = response.headers()['set-cookie'];
       expect(setCookie).toBeTruthy();
       expect(setCookie).toContain('JSESSIONID');
@@ -63,9 +63,9 @@ test.describe('冒烟测试', () => {
     test('Dashboard 无效凭据登录失败', async ({ request }) => {
       const response = await request.post(`${DASHBOARD_URL}${API.dashboard.login}`, {
         params: { username: 'invalid', password: 'invalid' },
-        failOnStatusCode: false
+        failOnStatusCode: false,
       });
-      
+
       expect(response.status()).toBeGreaterThanOrEqual(400);
     });
   });
@@ -93,10 +93,9 @@ test.describe('冒烟测试', () => {
       const cookies = loginRes.headers()['set-cookie']?.split(';')[0] || '';
 
       // 获取实例列表
-      const response = await request.get(
-        `${DASHBOARD_URL}${API.dashboard.instances}?app=${APP_NAME}`,
-        { headers: { Cookie: cookies } }
-      );
+      const response = await request.get(`${DASHBOARD_URL}${API.dashboard.instances}?app=${APP_NAME}`, {
+        headers: { Cookie: cookies },
+      });
 
       expect(response.ok()).toBeTruthy();
       const data = await response.json();
@@ -127,7 +126,7 @@ test.describe('冒烟测试', () => {
 
     test('Dashboard 前端资源可访问', async ({ request }) => {
       const response = await request.get(`${DASHBOARD_URL}/assets/index.js`, {
-        failOnStatusCode: false
+        failOnStatusCode: false,
       });
       // 检查静态资源是否可访问（200 或 304）
       expect([200, 304, 404]).toContain(response.status());
@@ -142,15 +141,15 @@ test.describe('冒烟测试', () => {
 
     test('登录后可访问应用列表', async ({ page }) => {
       await page.goto(`${DASHBOARD_URL}/auth/sign-in`);
-      
+
       // 登录
       await page.fill('input[name="username"]', TEST_USER.username);
       await page.fill('input[name="password"]', TEST_USER.password);
       await page.click('button[type="submit"]');
-      
+
       // 等待跳转
       await page.waitForURL(/.*\/dashboard/, { timeout: 5000 });
-      
+
       // 验证页面加载成功
       await expect(page.getByText(APP_NAME).first()).toBeVisible({ timeout: 10000 });
     });

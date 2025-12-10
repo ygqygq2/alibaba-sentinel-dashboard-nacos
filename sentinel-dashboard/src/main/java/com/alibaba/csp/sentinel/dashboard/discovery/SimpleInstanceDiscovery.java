@@ -30,24 +30,24 @@ import org.springframework.stereotype.Component;
  * @author leyou
  */
 @Component
-public class SimpleMachineDiscovery implements MachineDiscovery {
+public class SimpleInstanceDiscovery implements InstanceDiscovery {
 
     private final ConcurrentMap<String, AppInfo> apps = new ConcurrentHashMap<>();
 
     @Override
-    public long addMachine(MachineInfo machineInfo) {
-        AssertUtil.notNull(machineInfo, "machineInfo cannot be null");
-        AppInfo appInfo = apps.computeIfAbsent(machineInfo.getApp(), o -> new AppInfo(machineInfo.getApp(), machineInfo.getAppType()));
-        appInfo.addMachine(machineInfo);
+    public long addInstance(InstanceInfo instanceInfo) {
+        AssertUtil.notNull(instanceInfo, "instanceInfo cannot be null");
+        AppInfo appInfo = apps.computeIfAbsent(instanceInfo.getApp(), o -> new AppInfo(instanceInfo.getApp(), instanceInfo.getAppType()));
+        appInfo.addInstance(instanceInfo);
         return 1;
     }
 
     @Override
-    public boolean removeMachine(String app, String ip, int port) {
+    public boolean removeInstance(String app, String ip, int port) {
         AssertUtil.assertNotBlank(app, "app name cannot be blank");
         AppInfo appInfo = apps.get(app);
         if (appInfo != null) {
-            return appInfo.removeMachine(ip, port);
+            return appInfo.removeInstance(ip, port);
         }
         return false;
     }

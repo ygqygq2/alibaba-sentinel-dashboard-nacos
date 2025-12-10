@@ -69,7 +69,7 @@
 │                                                              │
 │  ┌─────────────────────────────────────────────────────────┐ │
 │  │                     Controllers                          │ │
-│  │  /auth  /app  /flow  /degrade  /cluster  /machine  ...  │ │
+│  │  /auth  /app  /flow  /degrade  /cluster  /instance  ...  │ │
 │  └─────────────────────────────────────────────────────────┘ │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -99,7 +99,7 @@ src/
 │       ├── param-flow/     # 热点参数
 │       ├── system/         # 系统规则
 │       ├── authority/      # 授权规则
-│       ├── machine/        # 机器列表
+│       ├── instance/        # 机器列表
 │       ├── cluster/        # 集群流控
 │       └── gateway/        # 网关流控
 │
@@ -123,7 +123,7 @@ src/
 │   ├── api.ts              # API 响应类型
 │   ├── app.ts              # 应用类型
 │   ├── rule.ts             # 规则类型
-│   ├── machine.ts          # 机器类型
+│   ├── instance.ts          # 机器类型
 │   └── cluster.ts          # 集群类型
 │
 ├── stores/                  # 状态管理（Zustand）
@@ -201,15 +201,15 @@ src/
 interface App {
   app: string; // 应用名
   appType: number; // 应用类型（0: 普通, 1: 网关）
-  machines: Machine[]; // 机器列表
+  instances: Instance[]; // 机器列表
   healthyCount: number; // 健康机器数
 }
 ```
 
-### 4.2 机器（Machine）
+### 4.2 机器（Instance）
 
 ```typescript
-interface Machine {
+interface Instance {
   app: string;
   ip: string;
   port: number;
@@ -268,7 +268,7 @@ interface DegradeRule {
 | `/dashboard/:app/param-flow` | 热点参数 | 热点参数规则   |
 | `/dashboard/:app/system`     | 系统规则 | 系统规则管理   |
 | `/dashboard/:app/authority`  | 授权规则 | 授权规则管理   |
-| `/dashboard/:app/machine`    | 机器列表 | 应用机器管理   |
+| `/dashboard/:app/instance`   | 机器列表 | 应用机器管理   |
 | `/dashboard/cluster`         | 集群流控 | 集群流控管理   |
 
 ---
@@ -277,18 +277,18 @@ interface DegradeRule {
 
 保持与现有后端 API 完全兼容，主要接口：
 
-| 接口                     | 方法   | 说明         |
-| ------------------------ | ------ | ------------ |
-| `/auth/login`            | POST   | 登录         |
-| `/auth/logout`           | POST   | 退出         |
-| `/app/briefinfos.json`   | GET    | 应用列表     |
-| `/machine/machines.json` | GET    | 机器列表     |
-| `/v1/flow/rules`         | GET    | 流控规则列表 |
-| `/v1/flow/rule`          | POST   | 新增流控规则 |
-| `/v1/flow/save.json`     | PUT    | 修改流控规则 |
-| `/v1/flow/delete.json`   | DELETE | 删除流控规则 |
-| `/cluster/state/:app`    | GET    | 集群状态     |
-| ...                      | ...    | ...          |
+| 接口                       | 方法   | 说明         |
+| -------------------------- | ------ | ------------ |
+| `/auth/login`              | POST   | 登录         |
+| `/auth/logout`             | POST   | 退出         |
+| `/app/briefinfos.json`     | GET    | 应用列表     |
+| `/instance/instances.json` | GET    | 机器列表     |
+| `/v1/flow/rules`           | GET    | 流控规则列表 |
+| `/v1/flow/rule`            | POST   | 新增流控规则 |
+| `/v1/flow/save.json`       | PUT    | 修改流控规则 |
+| `/v1/flow/delete.json`     | DELETE | 删除流控规则 |
+| `/cluster/state/:app`      | GET    | 集群状态     |
+| ...                        | ...    | ...          |
 
 ---
 

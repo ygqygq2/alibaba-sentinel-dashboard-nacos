@@ -26,20 +26,20 @@ export function authHeaders(cookies: string) {
 /**
  * 获取机器信息（ip 和 port）
  */
-export async function getMachineInfo(
+export async function getInstanceInfo(
   request: APIRequestContext,
   cookies: string,
   app = APP_NAME
 ): Promise<{ ip: string; port: number }> {
-  const response = await request.get(`${DASHBOARD_URL}${API.dashboard.machines(app)}`, {
+  const response = await request.get(`${DASHBOARD_URL}${API.dashboard.instances(app)}`, {
     headers: authHeaders(cookies),
   });
   const data = await response.json();
-  const machine = data.data?.[0];
-  if (!machine) {
-    throw new Error(`No machine found for app: ${app}`);
+  const instance = data.data?.[0];
+  if (!instance) {
+    throw new Error(`No instance found for app: ${app}`);
   }
-  return { ip: machine.ip, port: machine.port };
+  return { ip: instance.ip, port: instance.port };
 }
 
 /**

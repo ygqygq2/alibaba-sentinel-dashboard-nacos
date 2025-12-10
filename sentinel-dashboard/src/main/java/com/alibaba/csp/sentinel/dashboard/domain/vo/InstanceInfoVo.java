@@ -18,12 +18,12 @@ package com.alibaba.csp.sentinel.dashboard.domain.vo;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.InstanceInfo;
 
 /**
  * @author leyou
  */
-public class MachineInfoVo {
+public class InstanceInfoVo {
 
     private String app;
     private String hostname;
@@ -35,24 +35,24 @@ public class MachineInfoVo {
 
     private String version;
 
-    public static List<MachineInfoVo> fromMachineInfoList(List<MachineInfo> machines) {
-        List<MachineInfoVo> list = new ArrayList<>();
-        for (MachineInfo machine : machines) {
-            list.add(fromMachineInfo(machine));
+    public static List<InstanceInfoVo> fromInstanceInfoList(List<InstanceInfo> instances) {
+        List<InstanceInfoVo> list = new ArrayList<>();
+        for (InstanceInfo instance : instances) {
+            list.add(fromInstanceInfo(instance));
         }
         return list;
     }
 
-    public static MachineInfoVo fromMachineInfo(MachineInfo machine) {
-        MachineInfoVo vo = new MachineInfoVo();
-        vo.setApp(machine.getApp());
-        vo.setHostname(machine.getHostname());
-        vo.setIp(machine.getIp());
-        vo.setPort(machine.getPort());
-        vo.setLastHeartbeat(machine.getLastHeartbeat());
-        vo.setHeartbeatVersion(machine.getHeartbeatVersion());
-        vo.setVersion(machine.getVersion());
-        vo.setHealthy(machine.isHealthy());
+    public static InstanceInfoVo fromInstanceInfo(InstanceInfo instance) {
+        InstanceInfoVo vo = new InstanceInfoVo();
+        vo.setApp(instance.getApp());
+        vo.setHostname(instance.getHostname());
+        vo.setIp(instance.getIp());
+        vo.setPort(instance.getPort());
+        vo.setLastHeartbeat(instance.getLastHeartbeat());
+        vo.setHeartbeatVersion(instance.getHeartbeatVersion());
+        vo.setVersion(instance.getVersion());
+        vo.setHealthy(instance.isHealthy());
         return vo;
     }
 
@@ -108,7 +108,7 @@ public class MachineInfoVo {
         return version;
     }
 
-    public MachineInfoVo setVersion(String version) {
+    public InstanceInfoVo setVersion(String version) {
         this.version = version;
         return this;
     }

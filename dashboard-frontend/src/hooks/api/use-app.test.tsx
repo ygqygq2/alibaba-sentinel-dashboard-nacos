@@ -7,23 +7,23 @@ import { renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useApps, useMachines } from '@/hooks/api/use-app';
+import { useApps, useInstances } from '@/hooks/api/use-app';
 import { appApi } from '@/lib/api';
-import type { AppInfo, MachineInfo } from '@/types/sentinel';
+import type { AppInfo, InstanceInfo } from '@/types/sentinel';
 
 // Mock API
 vi.mock('@/lib/api', () => ({
   appApi: {
     getApps: vi.fn(),
-    getMachines: vi.fn(),
-    removeMachine: vi.fn(),
+    getInstances: vi.fn(),
+    removeInstance: vi.fn(),
   },
 }));
 
 const mockAppApi = appApi as {
   getApps: ReturnType<typeof vi.fn>;
-  getMachines: ReturnType<typeof vi.fn>;
-  removeMachine: ReturnType<typeof vi.fn>;
+  getInstances: ReturnType<typeof vi.fn>;
+  removeInstance: ReturnType<typeof vi.fn>;
 };
 
 function createWrapper() {
@@ -85,25 +85,25 @@ describe('useApps', () => {
   });
 });
 
-describe('useMachines', () => {
+describe('useInstances', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('应该获取机器列表', async () => {
-    const mockMachines: MachineInfo[] = [
+  it('应该获取实例列表', async () => {
+    const mockInstances: InstanceInfo[] = [
       {
         app: 'test-app',
-        id: 'machine-1',
+        id: 'instance-1',
         hostname: 'host1',
         ip: '192.168.1.1',
         port: 8719,
         healthy: true,
       },
     ];
-    mockAppApi.getMachines.mockResolvedValueOnce(mockMachines);
+    mockAppApi.getInstances.mockResolvedValueOnce(mockInstances);
 
-    const { result } = renderHook(() => useMachines('test-app'), {
+    const { result } = renderHook(() => useInstances('test-app'), {
       wrapper: createWrapper(),
     });
 
@@ -111,12 +111,12 @@ describe('useMachines', () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(result.current.data).toEqual(mockMachines);
-    expect(mockAppApi.getMachines).toHaveBeenCalledWith('test-app');
+    expect(result.current.data).toEqual(mockInstances);
+    expect(mockAppApi.getInstances).toHaveBeenCalledWith('test-app');
   });
 
   it('应用名为空时不应该发起请求', async () => {
-    const { result } = renderHook(() => useMachines(''), {
+    const { result } = renderHook(() => useInstances(''), {
       wrapper: createWrapper(),
     });
 
@@ -124,6 +124,6 @@ describe('useMachines', () => {
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     expect(result.current.isFetching).toBe(false);
-    expect(mockAppApi.getMachines).not.toHaveBeenCalled();
+    expect(mockAppApi.getInstances).not.toHaveBeenCalled();
   });
 });

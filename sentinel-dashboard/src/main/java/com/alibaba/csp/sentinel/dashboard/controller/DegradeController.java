@@ -21,7 +21,7 @@ import java.util.List;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.InstanceInfo;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.RuleRepository;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
@@ -64,7 +64,7 @@ public class DegradeController {
 
     @GetMapping("/rules.json")
     @AuthAction(PrivilegeType.READ_RULE)
-    public Result<List<DegradeRuleEntity>> apiQueryMachineRules(String app, String ip, Integer port) {
+    public Result<List<DegradeRuleEntity>> apiQueryInstanceRules(String app, String ip, Integer port) {
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
         }
@@ -74,11 +74,11 @@ public class DegradeController {
         if (port == null) {
             return Result.ofFail(-1, "port can't be null");
         }
-        if (!appManagement.isValidMachineOfApp(app, ip)) {
+        if (!appManagement.isValidInstanceOfApp(app, ip)) {
             return Result.ofFail(-1, "given ip does not belong to given app");
         }
         try {
-            List<DegradeRuleEntity> rules = sentinelApiClient.fetchDegradeRuleOfMachine(app, ip, port);
+            List<DegradeRuleEntity> rules = sentinelApiClient.fetchDegradeRuleOfInstance(app, ip, port);
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -168,8 +168,8 @@ public class DegradeController {
     }
 
     private boolean publishRules(String app, String ip, Integer port) {
-        List<DegradeRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.setDegradeRuleOfMachine(app, ip, port, rules);
+        List<DegradeRuleEntity> rules = repository.findAllByInstance(InstanceInfo.of(app, ip, port));
+        return sentinelApiClient.setDegradeRuleOfInstance(app, ip, port, rules);
     }
 
     private <R> Result<R> checkEntityInternal(DegradeRuleEntity entity) {
@@ -179,7 +179,7 @@ public class DegradeController {
         if (StringUtil.isBlank(entity.getIp())) {
             return Result.ofFail(-1, "ip can't be null or empty");
         }
-        if (!appManagement.isValidMachineOfApp(entity.getApp(), entity.getIp())) {
+        if (!appManagement.isValidInstanceOfApp(entity.getApp(), entity.getIp())) {
             return Result.ofFail(-1, "given ip does not belong to given app");
         }
         if (entity.getPort() == null || entity.getPort() <= 0) {

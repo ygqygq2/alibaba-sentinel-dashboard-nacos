@@ -24,7 +24,7 @@ import javax.servlet.Filter;
  * <ul>
  * <li>index url: {@code /}</li>
  * <li>authentication request url: {@code /login}, {@code /logout}</li>
- * <li>machine registry: {@code /registry/machine}</li>
+ * <li>instance registry: {@code /registry/instance}</li>
  * <li>static resources</li>
  * </ul>
  * <p>

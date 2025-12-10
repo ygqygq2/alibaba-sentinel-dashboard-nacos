@@ -28,54 +28,54 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AppManagement implements MachineDiscovery {
+public class AppManagement implements InstanceDiscovery {
 
     @Autowired
     private ApplicationContext context;
 
-    private MachineDiscovery machineDiscovery;
+    private InstanceDiscovery instanceDiscovery;
 
     @PostConstruct
     public void init() {
-        machineDiscovery = context.getBean(SimpleMachineDiscovery.class);
+        instanceDiscovery = context.getBean(SimpleInstanceDiscovery.class);
     }
 
     @Override
     public Set<AppInfo> getBriefApps() {
-        return machineDiscovery.getBriefApps();
+        return instanceDiscovery.getBriefApps();
     }
 
     @Override
-    public long addMachine(MachineInfo machineInfo) {
-        return machineDiscovery.addMachine(machineInfo);
+    public long addInstance(InstanceInfo instanceInfo) {
+        return instanceDiscovery.addInstance(instanceInfo);
     }
     
     @Override
-    public boolean removeMachine(String app, String ip, int port) {
-        return machineDiscovery.removeMachine(app, ip, port);
+    public boolean removeInstance(String app, String ip, int port) {
+        return instanceDiscovery.removeInstance(app, ip, port);
     }
 
     @Override
     public List<String> getAppNames() {
-        return machineDiscovery.getAppNames();
+        return instanceDiscovery.getAppNames();
     }
 
     @Override
     public AppInfo getDetailApp(String app) {
-        return machineDiscovery.getDetailApp(app);
+        return instanceDiscovery.getDetailApp(app);
     }
     
     @Override
     public void removeApp(String app) {
-        machineDiscovery.removeApp(app);
+        instanceDiscovery.removeApp(app);
     }
 
-    public boolean isValidMachineOfApp(String app, String ip) {
+    public boolean isValidInstanceOfApp(String app, String ip) {
         if (StringUtil.isEmpty(app)) {
             return false;
         }
         return Optional.ofNullable(getDetailApp(app))
-            .flatMap(a -> a.getMachine(ip))
+            .flatMap(a -> a.getInstance(ip))
             .isPresent();
     }
 

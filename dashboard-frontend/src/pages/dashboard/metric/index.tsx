@@ -22,13 +22,16 @@ import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router-dom';
 
 import { CHART_COLORS, ChartContainer } from '@/components/dashboard/chart-container';
+import { InstanceFilter } from '@/components/dashboard/metric';
 import { useGlobalSearch } from '@/contexts/search-context';
-import { useTopResourceMetric } from '@/hooks/api';
+import { useMetricByViewMode } from '@/hooks/api';
 import { useColorMode } from '@/hooks/use-color-mode';
 import { CHART_SERIES } from '@/lib/theme/chart-colors';
 import type { MetricData } from '@/types/sentinel';
 
 const ITEMS_PER_PAGE = 2; // 每页显示2个图表
+
+type ViewMode = 'aggregate' | 'instance';
 
 /** 资源监控图表组件 */
 interface ResourceChartProps {
@@ -309,6 +312,15 @@ export function Page(): React.JSX.Element {
   const { app } = useParams<{ app: string }>();
   const { searchKey } = useGlobalSearch(); // 使用全局搜索
 
+  // 视图模式：汇总视图 vs 实例视图
+  const [viewMode, setViewMode] = React.useState<ViewMode>(() => {
+    const stored = localStorage.getItem('metric-view-mode');
+    return (stored as ViewMode) || 'aggregate';
+  });
+
+  // 实例视图模式下选中的实例
+  const [selectedInstance, setSelectedInstance] = React.useState<string | null>(null);
+
   // 从 localStorage 读取自动刷新状态
   const [autoRefresh, setAutoRefresh] = React.useState(() => {
     const stored = localStorage.getItem('metric-auto-refresh');
@@ -331,7 +343,8 @@ export function Page(): React.JSX.Element {
   // 按资源分组的历史数据
   const [resourceHistory, setResourceHistory] = React.useState<Map<string, MetricData[]>>(new Map());
 
-  const { data, isLoading, error, refetch } = useTopResourceMetric(app ?? '', {
+  const { data, isLoading, error, refetch } = useMetricByViewMode(app ?? '', viewMode, {
+    instance: viewMode === 'instance' ? (selectedInstance ?? undefined) : undefined,
     refetchInterval: autoRefresh ? 10000 : false,
   });
 
@@ -387,6 +400,15 @@ export function Page(): React.JSX.Element {
     localStorage.setItem('metric-auto-refresh', JSON.stringify(newValue));
   };
 
+  const handleViewModeChange = (mode: string) => {
+    const newMode = mode as ViewMode;
+    setViewMode(newMode);
+    localStorage.setItem('metric-view-mode', newMode);
+    // 重置展开状态和分页
+    setExpandedResources(new Set());
+    setCurrentPage(1);
+  };
+
   const toggleResource = (resource: string) => {
     setExpandedResources((prev) => {
       const newSet = new Set(prev);
@@ -399,33 +421,63 @@ export function Page(): React.JSX.Element {
     });
   };
 
-  // 按资源分组并过滤搜索
+  // 按资源或实例分组并过滤搜索
   const resourceGroups = React.useMemo(() => {
     if (!metrics) return [];
 
-    // 按资源名分组
-    const groups = new Map<string, MetricData[]>();
-    metrics.forEach((metric) => {
-      const existing = groups.get(metric.resource) || [];
-      groups.set(metric.resource, [...existing, metric]);
-    });
+    if (viewMode === 'instance') {
+      // 实例视图：按 instance/resource 分组
+      const groups = new Map<string, MetricData[]>();
+      metrics.forEach((metric) => {
+        const key = `${metric.instance || 'unknown'}${metric.resource}`;
+        const existing = groups.get(key) || [];
+        groups.set(key, [...existing, metric]);
+      });
 
-    let filtered = Array.from(groups.entries()).map(([resource, data]) => ({
-      resource,
-      data: resourceHistory.get(resource) || data,
-      latest: data[data.length - 1] || data[0],
-    }));
+      let filtered = Array.from(groups.entries()).map(([key, data]) => ({
+        resource: key, // 使用 instance/resource 作为显示
+        data: resourceHistory.get(key) || data,
+        latest: data[data.length - 1] || data[0],
+      }));
 
-    // 应用搜索过滤
-    if (searchKey) {
-      filtered = filtered.filter((group) => group.resource.toLowerCase().includes(searchKey.toLowerCase()));
+      // 应用搜索过滤
+      if (searchKey) {
+        filtered = filtered.filter(
+          (group) =>
+            group.resource.toLowerCase().includes(searchKey.toLowerCase()) ||
+            (group.latest?.instance?.toLowerCase().includes(searchKey.toLowerCase()) ?? false)
+        );
+      }
+
+      // 按实例和资源名称排序
+      filtered.sort((a, b) => a.resource.localeCompare(b.resource));
+
+      return filtered;
+    } else {
+      // 汇总视图：按资源名分组
+      const groups = new Map<string, MetricData[]>();
+      metrics.forEach((metric) => {
+        const existing = groups.get(metric.resource) || [];
+        groups.set(metric.resource, [...existing, metric]);
+      });
+
+      let filtered = Array.from(groups.entries()).map(([resource, data]) => ({
+        resource,
+        data: resourceHistory.get(resource) || data,
+        latest: data[data.length - 1] || data[0],
+      }));
+
+      // 应用搜索过滤
+      if (searchKey) {
+        filtered = filtered.filter((group) => group.resource.toLowerCase().includes(searchKey.toLowerCase()));
+      }
+
+      // 按资源名称排序
+      filtered.sort((a, b) => a.resource.localeCompare(b.resource));
+
+      return filtered;
     }
-
-    // 按资源名称排序
-    filtered.sort((a, b) => a.resource.localeCompare(b.resource));
-
-    return filtered;
-  }, [metrics, resourceHistory, searchKey]);
+  }, [metrics, resourceHistory, searchKey, viewMode]);
 
   // 计算分页
   const totalPages = Math.ceil(resourceGroups.length / ITEMS_PER_PAGE);
@@ -437,7 +489,7 @@ export function Page(): React.JSX.Element {
 
   // 过滤监控表格数据（也应用搜索）并排序
   const filteredMetrics = React.useMemo(() => {
-    let result = searchKey
+    const result = searchKey
       ? metrics.filter((m) => m.resource.toLowerCase().includes(searchKey.toLowerCase()))
       : metrics;
 
@@ -482,20 +534,54 @@ export function Page(): React.JSX.Element {
             justifyContent="space-between"
             alignItems="center"
           >
-            <Box>
-              <Heading size="lg">实时监控</Heading>
-              <Text
-                color="fg.muted"
-                fontSize="sm"
-                mt={1}
-              >
-                应用：{app}
-              </Text>
-            </Box>
+            <Flex
+              alignItems="center"
+              gap={3}
+            >
+              <Box>
+                <Heading size="lg">实时监控</Heading>
+                <Text
+                  color="fg.muted"
+                  fontSize="sm"
+                  mt={1}
+                >
+                  应用：{app}
+                </Text>
+              </Box>
+              {viewMode === 'instance' && (
+                <InstanceFilter
+                  app={app}
+                  value={selectedInstance}
+                  onChange={setSelectedInstance}
+                />
+              )}
+            </Flex>
             <Flex
               gap={2}
               alignItems="center"
             >
+              {/* 视图模式切换 */}
+              <Flex
+                gap={1}
+                borderWidth="1px"
+                borderRadius="md"
+                p={0.5}
+              >
+                <Button
+                  size="sm"
+                  variant={viewMode === 'aggregate' ? 'solid' : 'ghost'}
+                  onClick={() => handleViewModeChange('aggregate')}
+                >
+                  汇总视图
+                </Button>
+                <Button
+                  size="sm"
+                  variant={viewMode === 'instance' ? 'solid' : 'ghost'}
+                  onClick={() => handleViewModeChange('instance')}
+                >
+                  实例视图
+                </Button>
+              </Flex>
               {autoRefresh && (
                 <Badge colorPalette="green">
                   <Icon icon="mdi:sync" />
@@ -504,33 +590,14 @@ export function Page(): React.JSX.Element {
               )}
               <Button
                 variant={autoRefresh ? 'solid' : 'outline'}
-                colorPalette={autoRefresh ? 'blue' : 'gray'}
                 onClick={toggleAutoRefresh}
-                _dark={{
-                  bg: autoRefresh ? 'blue.600' : 'transparent',
-                  borderColor: autoRefresh ? 'blue.600' : 'gray.600',
-                  color: autoRefresh ? 'white' : 'gray.300',
-                  _hover: {
-                    bg: autoRefresh ? 'blue.700' : 'gray.700',
-                    borderColor: autoRefresh ? 'blue.700' : 'gray.500',
-                  },
-                }}
               >
                 <Icon icon={autoRefresh ? 'mdi:pause' : 'mdi:play'} />
                 {autoRefresh ? '停止刷新' : '自动刷新'}
               </Button>
               <Button
                 variant="outline"
-                colorPalette="blue"
                 onClick={handleRefresh}
-                _dark={{
-                  borderColor: 'gray.600',
-                  color: 'gray.300',
-                  _hover: {
-                    bg: 'gray.700',
-                    borderColor: 'gray.500',
-                  },
-                }}
               >
                 <Icon icon="mdi:refresh" />
                 刷新

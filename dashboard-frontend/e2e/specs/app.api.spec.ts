@@ -33,8 +33,8 @@ test.describe('应用 API', () => {
     expect(apps).toContain(APP_NAME);
   });
 
-  test('获取机器列表', async ({ request }) => {
-    const response = await request.get(`${DASHBOARD_URL}${API.dashboard.machines(APP_NAME)}`, {
+  test('获取实例列表', async ({ request }) => {
+    const response = await request.get(`${DASHBOARD_URL}${API.dashboard.instances(APP_NAME)}`, {
       headers: authHeaders(cookies),
     });
 
@@ -55,14 +55,14 @@ test.describe('资源 API', () => {
   });
 
   test('获取资源数据', async ({ request }) => {
-    // 先获取机器信息
-    const machineRes = await request.get(`${DASHBOARD_URL}${API.dashboard.machines(APP_NAME)}`, {
+    // 先获取实例信息
+    const instanceRes = await request.get(`${DASHBOARD_URL}${API.dashboard.instances(APP_NAME)}`, {
       headers: authHeaders(cookies),
     });
-    const machine = (await machineRes.json()).data[0];
+    const instance = (await instanceRes.json()).data[0];
 
     const response = await request.get(`${DASHBOARD_URL}${API.dashboard.resource}`, {
-      params: { app: APP_NAME, ip: machine.ip, port: machine.port },
+      params: { app: APP_NAME, ip: instance.ip, port: instance.port },
       headers: authHeaders(cookies),
     });
 

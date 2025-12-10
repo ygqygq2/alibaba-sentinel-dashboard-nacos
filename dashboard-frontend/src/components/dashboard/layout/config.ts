@@ -61,9 +61,9 @@ export function getAppFunctionMenuItems(appName: string): NavItemConfig[] {
       matcher: { type: 'startsWith', href: paths.dashboard.authority.list(appName) },
     },
     {
-      key: `${appName}-machines`,
-      title: '机器列表',
-      href: paths.dashboard.machines(appName),
+      key: `${appName}-instances`,
+      title: '实例列表',
+      href: paths.dashboard.instances(appName),
       icon: 'desktop',
     },
   ];

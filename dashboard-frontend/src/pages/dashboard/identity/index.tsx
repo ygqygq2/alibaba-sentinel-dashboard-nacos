@@ -9,8 +9,8 @@ import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router-dom';
 
-import { MachineSelector, ResourceTable } from '@/components/dashboard/identity';
-import { useMachineResources } from '@/hooks/api';
+import { InstanceSelector, ResourceTable } from '@/components/dashboard/identity';
+import { useInstanceResources } from '@/hooks/api';
 
 type ViewMode = 'tree' | 'list';
 
@@ -18,7 +18,7 @@ export function Page(): React.JSX.Element {
   const { app } = useParams<{ app: string }>();
 
   // 状态
-  const [selectedMachine, setSelectedMachine] = React.useState<{
+  const [selectedInstance, setSelectedInstance] = React.useState<{
     ip: string;
     port: number;
   } | null>(null);
@@ -40,17 +40,17 @@ export function Page(): React.JSX.Element {
     isLoading,
     error,
     refetch,
-  } = useMachineResources({
-    ip: selectedMachine?.ip ?? '',
-    port: selectedMachine?.port ?? 0,
+  } = useInstanceResources({
+    ip: selectedInstance?.ip ?? '',
+    port: selectedInstance?.port ?? 0,
     type: viewMode === 'tree' ? 'root' : 'cluster',
     searchKey: debouncedSearchKey || undefined,
-    enabled: !!selectedMachine,
+    enabled: !!selectedInstance,
     refetchInterval: 10000, // 10秒自动刷新
   });
 
-  const handleMachineChange = (machine: { ip: string; port: number } | null) => {
-    setSelectedMachine(machine);
+  const handleInstanceChange = (instance: { ip: string; port: number } | null) => {
+    setSelectedInstance(instance);
   };
 
   const handleRefresh = () => {
@@ -126,12 +126,12 @@ export function Page(): React.JSX.Element {
                       color="fg.muted"
                       whiteSpace="nowrap"
                     >
-                      机器:
+                      实例:
                     </Text>
-                    <MachineSelector
+                    <InstanceSelector
                       app={app}
-                      value={selectedMachine ? `${selectedMachine.ip}:${selectedMachine.port}` : undefined}
-                      onChange={handleMachineChange}
+                      value={selectedInstance ? `${selectedInstance.ip}:${selectedInstance.port}` : undefined}
+                      onChange={handleInstanceChange}
                     />
                   </HStack>
                   <HStack gap={2}>
@@ -155,7 +155,7 @@ export function Page(): React.JSX.Element {
                   size="sm"
                   colorPalette="blue"
                   onClick={handleRefresh}
-                  disabled={!selectedMachine}
+                  disabled={!selectedInstance}
                 >
                   <Icon icon="mdi:refresh" />
                   刷新
@@ -167,12 +167,12 @@ export function Page(): React.JSX.Element {
           {/* 资源表格 */}
           <Card.Root>
             <Card.Body p={0}>
-              {!selectedMachine ? (
+              {!selectedInstance ? (
                 <Box
                   p={8}
                   textAlign="center"
                 >
-                  <Text color="fg.muted">请先选择一台机器</Text>
+                  <Text color="fg.muted">请先选择一台实例</Text>
                 </Box>
               ) : (
                 <ResourceTable

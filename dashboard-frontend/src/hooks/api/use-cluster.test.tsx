@@ -68,7 +68,7 @@ const mockStateInfo: ClusterStateInfo = {
 
 const mockClusterState: ClusterState = {
   app: 'test-app',
-  machineId: 'machine-1',
+  instanceId: 'instance-1',
   ip: '192.168.1.1',
   port: 8719,
   stateInfo: mockStateInfo,
@@ -78,7 +78,7 @@ const mockTokenServer: TokenServer = {
   app: 'test-app',
   ip: '192.168.1.1',
   port: 8719,
-  machineId: 'machine-1',
+  instanceId: 'instance-1',
   embedded: false,
   tokenServerPort: 18730,
   namespaceSet: ['default'],
@@ -88,7 +88,7 @@ const mockTokenClient: TokenClient = {
   app: 'test-app',
   ip: '192.168.1.2',
   port: 8719,
-  machineId: 'machine-2',
+  instanceId: 'instance-2',
   serverHost: '192.168.1.1',
   serverPort: 18730,
 };

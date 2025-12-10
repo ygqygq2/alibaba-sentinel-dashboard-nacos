@@ -25,7 +25,7 @@ import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.client.CommandNotFoundException;
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.InstanceInfo;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
@@ -69,11 +69,11 @@ public class ParamFlowRuleController {
     private boolean checkIfSupported(String app, String ip, int port) {
         try {
             return Optional.ofNullable(appManagement.getDetailApp(app))
-                .flatMap(e -> e.getMachine(ip, port))
+                .flatMap(e -> e.getInstance(ip, port))
                 .flatMap(m -> VersionUtils.parseVersion(m.getVersion())
                     .map(v -> v.greaterOrEqual(version020)))
                 .orElse(true);
-            // If error occurred or cannot retrieve machine info, return true.
+            // If error occurred or cannot retrieve instance info, return true.
         } catch (Exception ex) {
             return true;
         }
@@ -81,7 +81,7 @@ public class ParamFlowRuleController {
 
     @GetMapping("/rules")
     @AuthAction(PrivilegeType.READ_RULE)
-    public Result<List<ParamFlowRuleEntity>> apiQueryAllRulesForMachine(@RequestParam String app,
+    public Result<List<ParamFlowRuleEntity>> apiQueryAllRulesForInstance(@RequestParam String app,
                                                                         @RequestParam String ip,
                                                                         @RequestParam Integer port) {
         if (StringUtil.isEmpty(app)) {
@@ -93,14 +93,14 @@ public class ParamFlowRuleController {
         if (port == null || port <= 0) {
             return Result.ofFail(-1, "Invalid parameter: port");
         }
-        if (!appManagement.isValidMachineOfApp(app, ip)) {
+        if (!appManagement.isValidInstanceOfApp(app, ip)) {
             return Result.ofFail(-1, "given ip does not belong to given app");
         }
         if (!checkIfSupported(app, ip, port)) {
             return unsupportedVersion();
         }
         try {
-            return sentinelApiClient.fetchParamFlowRulesOfMachine(app, ip, port)
+            return sentinelApiClient.fetchParamFlowRulesOfInstance(app, ip, port)
                 .thenApply(repository::saveAll)
                 .thenApply(Result::ofSuccess)
                 .get();
@@ -259,8 +259,8 @@ public class ParamFlowRuleController {
     }
 
     private CompletableFuture<Void> publishRules(String app, String ip, Integer port) {
-        List<ParamFlowRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.setParamFlowRuleOfMachine(app, ip, port, rules);
+        List<ParamFlowRuleEntity> rules = repository.findAllByInstance(InstanceInfo.of(app, ip, port));
+        return sentinelApiClient.setParamFlowRuleOfInstance(app, ip, port, rules);
     }
 
     private <R> Result<R> unsupportedVersion() {

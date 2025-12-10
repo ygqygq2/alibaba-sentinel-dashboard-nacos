@@ -122,7 +122,7 @@ jobs:
           curl -sf -c "$COOKIE_FILE" -X POST "http://localhost:8080/auth/login?username=sentinel&password=sentinel"
 
           timeout 90 bash -c "
-            until curl -sf -b \"$COOKIE_FILE\" \"http://localhost:8080/app/sentinel-token-server/machines.json\" | grep -q 'sentinel-token-server'; do
+            until curl -sf -b \"$COOKIE_FILE\" \"http://localhost:8080/app/sentinel-token-server/instances.json\" | grep -q 'sentinel-token-server'; do
               curl -sf http://localhost:8081/api/hello || true
               sleep 5
             done

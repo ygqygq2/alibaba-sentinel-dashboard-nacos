@@ -24,7 +24,7 @@ import java.util.Set;
  */
 public class ClusterGroupEntity {
 
-    private String machineId;
+    private String instanceId;
 
     private String ip;
     private Integer port;
@@ -33,12 +33,12 @@ public class ClusterGroupEntity {
 
     private Boolean belongToApp;
 
-    public String getMachineId() {
-        return machineId;
+    public String getInstanceId() {
+        return instanceId;
     }
 
-    public ClusterGroupEntity setMachineId(String machineId) {
-        this.machineId = machineId;
+    public ClusterGroupEntity setInstanceId(String instanceId) {
+        this.instanceId = instanceId;
         return this;
     }
 
@@ -81,7 +81,7 @@ public class ClusterGroupEntity {
     @Override
     public String toString() {
         return "ClusterGroupEntity{" +
-            "machineId='" + machineId + '\'' +
+            "instanceId='" + instanceId + '\'' +
             ", ip='" + ip + '\'' +
             ", port=" + port +
             ", clientSet=" + clientSet +

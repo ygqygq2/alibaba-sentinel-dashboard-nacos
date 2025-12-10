@@ -110,7 +110,8 @@ export function useUnbindTokenServer() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ app, machineId }: { app: string; machineId: string }) => tokenServerApi.unbindServer(app, machineId),
+    mutationFn: ({ app, instanceId }: { app: string; instanceId: string }) =>
+      tokenServerApi.unbindServer(app, instanceId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: clusterKeys.all });
     },

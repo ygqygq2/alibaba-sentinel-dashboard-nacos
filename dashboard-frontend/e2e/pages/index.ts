@@ -9,9 +9,9 @@ export {
   SystemRulePage,
   AuthorityRulePage,
   ClusterLinkPage,
-  MachinePage,
+  InstancePage,
 } from './app.page';
 export { FlowRulesPage } from './flow-rules.page';
-export { MachinesPage } from './machines.page';
+export { InstancesPage } from './instances.page';
 export { MetricPage } from './metric.page';
 export { ClusterPage } from './cluster.page';

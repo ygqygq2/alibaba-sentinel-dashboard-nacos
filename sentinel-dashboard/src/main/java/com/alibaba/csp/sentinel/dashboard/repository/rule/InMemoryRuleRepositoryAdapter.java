@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.RuleEntity;
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.InstanceInfo;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
@@ -30,9 +30,9 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implements RuleRepository<T, Long> {
 
     /**
-     * {@code <machine, <id, rule>>}
+     * {@code <instance, <id, rule>>}
      */
-    private Map<MachineInfo, Map<Long, T>> machineRules = new ConcurrentHashMap<>(16);
+    private Map<InstanceInfo, Map<Long, T>> instanceRules = new ConcurrentHashMap<>(16);
     private Map<Long, T> allRules = new ConcurrentHashMap<>(16);
 
     private Map<String, Map<Long, T>> appRules = new ConcurrentHashMap<>(16);
@@ -47,7 +47,7 @@ public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implem
         T processedEntity = preProcess(entity);
         if (processedEntity != null) {
             allRules.put(processedEntity.getId(), processedEntity);
-            machineRules.computeIfAbsent(MachineInfo.of(processedEntity.getApp(), processedEntity.getIp(),
+            instanceRules.computeIfAbsent(InstanceInfo.of(processedEntity.getApp(), processedEntity.getIp(),
                 processedEntity.getPort()), e -> new ConcurrentHashMap<>(32))
                 .put(processedEntity.getId(), processedEntity);
             appRules.computeIfAbsent(processedEntity.getApp(), v -> new ConcurrentHashMap<>(32))
@@ -61,7 +61,7 @@ public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implem
     public List<T> saveAll(List<T> rules) {
         // TODO: check here.
         allRules.clear();
-        machineRules.clear();
+        instanceRules.clear();
         appRules.clear();
 
         if (rules == null) {
@@ -81,7 +81,7 @@ public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implem
             if (appRules.get(entity.getApp()) != null) {
                 appRules.get(entity.getApp()).remove(id);
             }
-            machineRules.get(MachineInfo.of(entity.getApp(), entity.getIp(), entity.getPort())).remove(id);
+            instanceRules.get(InstanceInfo.of(entity.getApp(), entity.getIp(), entity.getPort())).remove(id);
         }
         return entity;
     }
@@ -92,8 +92,8 @@ public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implem
     }
 
     @Override
-    public List<T> findAllByMachine(MachineInfo machineInfo) {
-        Map<Long, T> entities = machineRules.get(machineInfo);
+    public List<T> findAllByInstance(InstanceInfo instanceInfo) {
+        Map<Long, T> entities = instanceRules.get(instanceInfo);
         if (entities == null) {
             return new ArrayList<>();
         }
@@ -112,7 +112,7 @@ public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implem
 
     public void clearAll() {
         allRules.clear();
-        machineRules.clear();
+        instanceRules.clear();
         appRules.clear();
     }
 

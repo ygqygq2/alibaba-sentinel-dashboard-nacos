@@ -58,7 +58,7 @@ function AppListItem({ app, isSelected, onSelect }: AppListItemProps): React.JSX
           fontSize="xs"
           color="var(--NavGroup-title-color)"
         >
-          {app.healthCount}/{app.healthCount + app.unhealthyCount} 机器
+          {app.healthCount}/{app.healthCount + app.unhealthyCount} 实例
         </Text>
       </Box>
       {isSelected && (

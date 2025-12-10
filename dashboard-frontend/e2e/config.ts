@@ -37,8 +37,8 @@ export const API = {
     logout: '/auth/logout',
     check: '/auth/check',
     apps: '/app/briefinfos.json',
-    machines: (app: string) => `/app/${app}/machines.json`,
-    resource: '/resource/machineResource.json',
+    instances: (app: string) => `/app/${app}/instances.json`,
+    resource: '/resource/instanceResource.json',
     // v2 API (Nacos 持久化，只需 app 参数)
     flowRules: '/v2/flow/rules',
     flowRule: '/v2/flow/rule',

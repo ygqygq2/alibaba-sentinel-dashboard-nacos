@@ -17,7 +17,7 @@ package com.alibaba.csp.sentinel.dashboard.repository.rule;
 
 import java.util.List;
 
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.InstanceInfo;
 
 /**
  * Interface to store and find rules.
@@ -59,12 +59,12 @@ public interface RuleRepository<T, ID> {
     T findById(ID id);
 
     /**
-     * Find all by machine.
+     * Find all by instance.
      *
-     * @param machineInfo
+     * @param instanceInfo
      * @return
      */
-    List<T> findAllByMachine(MachineInfo machineInfo);
+    List<T> findAllByInstance(InstanceInfo instanceInfo);
 
     /**
      * Find all by application.

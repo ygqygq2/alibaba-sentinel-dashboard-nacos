@@ -21,7 +21,7 @@ import java.util.List;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.InstanceInfo;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -62,7 +62,7 @@ public class AuthorityRuleController {
 
     @GetMapping("/rules")
     @AuthAction(PrivilegeType.READ_RULE)
-    public Result<List<AuthorityRuleEntity>> apiQueryAllRulesForMachine(@RequestParam String app,
+    public Result<List<AuthorityRuleEntity>> apiQueryAllRulesForInstance(@RequestParam String app,
                                                                         @RequestParam String ip,
                                                                         @RequestParam Integer port) {
         if (StringUtil.isEmpty(app)) {
@@ -74,11 +74,11 @@ public class AuthorityRuleController {
         if (port == null || port <= 0) {
             return Result.ofFail(-1, "Invalid parameter: port");
         }
-        if (!appManagement.isValidMachineOfApp(app, ip)) {
+        if (!appManagement.isValidInstanceOfApp(app, ip)) {
             return Result.ofFail(-1, "given ip does not belong to given app");
         }
         try {
-            List<AuthorityRuleEntity> rules = sentinelApiClient.fetchAuthorityRulesOfMachine(app, ip, port);
+            List<AuthorityRuleEntity> rules = sentinelApiClient.fetchAuthorityRulesOfInstance(app, ip, port);
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -191,7 +191,7 @@ public class AuthorityRuleController {
     }
 
     private boolean publishRules(String app, String ip, Integer port) {
-        List<AuthorityRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.setAuthorityRuleOfMachine(app, ip, port, rules);
+        List<AuthorityRuleEntity> rules = repository.findAllByInstance(InstanceInfo.of(app, ip, port));
+        return sentinelApiClient.setAuthorityRuleOfInstance(app, ip, port, rules);
     }
 }

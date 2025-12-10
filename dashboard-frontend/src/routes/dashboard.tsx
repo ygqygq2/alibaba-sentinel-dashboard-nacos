@@ -23,11 +23,11 @@ export const route: RouteObject = {
         return { Component: Page };
       },
     },
-    // 机器列表
+    // 实例列表
     {
-      path: 'apps/:app/machines',
+      path: 'apps/:app/instances',
       lazy: async () => {
-        const { Page } = await import('@/pages/dashboard/machines/list');
+        const { Page } = await import('@/pages/dashboard/instances/list');
         return { Component: Page };
       },
     },

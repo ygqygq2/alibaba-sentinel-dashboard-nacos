@@ -87,17 +87,17 @@ public class ClusterAssignController {
 
     @PostMapping("/unbind_server/{app}")
     public Result<ClusterAppAssignResultVO> apiUnbindClusterServersOfApp(@PathVariable String app,
-                                                                         @RequestBody Set<String> machineIds) {
+                                                                         @RequestBody Set<String> instanceIds) {
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app cannot be null or empty");
         }
-        if (machineIds == null || machineIds.isEmpty()) {
+        if (instanceIds == null || instanceIds.isEmpty()) {
             return Result.ofFail(-1, "bad request body");
         }
         try {
-            return Result.ofSuccess(clusterAssignService.unbindClusterServers(app, machineIds));
+            return Result.ofSuccess(clusterAssignService.unbindClusterServers(app, instanceIds));
         } catch (Throwable throwable) {
-            logger.error("Error when unbinding cluster server {} for app <{}>", machineIds, app, throwable);
+            logger.error("Error when unbinding cluster server {} for app <{}>", instanceIds, app, throwable);
             return Result.ofFail(-1, throwable.getMessage());
         }
     }

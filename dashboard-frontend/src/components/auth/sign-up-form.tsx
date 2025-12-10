@@ -9,7 +9,6 @@ import { z as zod } from 'zod';
 import { RouterLink } from '@/components/core/link';
 import { DynamicLogo } from '@/components/core/logo';
 import { toaster } from '@/components/ui/toaster';
-import { useSettings } from '@/hooks/use-settings';
 import { useUser } from '@/hooks/use-user';
 import { authClient } from '@/lib/auth/client';
 import { paths } from '@/paths';
@@ -39,7 +38,6 @@ const defaultValues = { firstName: '', lastName: '', email: '', password: '', te
 
 export function SignUpForm(): React.JSX.Element {
   const { checkSession } = useUser();
-  const { settings } = useSettings();
 
   const [isPending, setIsPending] = React.useState<boolean>(false);
 
@@ -120,7 +118,6 @@ export function SignUpForm(): React.JSX.Element {
           {oAuthProviders.map((provider) => (
             <Button
               variant="outline"
-              
               loading={isPending}
               key={provider.id}
               onClick={() => {

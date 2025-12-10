@@ -86,10 +86,10 @@ export function Page(): React.JSX.Element {
                   <Table.Header>
                     <Table.Row>
                       <Table.ColumnHeader>应用名称</Table.ColumnHeader>
-                      <Table.ColumnHeader>类型</Table.ColumnHeader>
-                      <Table.ColumnHeader>健康机器数</Table.ColumnHeader>
-                      <Table.ColumnHeader>不健康机器数</Table.ColumnHeader>
-                      <Table.ColumnHeader>总机器数</Table.ColumnHeader>
+                      <Table.ColumnHeader>应用类型</Table.ColumnHeader>
+                      <Table.ColumnHeader>健康实例数</Table.ColumnHeader>
+                      <Table.ColumnHeader>不健康实例数</Table.ColumnHeader>
+                      <Table.ColumnHeader>最近心跳</Table.ColumnHeader>
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>

@@ -35,7 +35,7 @@ import org.springframework.lang.NonNull;
  */
 public class DashboardConfig {
 
-    public static final int DEFAULT_MACHINE_HEALTHY_TIMEOUT_MS = 60_000;
+    public static final int DEFAULT_INSTANCE_HEALTHY_TIMEOUT_MS = 60_000;
 
     /**
      * Login username
@@ -48,21 +48,21 @@ public class DashboardConfig {
     public static final String CONFIG_AUTH_PASSWORD = "sentinel.dashboard.auth.password";
 
     /**
-     * Hide application name in sidebar when it has no healthy machines after specific period in millisecond.
+     * Hide application name in sidebar when it has no healthy instances after specific period in millisecond.
      */
-    public static final String CONFIG_HIDE_APP_NO_MACHINE_MILLIS = "sentinel.dashboard.app.hideAppNoMachineMillis";
+    public static final String CONFIG_HIDE_APP_NO_INSTANCE_MILLIS = "sentinel.dashboard.app.hideAppNoInstanceMillis";
     /**
-     * Remove application when it has no healthy machines after specific period in millisecond.
+     * Remove application when it has no healthy instances after specific period in millisecond.
      */
-    public static final String CONFIG_REMOVE_APP_NO_MACHINE_MILLIS = "sentinel.dashboard.removeAppNoMachineMillis";
+    public static final String CONFIG_REMOVE_APP_NO_INSTANCE_MILLIS = "sentinel.dashboard.removeAppNoInstanceMillis";
     /**
      * Timeout
      */
-    public static final String CONFIG_UNHEALTHY_MACHINE_MILLIS = "sentinel.dashboard.unhealthyMachineMillis";
+    public static final String CONFIG_UNHEALTHY_INSTANCE_MILLIS = "sentinel.dashboard.unhealthyInstanceMillis";
     /**
-     * Auto remove unhealthy machine after specific period in millisecond.
+     * Auto remove unhealthy instance after specific period in millisecond.
      */
-    public static final String CONFIG_AUTO_REMOVE_MACHINE_MILLIS = "sentinel.dashboard.autoRemoveMachineMillis";
+    public static final String CONFIG_AUTO_REMOVE_INSTANCE_MILLIS = "sentinel.dashboard.autoRemoveInstanceMillis";
 
     private static final ConcurrentMap<String, Object> cacheMap = new ConcurrentHashMap<>();
     
@@ -118,20 +118,20 @@ public class DashboardConfig {
         return getConfigStr(CONFIG_AUTH_PASSWORD);
     }
 
-    public static int getHideAppNoMachineMillis() {
-        return getConfigInt(CONFIG_HIDE_APP_NO_MACHINE_MILLIS, 0, 60000);
+    public static int getHideAppNoInstanceMillis() {
+        return getConfigInt(CONFIG_HIDE_APP_NO_INSTANCE_MILLIS, 0, 60000);
     }
     
-    public static int getRemoveAppNoMachineMillis() {
-        return getConfigInt(CONFIG_REMOVE_APP_NO_MACHINE_MILLIS, 0, 120000);
+    public static int getRemoveAppNoInstanceMillis() {
+        return getConfigInt(CONFIG_REMOVE_APP_NO_INSTANCE_MILLIS, 0, 120000);
     }
     
-    public static int getAutoRemoveMachineMillis() {
-        return getConfigInt(CONFIG_AUTO_REMOVE_MACHINE_MILLIS, 0, 300000);
+    public static int getAutoRemoveInstanceMillis() {
+        return getConfigInt(CONFIG_AUTO_REMOVE_INSTANCE_MILLIS, 0, 300000);
     }
     
-    public static int getUnhealthyMachineMillis() {
-        return getConfigInt(CONFIG_UNHEALTHY_MACHINE_MILLIS, DEFAULT_MACHINE_HEALTHY_TIMEOUT_MS, 30000);
+    public static int getUnhealthyInstanceMillis() {
+        return getConfigInt(CONFIG_UNHEALTHY_INSTANCE_MILLIS, DEFAULT_INSTANCE_HEALTHY_TIMEOUT_MS, 30000);
     }
     
     public static void clearCache() {

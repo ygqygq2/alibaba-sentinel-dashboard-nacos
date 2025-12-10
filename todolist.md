@@ -24,7 +24,7 @@
 ### 1.3 类型定义
 
 - ✅ App 类型（src/types/app.ts）
-- ✅ Machine 类型（src/types/machine.ts）
+- ✅ Instance 类型（src/types/instance.ts）
 - ✅ Rule 类型（src/types/rule.ts）
 - ✅ Cluster 类型（src/types/cluster.ts）
 
@@ -193,18 +193,18 @@
 
 ---
 
-## 12. 机器列表
+## 12. 实例列表
 
 ### 12.1 功能
 
-- ✅ Machine API 集成（lib/api/machine.ts）
-- ✅ 机器列表展示（pages/dashboard/machines/list.tsx）
+- ✅ Instance API 集成（lib/api/instance.ts）
+- ✅ 实例列表展示（pages/dashboard/instances/list.tsx）
 - ✅ 机器详情
 - ⬜ 移除机器
 
 ### 12.2 E2E 测试
 
-- ✅ 机器列表测试（e2e/specs/machines.spec.ts）
+- ✅ 实例列表测试（e2e/specs/instances.spec.ts）
 
 ---
 
@@ -273,7 +273,7 @@
 - **实时监控**：100%（Metric 图表、自动刷新）
 - **簇点链路**：95%（资源展示、搜索功能测试待补充）
 - **规则管理**：100%（流控、降级、热点、系统、授权规则）
-- **机器列表**：100%（列表展示、E2E 测试）
+- **实例列表**：100%（列表展示、E2E 测试）
 - **集群流控**：90%（API、页面、测试已完成，集群分配待实现）
 - **网关流控**：80%（API 已完成，E2E 测试待补充）
 - **优化收尾**：90%（主题、国际化、测试已完成，性能持续优化）

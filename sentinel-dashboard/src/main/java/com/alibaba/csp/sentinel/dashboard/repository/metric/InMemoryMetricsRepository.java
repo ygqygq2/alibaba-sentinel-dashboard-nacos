@@ -163,4 +163,29 @@ public class InMemoryMetricsRepository implements MetricsRepository<MetricEntity
             readWriteLock.readLock().unlock();
         }
     }
+
+    @Override
+    public List<MetricEntity> queryByAppBetween(String app, long startTime, long endTime) {
+        List<MetricEntity> results = new ArrayList<>();
+        if (StringUtil.isBlank(app)) {
+            return results;
+        }
+        Map<String, LinkedHashMap<Long, MetricEntity>> resourceMap = allMetrics.get(app);
+        if (resourceMap == null) {
+            return results;
+        }
+        readWriteLock.readLock().lock();
+        try {
+            for (LinkedHashMap<Long, MetricEntity> metricsMap : resourceMap.values()) {
+                for (Entry<Long, MetricEntity> entry : metricsMap.entrySet()) {
+                    if (entry.getKey() >= startTime && entry.getKey() <= endTime) {
+                        results.add(entry.getValue());
+                    }
+                }
+            }
+            return results;
+        } finally {
+            readWriteLock.readLock().unlock();
+        }
+    }
 }

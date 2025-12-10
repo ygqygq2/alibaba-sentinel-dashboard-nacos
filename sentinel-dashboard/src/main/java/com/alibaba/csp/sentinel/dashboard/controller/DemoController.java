@@ -35,7 +35,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 @RequestMapping(value = "/demo", produces = MediaType.APPLICATION_JSON_VALUE)
 public class DemoController {
 
-    Logger logger = LoggerFactory.getLogger(MachineRegistryController.class);
+    Logger logger = LoggerFactory.getLogger(InstanceRegistryController.class);
 
     @RequestMapping("/greeting")
     public String greeting() {

@@ -48,7 +48,7 @@ function getPlaceholderByPath(pathname: string): string {
   if (pathname.includes('/identity')) {
     return '搜索资源名...';
   }
-  if (pathname.includes('/machines')) {
+  if (pathname.includes('/instances')) {
     return '搜索 IP/主机名...';
   }
   if (pathname.includes('/metric')) {

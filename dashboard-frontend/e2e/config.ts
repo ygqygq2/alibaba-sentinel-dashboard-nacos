@@ -12,6 +12,13 @@ export const DASHBOARD_URL = isCI
   : process.env.DASHBOARD_URL || 'http://localhost:3000';
 export const TOKEN_SERVER_URL = process.env.TOKEN_SERVER_URL || 'http://localhost:8081';
 
+// 客户端 API 端口（Sentinel 客户端暴露的 8719 端口）
+export const CLIENT_API_PORT = process.env.CLIENT_API_PORT || '8719';
+export const CLIENT_API_URL = `http://localhost:${CLIENT_API_PORT}`;
+
+// 客户端 API 密钥（用于测试 8719 端口的鉴权）
+export const CLIENT_API_SECRET = process.env.CLIENT_API_SECRET || 'sentinel_app_secret';
+
 // 测试应用名称
 export const APP_NAME = 'sentinel-token-server';
 
@@ -44,8 +51,11 @@ export const API = {
     flowRule: '/v2/flow/rule',
     // v1 API (需要 app, ip, port 参数)
     degradeRules: '/degrade/rules.json',
+    degradeRule: '/degrade/rule',
     systemRules: '/system/rules.json',
+    systemRule: '/system/rule',
     authorityRules: '/authority/rules',
+    authorityRule: '/authority/rule',
     paramFlowRules: '/paramFlow/rules',
   },
   // Token Server API

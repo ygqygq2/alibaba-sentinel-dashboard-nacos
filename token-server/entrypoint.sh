@@ -53,6 +53,9 @@ echo "========================================="
 SENTINEL_OPTS="-Dproject.name=${APP_NAME}"
 SENTINEL_OPTS="${SENTINEL_OPTS} -Dserver.port=${SERVER_PORT}"
 
+# SPI 类加载器配置：使用 context 类加载器，支持 Spring Boot Fat JAR
+SENTINEL_OPTS="${SENTINEL_OPTS} -Dcsp.sentinel.spi.classloader=context"
+
 # Cluster Server 配置
 SENTINEL_OPTS="${SENTINEL_OPTS} -Dsentinel.cluster.server.port=${CLUSTER_SERVER_PORT}"
 SENTINEL_OPTS="${SENTINEL_OPTS} -Dsentinel.cluster.server.idle-seconds=${CLUSTER_IDLE_SECONDS}"
@@ -64,11 +67,23 @@ fi
 SENTINEL_OPTS="${SENTINEL_OPTS} -Dnacos.server-addr=${NACOS_SERVER_ADDR}"
 SENTINEL_OPTS="${SENTINEL_OPTS} -Dnacos.group-id=${NACOS_GROUP_ID}"
 
-# Dashboard 注册（Token Server 也注册到 Dashboard 以便管理）
-SENTINEL_OPTS="${SENTINEL_OPTS} -Dcsp.sentinel.dashboard.server=${SENTINEL_DASHBOARD_HOST}:${SENTINEL_DASHBOARD_PORT}"
-SENTINEL_OPTS="${SENTINEL_OPTS} -Dcsp.sentinel.api.port=${CSP_SENTINEL_API_PORT:-8719}"
-if [ -n "${CLIENT_ADDRESS}" ]; then
-  SENTINEL_OPTS="${SENTINEL_OPTS} -Dcsp.sentinel.heartbeat.client.ip=${CLIENT_ADDRESS}"
+# Dashboard 注册（开发/测试环境启用，生产环境禁用）
+REGISTER_TO_DASHBOARD="${REGISTER_TO_DASHBOARD:-false}"
+if [ "${REGISTER_TO_DASHBOARD}" = "true" ]; then
+  SENTINEL_OPTS="${SENTINEL_OPTS} -Dcsp.sentinel.dashboard.server=${SENTINEL_DASHBOARD_HOST}:${SENTINEL_DASHBOARD_PORT}"
+  SENTINEL_OPTS="${SENTINEL_OPTS} -Dcsp.sentinel.api.port=${CSP_SENTINEL_API_PORT:-8719}"
+  if [ -n "${CLIENT_ADDRESS}" ]; then
+    SENTINEL_OPTS="${SENTINEL_OPTS} -Dcsp.sentinel.heartbeat.client.ip=${CLIENT_ADDRESS}"
+  fi
+  # 客户端鉴权密钥（如果 Dashboard 启用了 AUTH_APP_SECRET）
+  if [ -n "${CSP_SENTINEL_APP_SECRET}" ]; then
+    SENTINEL_OPTS="${SENTINEL_OPTS} -Dcsp.sentinel.app.secret=${CSP_SENTINEL_APP_SECRET}"
+    echo "Dashboard Registration: ENABLED (with authentication)"
+  else
+    echo "Dashboard Registration: ENABLED (no authentication)"
+  fi
+else
+  echo "Dashboard Registration: DISABLED (set REGISTER_TO_DASHBOARD=true for dev/test)"
 fi
 
 exec java ${JAVA_OPTS} ${EXTRA_OPTS} ${SENTINEL_OPTS} -jar app.jar "$@"

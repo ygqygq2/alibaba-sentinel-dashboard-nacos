@@ -135,6 +135,9 @@ public class SentinelApiClient {
     
     @Autowired
     private AppManagement appManagement;
+    
+    @Autowired
+    private com.alibaba.csp.sentinel.dashboard.config.AuthProperties authProperties;
 
     public SentinelApiClient() {
         IOReactorConfig ioConfig = IOReactorConfig.custom().setConnectTimeout(3000).setSoTimeout(10000)
@@ -320,7 +323,17 @@ public class SentinelApiClient {
         urlBuilder.append("http://");
         urlBuilder.append(ip).append(':').append(port).append('/').append(api);
         if (params == null) {
-            params = Collections.emptyMap();
+            params = new HashMap<>();
+        } else {
+            params = new HashMap<>(params); // 创建副本，避免修改原参数
+        }
+        
+        // 扩展：如果配置了 app_secret，自动添加到所有 Dashboard → Client 的 API 调用中
+        // 这样客户端可以验证请求是否来自可信的 Dashboard
+        if (authProperties != null && authProperties.isEnabled() 
+            && StringUtil.isNotBlank(authProperties.getAppSecret())) {
+            params.put("app_secret", authProperties.getAppSecret());
+            logger.debug("[Auth] Adding app_secret to API call: {} -> {}:{}{}", app, ip, port, api);
         }
         if (!useHttpPost || !isSupportPost(app, ip, port)) {
             // Using GET in older versions, append parameters after url

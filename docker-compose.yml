@@ -62,7 +62,8 @@ services:
       - NACOS_PASSWORD=${NACOS_PASSWORD:-nacos}
       - SENTINEL_DASHBOARD_AUTH_USERNAME=${DASHBOARD_USERNAME:-sentinel}
       - SENTINEL_DASHBOARD_AUTH_PASSWORD=${DASHBOARD_PASSWORD:-sentinel}
-      - AUTH_APP_SECRET=${AUTH_APP_SECRET:-}
+      # 客户端鉴权密钥（所有客户端必须提供相同的密钥才能注册）
+      - AUTH_APP_SECRET=${AUTH_APP_SECRET:-sentinel_app_secret}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
       - JAVA_OPTS=-Xms256m -Xmx512m
     ports:
@@ -98,6 +99,10 @@ services:
       - SENTINEL_DASHBOARD_PORT=8080
       - CSP_SENTINEL_API_PORT=8719
       - SERVICE_NAME=token-server
+      # Dashboard 注册（开发/测试环境启用，生产环境设为 false）
+      - REGISTER_TO_DASHBOARD=true
+      # 客户端鉴权密钥（必须与 Dashboard 的 AUTH_APP_SECRET 一致）
+      - CSP_SENTINEL_APP_SECRET=${AUTH_APP_SECRET:-sentinel_app_secret}
       # Cluster Token Server 配置
       - CLUSTER_SERVER_PORT=18730
       - CLUSTER_IDLE_SECONDS=600
@@ -111,7 +116,17 @@ services:
       - JAVA_OPTS=-Xms128m -Xmx256m
     ports:
       - "8081:8081" # HTTP 服务端口
-      - "8719:8719" # Sentinel API 端口（Dashboard 通信）
+      # ⚠️ 生产环境安全警告：
+      # 8719 端口是 Sentinel 内部 API，没有任何鉴权保护！
+      # 任何能访问此端口的人都可以读取/修改规则，存在严重安全风险。
+      #
+      # 生产环境建议：
+      # 1. 【推荐】不暴露 8719 端口，Dashboard 和 Client 部署在同一内网
+      # 2. 使用防火墙/Security Group 限制只有 Dashboard IP 能访问
+      # 3. 使用 Kubernetes NetworkPolicy 限制 Pod 间通信
+      #
+      # 开发/测试环境：可以暴露方便调试
+      - "8719:8719" # Sentinel API 端口（⚠️ 生产环境应注释此行）
       - "18730:18730" # Cluster Token Server 端口（集群限流通信）
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8081/actuator/health"]

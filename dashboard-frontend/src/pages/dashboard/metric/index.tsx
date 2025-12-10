@@ -426,10 +426,10 @@ export function Page(): React.JSX.Element {
     if (!metrics) return [];
 
     if (viewMode === 'instance') {
-      // 实例视图：按 instance/resource 分组
+      // 实例视图：按 instance/resource 分组（与 API 层保持一致）
       const groups = new Map<string, MetricData[]>();
       metrics.forEach((metric) => {
-        const key = `${metric.instance || 'unknown'}${metric.resource}`;
+        const key = `${metric.instance || 'unknown'}/${metric.resource}`;
         const existing = groups.get(key) || [];
         groups.set(key, [...existing, metric]);
       });

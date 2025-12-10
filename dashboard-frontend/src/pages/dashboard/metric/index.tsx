@@ -42,6 +42,15 @@ interface ResourceChartProps {
 }
 
 function ResourceChart({ resource, data, isExpanded = false, onToggle }: ResourceChartProps) {
+  // 提取资源名（实例视图格式：instance/resource，只显示资源名部分）
+  const displayTitle = React.useMemo(() => {
+    if (resource.includes('/')) {
+      const [, ...resourceParts] = resource.split('/');
+      return resourceParts.join('/');
+    }
+    return resource;
+  }, [resource]);
+
   // 格式化数据用于图表
   const chartData = React.useMemo(() => {
     return data.map((d) => ({
@@ -81,7 +90,7 @@ function ResourceChart({ resource, data, isExpanded = false, onToggle }: Resourc
             title={resource}
             truncate
           >
-            {resource}
+            {displayTitle}
           </Heading>
           <Icon
             icon={isExpanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}

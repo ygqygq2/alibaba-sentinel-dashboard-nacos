@@ -112,8 +112,7 @@ export function InstanceFilter({ app, value, onChange }: InstanceFilterProps): R
             maxHeight="200px"
             overflowY="auto"
             bg="bg"
-            border="1px solid"
-            borderColor="border"
+            borderWidth="1px"
             borderRadius="md"
             boxShadow="lg"
             zIndex={1000}

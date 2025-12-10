@@ -208,11 +208,11 @@ public class ClusterConfigController {
     private boolean checkIfSupported(String app, String ip, int port) {
         try {
             return Optional.ofNullable(appManagement.getDetailApp(app))
-                .flatMap(e -> e.getMachine(ip, port))
+                .flatMap(e -> e.getInstance(ip, port))
                 .flatMap(m -> VersionUtils.parseVersion(m.getVersion())
                     .map(v -> v.greaterOrEqual(version140)))
                 .orElse(true);
-            // If error occurred or cannot retrieve machine info, return true.
+            // If error occurred or cannot retrieve instance info, return true.
         } catch (Exception ex) {
             return true;
         }

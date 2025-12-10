@@ -29,8 +29,8 @@ export interface AppInfoRaw {
   app: string;
   /** 应用类型：0-普通应用，1-网关应用 */
   appType: number;
-  /** 机器列表 */
-  machines?: MachineInfo[];
+  /** 实例列表 */
+  instances?: InstanceInfo[];
 }
 
 /**
@@ -41,28 +41,32 @@ export interface AppInfo {
   app: string;
   /** 应用类型：0-普通应用，1-网关应用 */
   appType: number;
-  /** 活跃的机器实例数 */
+  /** 活跃的实例数 */
   activeCount: number;
-  /** 健康的机器数 */
+  /** 健康的实例数 */
   healthCount: number;
-  /** 不健康的机器数 */
+  /** 不健康的实例数 */
   unhealthyCount: number;
   /** 最近心跳时间 */
   lastHeartbeat?: number;
 }
 
 /**
- * 机器信息
+ * 实例信息
  */
-export interface MachineInfo {
+export interface InstanceInfo {
   /** 应用名称 */
   app: string;
-  /** 机器 ID */
+  /** 实例 ID */
   id: string;
   /** 主机名 */
   hostname: string;
   /** IP 地址 */
   ip: string;
+  /** 域名（可选，例如 service.namespace.svc.cluster.local） */
+  domain?: string;
+  /** 自定义名称（可选，例如 StatefulSet pod 名 "token-server-0"） */
+  name?: string;
   /** 端口 */
   port: number;
   /** Sentinel 版本 */
@@ -105,6 +109,8 @@ export interface ResourceInfo {
 export interface MetricData {
   /** 资源名称 */
   resource: string;
+  /** 实例标识（仅在实例视图下有值，格式：ip:port） */
+  instance?: string;
   /** 时间戳 */
   timestamp: number;
   /** 通过请求数 */

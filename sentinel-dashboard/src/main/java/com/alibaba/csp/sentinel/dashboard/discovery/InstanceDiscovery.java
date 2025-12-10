@@ -18,7 +18,7 @@ package com.alibaba.csp.sentinel.dashboard.discovery;
 import java.util.List;
 import java.util.Set;
 
-public interface MachineDiscovery {
+public interface InstanceDiscovery {
 
     String UNKNOWN_APP_NAME = "CLUSTER_NOT_STARTED";
 
@@ -36,16 +36,16 @@ public interface MachineDiscovery {
      */
     void removeApp(String app);
 
-    long addMachine(MachineInfo machineInfo);
+    long addInstance(InstanceInfo instanceInfo);
 
     /**
-     * Remove the given machine instance from the application registry.
+     * Remove the given instance from the application registry.
      *
-     * @param app the application name of the machine
-     * @param ip machine IP
-     * @param port machine port
+     * @param app the application name of the instance
+     * @param ip instance IP
+     * @param port instance port
      * @return true if removed, otherwise false
      * @since 1.5.0
      */
-    boolean removeMachine(String app, String ip, int port);
+    boolean removeInstance(String app, String ip, int port);
 }

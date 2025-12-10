@@ -111,6 +111,13 @@
               <artifactId>lombok</artifactId>
             </exclude>
           </excludes>
+          <!-- 启用 SPI 服务加载器支持 -->
+          <requiresUnpack>
+            <dependency>
+              <groupId>com.alibaba.csp</groupId>
+              <artifactId>sentinel-transport-simple-http</artifactId>
+            </dependency>
+          </requiresUnpack>
         </configuration>
       </plugin>
 

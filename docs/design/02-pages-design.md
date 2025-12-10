@@ -20,7 +20,7 @@
 | 热点规则 | `/dashboard/apps/:app/param-flow` | 热点参数规则  | ✅ 基础完成   |
 | 系统规则 | `/dashboard/apps/:app/system`     | 系统保护规则  | 🔄 缺少编辑   |
 | 授权规则 | `/dashboard/apps/:app/authority`  | 黑白名单规则  | ✅ 基础完成   |
-| 机器列表 | `/dashboard/apps/:app/machines`   | 机器管理      | ✅ 基础完成   |
+| 机器列表 | `/dashboard/apps/:app/instances`  | 机器管理      | ✅ 基础完成   |
 | 集群流控 | `/dashboard/apps/:app/cluster/*`  | 集群流控配置  | 🔄 需完善     |
 
 ---
@@ -61,7 +61,7 @@ const appMenuItems = [
   { key: "system", title: "系统规则", icon: "cog", path: "/system" },
   { key: "authority", title: "授权规则", icon: "key", path: "/authority" },
   { key: "cluster", title: "集群流控", icon: "users", path: "/cluster/server" },
-  { key: "machines", title: "机器列表", icon: "desktop", path: "/machines" },
+  { key: "instances", title: "机器列表", icon: "desktop", path: "/instances" },
 ];
 ```
 
@@ -103,7 +103,7 @@ const appMenuItems = [
 
 **API**：
 
-- `GET /resource/machineResource.json?ip=&port=&type=&searchKey=`
+- `GET /resource/instanceResource.json?ip=&port=&type=&searchKey=`
 
 **组件拆分**：
 
@@ -113,7 +113,7 @@ pages/dashboard/identity/
 ├── components/
 │   ├── ResourceTable.tsx  # 资源表格（支持树状/列表）
 │   ├── ResourceRow.tsx    # 资源行（可展开子节点）
-│   ├── MachineSelector.tsx # 机器选择器
+│   ├── InstanceSelector.tsx # 机器选择器
 │   ├── ViewToggle.tsx     # 视图切换按钮
 │   └── QuickRuleDialog.tsx # 快速添加规则对话框
 ```
@@ -311,7 +311,7 @@ interface RuleDialogProps<T> {
 
 ```typescript
 // 机器选择器 Props
-interface MachineSelectorProps {
+interface InstanceSelectorProps {
   app: string;
   value?: string; // "ip:port"
   onChange: (value: string) => void;
@@ -328,8 +328,8 @@ interface MachineSelectorProps {
 // lib/api/resource.ts - 簇点链路 API
 export const resourceApi = {
   // 获取机器资源链路
-  getMachineResource: (ip: string, port: number, type?: string, searchKey?: string) =>
-    apiClient.get<ClusterNode[]>("/resource/machineResource.json", {
+  getInstanceResource: (ip: string, port: number, type?: string, searchKey?: string) =>
+    apiClient.get<ClusterNode[]>("/resource/instanceResource.json", {
       params: { ip, port, type, searchKey },
     }),
 };
@@ -354,11 +354,11 @@ export const metricApi = {
 
 ```typescript
 // hooks/api/use-resource.ts
-export function useResources(app: string, machine: { ip: string; port: number }) {
+export function useResources(app: string, instance: { ip: string; port: number }) {
   return useQuery({
-    queryKey: ["resources", app, machine.ip, machine.port],
-    queryFn: () => resourceApi.getMachineResource(machine.ip, machine.port),
-    enabled: !!app && !!machine.ip,
+    queryKey: ["resources", app, instance.ip, instance.port],
+    queryFn: () => resourceApi.getInstanceResource(instance.ip, instance.port),
+    enabled: !!app && !!instance.ip,
     refetchInterval: 10000, // 10秒刷新一次
   });
 }
@@ -417,7 +417,7 @@ src/
 │       ├── identity/          # 簇点链路组件
 │       │   ├── ResourceTable.tsx
 │       │   ├── ResourceTreeTable.tsx
-│       │   ├── MachineSelector.tsx
+│       │   ├── InstanceSelector.tsx
 │       │   └── QuickRuleButtons.tsx
 │       │
 │       ├── metric/            # 监控组件
@@ -448,12 +448,12 @@ src/
 │       ├── system/            # 系统规则
 │       ├── authority/         # 授权规则
 │       ├── cluster/           # 集群流控
-│       └── machines/          # 机器列表
+│       └── instances/          # 机器列表
 │
 ├── hooks/
 │   └── api/
 │       ├── use-app.ts
-│       ├── use-machine.ts
+│       ├── use-instance.ts
 │       ├── use-resource.ts    # 新增
 │       ├── use-metric.ts      # 增强
 │       ├── use-flow-rule.ts
@@ -467,7 +467,7 @@ src/
 │   └── api/
 │       ├── client.ts
 │       ├── app.ts
-│       ├── machine.ts
+│       ├── instance.ts
 │       ├── resource.ts        # 新增
 │       ├── metric.ts          # 增强
 │       ├── flow-rule.ts

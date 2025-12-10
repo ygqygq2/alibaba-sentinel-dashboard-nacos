@@ -8,7 +8,6 @@ import { z as zod } from 'zod';
 import { RouterLink } from '@/components/core/link';
 import { DynamicLogo } from '@/components/core/logo';
 import { toaster } from '@/components/ui/toaster';
-import { useSettings } from '@/hooks/use-settings';
 import { useUser } from '@/hooks/use-user';
 import { authClient } from '@/lib/auth/client';
 import { paths } from '@/paths';
@@ -27,7 +26,6 @@ const defaultValues = (
 
 export function SignInForm(): React.JSX.Element {
   const { checkSession } = useUser();
-  const { settings } = useSettings();
 
   const [showPassword, setShowPassword] = React.useState<boolean>();
 
@@ -36,7 +34,6 @@ export function SignInForm(): React.JSX.Element {
   const {
     control,
     handleSubmit,
-    setError,
     formState: { errors },
   } = useForm<Values>({ defaultValues, resolver: zodResolver(schema) });
 
@@ -151,7 +148,6 @@ export function SignInForm(): React.JSX.Element {
                 loading={isPending}
                 type="submit"
                 variant="solid"
-                
               >
                 登录
               </Button>

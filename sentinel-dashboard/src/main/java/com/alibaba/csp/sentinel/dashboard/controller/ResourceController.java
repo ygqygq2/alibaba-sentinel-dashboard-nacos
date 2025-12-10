@@ -46,7 +46,7 @@ public class ResourceController {
     private SentinelApiClient httpFetcher;
 
     /**
-     * Fetch real time statistics info of the machine.
+     * Fetch real time statistics info of the instance.
      *
      * @param ip        ip to fetch
      * @param port      port of the ip
@@ -55,8 +55,8 @@ public class ResourceController {
      * @param searchKey key to search
      * @return node statistics info.
      */
-    @GetMapping("/machineResource.json")
-    public Result<List<ResourceVo>> fetchResourceChainListOfMachine(String ip, Integer port, String type,
+    @GetMapping("/instanceResource.json")
+    public Result<List<ResourceVo>> fetchResourceChainListOfInstance(String ip, Integer port, String type,
                                                                     String searchKey) {
         if (StringUtil.isEmpty(ip) || port == null) {
             return Result.ofFail(-1, "invalid param, give ip, port");
@@ -67,7 +67,7 @@ public class ResourceController {
             type = ROOT;
         }
         if (ROOT.equalsIgnoreCase(type) || DEFAULT.equalsIgnoreCase(type)) {
-            List<NodeVo> nodeVos = httpFetcher.fetchResourceOfMachine(ip, port, type);
+            List<NodeVo> nodeVos = httpFetcher.fetchResourceOfInstance(ip, port, type);
             if (nodeVos == null) {
                 return Result.ofSuccess(null);
             }
@@ -76,7 +76,7 @@ public class ResourceController {
             return Result.ofSuccess(ResourceVo.fromResourceTreeNode(treeNode));
         } else {
             // Normal (cluster node).
-            List<NodeVo> nodeVos = httpFetcher.fetchClusterNodeOfMachine(ip, port, true);
+            List<NodeVo> nodeVos = httpFetcher.fetchClusterNodeOfInstance(ip, port, true);
             if (nodeVos == null) {
                 return Result.ofSuccess(null);
             }

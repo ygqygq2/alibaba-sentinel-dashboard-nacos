@@ -135,6 +135,9 @@ public class SentinelApiClient {
     
     @Autowired
     private AppManagement appManagement;
+    
+    @Autowired
+    private com.alibaba.csp.sentinel.dashboard.config.AuthProperties authProperties;
 
     public SentinelApiClient() {
         IOReactorConfig ioConfig = IOReactorConfig.custom().setConnectTimeout(3000).setSoTimeout(10000)
@@ -181,7 +184,7 @@ public class SentinelApiClient {
     
     protected boolean isSupportPost(String app, String ip, int port) {
         return StringUtil.isNotEmpty(app) && Optional.ofNullable(appManagement.getDetailApp(app))
-                .flatMap(e -> e.getMachine(ip, port))
+                .flatMap(e -> e.getInstance(ip, port))
                 .flatMap(m -> VersionUtils.parseVersion(m.getVersion())
                     .map(v -> v.greaterOrEqual(version160)))
                 .orElse(false);
@@ -197,7 +200,7 @@ public class SentinelApiClient {
      */
     protected boolean isSupportEnhancedContentType(String app, String ip, int port) {
         return StringUtil.isNotEmpty(app) && Optional.ofNullable(appManagement.getDetailApp(app))
-                .flatMap(e -> e.getMachine(ip, port))
+                .flatMap(e -> e.getInstance(ip, port))
                 .flatMap(m -> VersionUtils.parseVersion(m.getVersion())
                     .map(v -> v.greaterOrEqual(version171)))
                 .orElse(false);
@@ -312,7 +315,7 @@ public class SentinelApiClient {
             future.completeExceptionally(new IllegalArgumentException("Bad IP or hostname"));
             return future;
         }
-        if (!StringUtil.isEmpty(app) && !appManagement.isValidMachineOfApp(app, ip)) {
+        if (!StringUtil.isEmpty(app) && !appManagement.isValidInstanceOfApp(app, ip)) {
             future.completeExceptionally(new IllegalArgumentException("Given ip does not belong to given app"));
             return future;
         }
@@ -320,7 +323,17 @@ public class SentinelApiClient {
         urlBuilder.append("http://");
         urlBuilder.append(ip).append(':').append(port).append('/').append(api);
         if (params == null) {
-            params = Collections.emptyMap();
+            params = new HashMap<>();
+        } else {
+            params = new HashMap<>(params); // 创建副本，避免修改原参数
+        }
+        
+        // 扩展：如果配置了 app_secret，自动添加到所有 Dashboard → Client 的 API 调用中
+        // 这样客户端可以验证请求是否来自可信的 Dashboard
+        if (authProperties != null && authProperties.isEnabled() 
+            && StringUtil.isNotBlank(authProperties.getAppSecret())) {
+            params.put("app_secret", authProperties.getAppSecret());
+            logger.debug("[Auth] Adding app_secret to API call: {} -> {}:{}{}", app, ip, port, api);
         }
         if (!useHttpPost || !isSupportPost(app, ip, port)) {
             // Using GET in older versions, append parameters after url
@@ -384,8 +397,8 @@ public class SentinelApiClient {
     
     @Nullable
     private <T> CompletableFuture<List<T>> fetchItemsAsync(String ip, int port, String api, String type, Class<T> ruleType) {
-        AssertUtil.notEmpty(ip, "Bad machine IP");
-        AssertUtil.isTrue(port > 0, "Bad machine port");
+        AssertUtil.notEmpty(ip, "Bad instance IP");
+        AssertUtil.isTrue(port > 0, "Bad instance port");
         Map<String, String> params = null;
         if (StringUtil.isNotEmpty(type)) {
             params = new HashMap<>(1);
@@ -398,8 +411,8 @@ public class SentinelApiClient {
     @Nullable
     private <T> List<T> fetchItems(String ip, int port, String api, String type, Class<T> ruleType) {
         try {
-            AssertUtil.notEmpty(ip, "Bad machine IP");
-            AssertUtil.isTrue(port > 0, "Bad machine port");
+            AssertUtil.notEmpty(ip, "Bad instance IP");
+            AssertUtil.isTrue(port > 0, "Bad instance port");
             Map<String, String> params = null;
             if (StringUtil.isNotEmpty(type)) {
                 params = new HashMap<>(1);
@@ -425,8 +438,8 @@ public class SentinelApiClient {
         }
         try {
             AssertUtil.notEmpty(app, "Bad app name");
-            AssertUtil.notEmpty(ip, "Bad machine IP");
-            AssertUtil.isTrue(port > 0, "Bad machine port");
+            AssertUtil.notEmpty(ip, "Bad instance IP");
+            AssertUtil.isTrue(port > 0, "Bad instance port");
             String data = JSON.toJSONString(
                     entities.stream().map(r -> r.toRule()).collect(Collectors.toList()));
             Map<String, String> params = new HashMap<>(2);
@@ -451,8 +464,8 @@ public class SentinelApiClient {
         try {
             AssertUtil.notNull(entities, "rules cannot be null");
             AssertUtil.notEmpty(app, "Bad app name");
-            AssertUtil.notEmpty(ip, "Bad machine IP");
-            AssertUtil.isTrue(port > 0, "Bad machine port");
+            AssertUtil.notEmpty(ip, "Bad instance IP");
+            AssertUtil.isTrue(port > 0, "Bad instance port");
             String data = JSON.toJSONString(
                 entities.stream().map(r -> r.toRule()).collect(Collectors.toList()));
             Map<String, String> params = new HashMap<>(2);
@@ -471,7 +484,7 @@ public class SentinelApiClient {
         }
     }
 
-    public List<NodeVo> fetchResourceOfMachine(String ip, int port, String type) {
+    public List<NodeVo> fetchResourceOfInstance(String ip, int port, String type) {
         return fetchItems(ip, port, RESOURCE_URL_PATH, type, NodeVo.class);
     }
 
@@ -483,7 +496,7 @@ public class SentinelApiClient {
      * @param includeZero whether zero value should in the result list.
      * @return
      */
-    public List<NodeVo> fetchClusterNodeOfMachine(String ip, int port, boolean includeZero) {
+    public List<NodeVo> fetchClusterNodeOfInstance(String ip, int port, boolean includeZero) {
         String type = "notZero";
         if (includeZero) {
             type = "zero";
@@ -491,7 +504,7 @@ public class SentinelApiClient {
         return fetchItems(ip, port, CLUSTER_NODE_PATH, type, NodeVo.class);
     }
 
-    public List<FlowRuleEntity> fetchFlowRuleOfMachine(String app, String ip, int port) {
+    public List<FlowRuleEntity> fetchFlowRuleOfInstance(String app, String ip, int port) {
         List<FlowRule> rules = fetchRules(ip, port, FLOW_RULE_TYPE, FlowRule.class);
         if (rules != null) {
             return rules.stream().map(rule -> FlowRuleEntity.fromFlowRule(app, ip, port, rule))
@@ -501,7 +514,7 @@ public class SentinelApiClient {
         }
     }
 
-    public List<DegradeRuleEntity> fetchDegradeRuleOfMachine(String app, String ip, int port) {
+    public List<DegradeRuleEntity> fetchDegradeRuleOfInstance(String app, String ip, int port) {
         List<DegradeRule> rules = fetchRules(ip, port, DEGRADE_RULE_TYPE, DegradeRule.class);
         if (rules != null) {
             return rules.stream().map(rule -> DegradeRuleEntity.fromDegradeRule(app, ip, port, rule))
@@ -511,7 +524,7 @@ public class SentinelApiClient {
         }
     }
 
-    public List<SystemRuleEntity> fetchSystemRuleOfMachine(String app, String ip, int port) {
+    public List<SystemRuleEntity> fetchSystemRuleOfInstance(String app, String ip, int port) {
         List<SystemRule> rules = fetchRules(ip, port, SYSTEM_RULE_TYPE, SystemRule.class);
         if (rules != null) {
             return rules.stream().map(rule -> SystemRuleEntity.fromSystemRule(app, ip, port, rule))
@@ -522,19 +535,19 @@ public class SentinelApiClient {
     }
 
     /**
-     * Fetch all parameter flow rules from provided machine.
+     * Fetch all parameter flow rules from provided instance.
      *
      * @param app  application name
-     * @param ip   machine client IP
-     * @param port machine client port
+     * @param ip   instance client IP
+     * @param port instance client port
      * @return all retrieved parameter flow rules
      * @since 0.2.1
      */
-    public CompletableFuture<List<ParamFlowRuleEntity>> fetchParamFlowRulesOfMachine(String app, String ip, int port) {
+    public CompletableFuture<List<ParamFlowRuleEntity>> fetchParamFlowRulesOfInstance(String app, String ip, int port) {
         try {
             AssertUtil.notEmpty(app, "Bad app name");
-            AssertUtil.notEmpty(ip, "Bad machine IP");
-            AssertUtil.isTrue(port > 0, "Bad machine port");
+            AssertUtil.notEmpty(ip, "Bad instance IP");
+            AssertUtil.isTrue(port > 0, "Bad instance port");
             return fetchItemsAsync(ip, port, GET_PARAM_RULE_PATH, null, ParamFlowRule.class)
                 .thenApply(rules -> rules.stream()
                     .map(e -> ParamFlowRuleEntity.fromParamFlowRule(app, ip, port, e))
@@ -547,18 +560,18 @@ public class SentinelApiClient {
     }
 
     /**
-     * Fetch all authority rules from provided machine.
+     * Fetch all authority rules from provided instance.
      *
      * @param app  application name
-     * @param ip   machine client IP
-     * @param port machine client port
+     * @param ip   instance client IP
+     * @param port instance client port
      * @return all retrieved authority rules
      * @since 0.2.1
      */
-    public List<AuthorityRuleEntity> fetchAuthorityRulesOfMachine(String app, String ip, int port) {
+    public List<AuthorityRuleEntity> fetchAuthorityRulesOfInstance(String app, String ip, int port) {
         AssertUtil.notEmpty(app, "Bad app name");
-        AssertUtil.notEmpty(ip, "Bad machine IP");
-        AssertUtil.isTrue(port > 0, "Bad machine port");
+        AssertUtil.notEmpty(ip, "Bad instance IP");
+        AssertUtil.isTrue(port > 0, "Bad instance port");
         Map<String, String> params = new HashMap<>(1);
         params.put("type", AUTHORITY_TYPE);
         List<AuthorityRule> rules = fetchRules(ip, port, AUTHORITY_TYPE, AuthorityRule.class);
@@ -569,7 +582,7 @@ public class SentinelApiClient {
     }
 
     /**
-     * set rules of the machine. rules == null will return immediately;
+     * set rules of the instance. rules == null will return immediately;
      * rules.isEmpty() means setting the rules to empty.
      *
      * @param app
@@ -578,16 +591,16 @@ public class SentinelApiClient {
      * @param rules
      * @return whether successfully set the rules.
      */
-    public boolean setFlowRuleOfMachine(String app, String ip, int port, List<FlowRuleEntity> rules) {
+    public boolean setFlowRuleOfInstance(String app, String ip, int port, List<FlowRuleEntity> rules) {
         return setRules(app, ip, port, FLOW_RULE_TYPE, rules);
     }
 
-    public CompletableFuture<Void> setFlowRuleOfMachineAsync(String app, String ip, int port, List<FlowRuleEntity> rules) {
+    public CompletableFuture<Void> setFlowRuleOfInstanceAsync(String app, String ip, int port, List<FlowRuleEntity> rules) {
         return setRulesAsync(app, ip, port, FLOW_RULE_TYPE, rules);
     }
 
     /**
-     * set rules of the machine. rules == null will return immediately;
+     * set rules of the instance. rules == null will return immediately;
      * rules.isEmpty() means setting the rules to empty.
      *
      * @param app
@@ -596,12 +609,12 @@ public class SentinelApiClient {
      * @param rules
      * @return whether successfully set the rules.
      */
-    public boolean setDegradeRuleOfMachine(String app, String ip, int port, List<DegradeRuleEntity> rules) {
+    public boolean setDegradeRuleOfInstance(String app, String ip, int port, List<DegradeRuleEntity> rules) {
         return setRules(app, ip, port, DEGRADE_RULE_TYPE, rules);
     }
 
     /**
-     * set rules of the machine. rules == null will return immediately;
+     * set rules of the instance. rules == null will return immediately;
      * rules.isEmpty() means setting the rules to empty.
      *
      * @param app
@@ -610,15 +623,15 @@ public class SentinelApiClient {
      * @param rules
      * @return whether successfully set the rules.
      */
-    public boolean setSystemRuleOfMachine(String app, String ip, int port, List<SystemRuleEntity> rules) {
+    public boolean setSystemRuleOfInstance(String app, String ip, int port, List<SystemRuleEntity> rules) {
         return setRules(app, ip, port, SYSTEM_RULE_TYPE, rules);
     }
 
-    public boolean setAuthorityRuleOfMachine(String app, String ip, int port, List<AuthorityRuleEntity> rules) {
+    public boolean setAuthorityRuleOfInstance(String app, String ip, int port, List<AuthorityRuleEntity> rules) {
         return setRules(app, ip, port, AUTHORITY_TYPE, rules);
     }
 
-    public CompletableFuture<Void> setParamFlowRuleOfMachine(String app, String ip, int port, List<ParamFlowRuleEntity> rules) {
+    public CompletableFuture<Void> setParamFlowRuleOfInstance(String app, String ip, int port, List<ParamFlowRuleEntity> rules) {
         if (rules == null) {
             return CompletableFuture.completedFuture(null);
         }
@@ -829,8 +842,8 @@ public class SentinelApiClient {
 
         try {
             AssertUtil.notEmpty(app, "Bad app name");
-            AssertUtil.notEmpty(ip, "Bad machine IP");
-            AssertUtil.isTrue(port > 0, "Bad machine port");
+            AssertUtil.notEmpty(ip, "Bad instance IP");
+            AssertUtil.isTrue(port > 0, "Bad instance port");
             String data = JSON.toJSONString(
                     apis.stream().map(r -> r.toApiDefinition()).collect(Collectors.toList()));
             Map<String, String> params = new HashMap<>(2);
@@ -869,8 +882,8 @@ public class SentinelApiClient {
 
         try {
             AssertUtil.notEmpty(app, "Bad app name");
-            AssertUtil.notEmpty(ip, "Bad machine IP");
-            AssertUtil.isTrue(port > 0, "Bad machine port");
+            AssertUtil.notEmpty(ip, "Bad instance IP");
+            AssertUtil.isTrue(port > 0, "Bad instance port");
             String data = JSON.toJSONString(
                     rules.stream().map(r -> r.toGatewayFlowRule()).collect(Collectors.toList()));
             Map<String, String> params = new HashMap<>(2);

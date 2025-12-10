@@ -11,7 +11,9 @@ export const metricKeys = {
   all: ['metrics'] as const,
   topResource: (app: string) => [...metricKeys.all, 'topResource', app] as const,
   byResource: (app: string, resource: string) => [...metricKeys.all, 'byResource', app, resource] as const,
-  byMachine: (app: string, ip: string, port: number) => [...metricKeys.all, 'byMachine', app, ip, port] as const,
+  byInstance: (app: string, ip: string, port: number) => [...metricKeys.all, 'byInstance', app, ip, port] as const,
+  byViewMode: (app: string, viewMode: 'aggregate' | 'instance', instance?: string) =>
+    [...metricKeys.all, 'byViewMode', app, viewMode, instance] as const,
 };
 
 /**
@@ -59,9 +61,9 @@ export function useResourceMetric(
 }
 
 /**
- * 按机器获取监控数据
+ * 按实例获取监控数据
  */
-export function useMachineMetric(
+export function useInstanceMetric(
   app: string,
   ip: string,
   port: number,
@@ -74,9 +76,32 @@ export function useMachineMetric(
   const { startTime, endTime, refetchInterval = 10000 } = options ?? {};
 
   return useQuery({
-    queryKey: metricKeys.byMachine(app, ip, port),
-    queryFn: () => metricApi.queryByMachine(app, ip, port, startTime, endTime),
+    queryKey: metricKeys.byInstance(app, ip, port),
+    queryFn: () => metricApi.queryByInstance(app, ip, port, startTime, endTime),
     enabled: !!app && !!ip && !!port,
+    refetchInterval,
+  });
+}
+
+/**
+ * 按视图模式获取监控数据
+ */
+export function useMetricByViewMode(
+  app: string,
+  viewMode: 'aggregate' | 'instance',
+  options?: {
+    instance?: string; // ip:port 格式
+    startTime?: number;
+    endTime?: number;
+    refetchInterval?: number | false;
+  }
+) {
+  const { instance, startTime, endTime, refetchInterval = false } = options ?? {};
+
+  return useQuery({
+    queryKey: metricKeys.byViewMode(app, viewMode, instance),
+    queryFn: () => metricApi.queryByViewMode(app, viewMode, instance, startTime, endTime),
+    enabled: !!app && (viewMode === 'aggregate' || !!instance), // 实例视图需要选择实例
     refetchInterval,
   });
 }

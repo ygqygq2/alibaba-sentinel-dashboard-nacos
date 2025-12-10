@@ -113,9 +113,7 @@ export function RuleListPage<T>({
                 应用：{app}
               </Text>
             </Box>
-            <Button
-              onClick={onCreate}
-            >
+            <Button onClick={onCreate}>
               <Icon icon="mdi:plus" />
               新增规则
             </Button>

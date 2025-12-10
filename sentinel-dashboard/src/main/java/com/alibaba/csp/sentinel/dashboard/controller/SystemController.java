@@ -25,7 +25,7 @@ import com.alibaba.csp.sentinel.dashboard.repository.rule.RuleRepository;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.InstanceInfo;
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 
@@ -62,7 +62,7 @@ public class SystemController {
         if (port == null) {
             return Result.ofFail(-1, "port can't be null");
         }
-        if (!appManagement.isValidMachineOfApp(app, ip)) {
+        if (!appManagement.isValidInstanceOfApp(app, ip)) {
             return Result.ofFail(-1, "given ip does not belong to given app");
         }
         if (port <= 0 || port > 65535) {
@@ -73,18 +73,18 @@ public class SystemController {
 
     @GetMapping("/rules.json")
     @AuthAction(PrivilegeType.READ_RULE)
-    public Result<List<SystemRuleEntity>> apiQueryMachineRules(String app, String ip,
+    public Result<List<SystemRuleEntity>> apiQueryInstanceRules(String app, String ip,
                                                                Integer port) {
         Result<List<SystemRuleEntity>> checkResult = checkBasicParams(app, ip, port);
         if (checkResult != null) {
             return checkResult;
         }
         try {
-            List<SystemRuleEntity> rules = sentinelApiClient.fetchSystemRuleOfMachine(app, ip, port);
+            List<SystemRuleEntity> rules = sentinelApiClient.fetchSystemRuleOfInstance(app, ip, port);
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
-            logger.error("Query machine system rules error", throwable);
+            logger.error("Query instance system rules error", throwable);
             return Result.ofThrowable(-1, throwable);
         }
     }
@@ -250,7 +250,7 @@ public class SystemController {
     }
 
     private boolean publishRules(String app, String ip, Integer port) {
-        List<SystemRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.setSystemRuleOfMachine(app, ip, port, rules);
+        List<SystemRuleEntity> rules = repository.findAllByInstance(InstanceInfo.of(app, ip, port));
+        return sentinelApiClient.setSystemRuleOfInstance(app, ip, port, rules);
     }
 }

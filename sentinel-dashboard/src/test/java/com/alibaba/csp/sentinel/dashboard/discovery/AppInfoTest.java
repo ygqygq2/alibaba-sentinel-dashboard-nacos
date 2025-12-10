@@ -27,14 +27,14 @@ import static org.junit.Assert.*;
 public class AppInfoTest {
 
     @Test
-    public void testConcurrentGetMachines() throws Exception {
+    public void testConcurrentGetInstances() throws Exception {
         AppInfo appInfo = new AppInfo("testApp");
-        appInfo.addMachine(genMachineInfo("hostName1", "10.18.129.91"));
-        appInfo.addMachine(genMachineInfo("hostName2", "10.18.129.92"));
-        Set<MachineInfo> machines = appInfo.getMachines();
+        appInfo.addInstance(genInstanceInfo("hostName1", "10.18.129.91"));
+        appInfo.addInstance(genInstanceInfo("hostName2", "10.18.129.92"));
+        Set<InstanceInfo> instances = appInfo.getInstances();
         new Thread(() -> {
             try {
-                for (MachineInfo m : machines) {
+                for (InstanceInfo m : instances) {
                     System.out.println(m);
                     try {
                         Thread.sleep(200);
@@ -49,7 +49,7 @@ public class AppInfoTest {
         }).start();
         Thread.sleep(100);
         try {
-            appInfo.addMachine(genMachineInfo("hostName3", "10.18.129.93"));
+            appInfo.addInstance(genInstanceInfo("hostName3", "10.18.129.93"));
         } catch (ConcurrentModificationException e) {
             e.printStackTrace();
             fail();
@@ -57,101 +57,100 @@ public class AppInfoTest {
         Thread.sleep(1000);
     }
 
-    private MachineInfo genMachineInfo(String hostName, String ip) {
-        MachineInfo machine = new MachineInfo();
-        machine.setApp("testApp");
-        machine.setHostname(hostName);
-        machine.setIp(ip);
-        machine.setPort(8719);
-        machine.setVersion(String.valueOf(System.currentTimeMillis()));
-        return machine;
+    private InstanceInfo genInstanceInfo(String hostName, String ip) {
+        InstanceInfo instance = new InstanceInfo();
+        instance.setApp("testApp");
+        instance.setHostname(hostName);
+        instance.setIp(ip);
+        instance.setPort(8719);
+        instance.setVersion(String.valueOf(System.currentTimeMillis()));
+        return instance;
     }
 
     @Test
-    public void addRemoveMachineTest() {
+    public void addRemoveInstanceTest() {
         AppInfo appInfo = new AppInfo("default");
         assertEquals("default", appInfo.getApp());
-        assertEquals(0, appInfo.getMachines().size());
+        assertEquals(0, appInfo.getInstances().size());
         //add one
         {
-            MachineInfo machineInfo = new MachineInfo();
-            machineInfo.setApp("default");
-            machineInfo.setHostname("bogon");
-            machineInfo.setIp("127.0.0.1");
-            machineInfo.setPort(3389);
-            machineInfo.setLastHeartbeat(System.currentTimeMillis());
-            machineInfo.setHeartbeatVersion(1);
-            machineInfo.setVersion("0.4.1");
-            appInfo.addMachine(machineInfo);
+            InstanceInfo instanceInfo = new InstanceInfo();
+            instanceInfo.setApp("default");
+            instanceInfo.setHostname("bogon");
+            instanceInfo.setIp("127.0.0.1");
+            instanceInfo.setPort(3389);
+            instanceInfo.setLastHeartbeat(System.currentTimeMillis());
+            instanceInfo.setHeartbeatVersion(1);
+            instanceInfo.setVersion("0.4.1");
+            appInfo.addInstance(instanceInfo);
         }
-        assertEquals(1, appInfo.getMachines().size());
+        assertEquals(1, appInfo.getInstances().size());
         //add duplicated one
         {
-            MachineInfo machineInfo = new MachineInfo();
-            machineInfo.setApp("default");
-            machineInfo.setHostname("bogon");
-            machineInfo.setIp("127.0.0.1");
-            machineInfo.setPort(3389);
-            machineInfo.setLastHeartbeat(System.currentTimeMillis());
-            machineInfo.setHeartbeatVersion(1);
-            machineInfo.setVersion("0.4.2");
-            appInfo.addMachine(machineInfo);
+            InstanceInfo instanceInfo = new InstanceInfo();
+            instanceInfo.setApp("default");
+            instanceInfo.setHostname("bogon");
+            instanceInfo.setIp("127.0.0.1");
+            instanceInfo.setPort(3389);
+            instanceInfo.setLastHeartbeat(System.currentTimeMillis());
+            instanceInfo.setHeartbeatVersion(1);
+            instanceInfo.setVersion("0.4.2");
+            appInfo.addInstance(instanceInfo);
         }
-        assertEquals(1, appInfo.getMachines().size());
+        assertEquals(1, appInfo.getInstances().size());
         //add different one
         {
-            MachineInfo machineInfo = new MachineInfo();
-            machineInfo.setApp("default");
-            machineInfo.setHostname("bogon");
-            machineInfo.setIp("127.0.0.1");
-            machineInfo.setPort(3390);
-            machineInfo.setLastHeartbeat(System.currentTimeMillis());
-            machineInfo.setHeartbeatVersion(1);
-            machineInfo.setVersion("0.4.3");
-            appInfo.addMachine(machineInfo);
+            InstanceInfo instanceInfo = new InstanceInfo();
+            instanceInfo.setApp("default");
+            instanceInfo.setHostname("bogon");
+            instanceInfo.setIp("127.0.0.1");
+            instanceInfo.setPort(3390);
+            instanceInfo.setLastHeartbeat(System.currentTimeMillis());
+            instanceInfo.setHeartbeatVersion(1);
+            instanceInfo.setVersion("0.4.3");
+            appInfo.addInstance(instanceInfo);
         }
-        assertEquals(2, appInfo.getMachines().size());
-        appInfo.removeMachine("127.0.0.1", 3389);
-        assertEquals(1, appInfo.getMachines().size());
-        appInfo.removeMachine("127.0.0.1", 3390);
-        assertEquals(0, appInfo.getMachines().size());
+        assertEquals(2, appInfo.getInstances().size());
+        appInfo.removeInstance("127.0.0.1", 3389);
+        assertEquals(1, appInfo.getInstances().size());
+        appInfo.removeInstance("127.0.0.1", 3390);
+        assertEquals(0, appInfo.getInstances().size());
     }
 
     @Test
     public void testHealthyAndDead() {
-        System.setProperty(DashboardConfig.CONFIG_HIDE_APP_NO_MACHINE_MILLIS, "60000");
-        System.setProperty(DashboardConfig.CONFIG_REMOVE_APP_NO_MACHINE_MILLIS, "600000");
+        System.setProperty(DashboardConfig.CONFIG_HIDE_APP_NO_INSTANCE_MILLIS, "60000");
+        System.setProperty(DashboardConfig.CONFIG_REMOVE_APP_NO_INSTANCE_MILLIS, "600000");
         DashboardConfig.clearCache();
         String appName = "default";
         AppInfo appInfo = new AppInfo();
         appInfo.setApp(appName);
         {
-            MachineInfo machineInfo = MachineInfo.of(appName, "127.0.0.1", 8801);
-            machineInfo.setHeartbeatVersion(1);
-            machineInfo.setLastHeartbeat(System.currentTimeMillis());
-            appInfo.addMachine(machineInfo);
+            InstanceInfo instanceInfo = InstanceInfo.of(appName, "127.0.0.1", 8801);
+            instanceInfo.setHeartbeatVersion(1);
+            instanceInfo.setLastHeartbeat(System.currentTimeMillis());
+            appInfo.addInstance(instanceInfo);
         }
         assertTrue(appInfo.isShown());
         assertFalse(appInfo.isDead());
 
         {
-            MachineInfo machineInfo = MachineInfo.of(appName, "127.0.0.1", 8801);
-            machineInfo.setHeartbeatVersion(1);
-            machineInfo.setLastHeartbeat(System.currentTimeMillis() - 70000);
-            appInfo.addMachine(machineInfo);
+            InstanceInfo instanceInfo = InstanceInfo.of(appName, "127.0.0.1", 8801);
+            instanceInfo.setHeartbeatVersion(1);
+            instanceInfo.setLastHeartbeat(System.currentTimeMillis() - 70000);
+            appInfo.addInstance(instanceInfo);
         }
         assertFalse(appInfo.isShown());
         assertFalse(appInfo.isDead());
 
         {
-            MachineInfo machineInfo = MachineInfo.of(appName, "127.0.0.1", 8801);
-            machineInfo.setHeartbeatVersion(1);
-            machineInfo.setLastHeartbeat(System.currentTimeMillis() - 700000);
-            appInfo.addMachine(machineInfo);
+            InstanceInfo instanceInfo = InstanceInfo.of(appName, "127.0.0.1", 8801);
+            instanceInfo.setHeartbeatVersion(1);
+            instanceInfo.setLastHeartbeat(System.currentTimeMillis() - 700000);
+            appInfo.addInstance(instanceInfo);
         }
         assertFalse(appInfo.isShown());
         assertTrue(appInfo.isDead());
     }
 
 }
-

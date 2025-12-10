@@ -94,10 +94,10 @@ public class ClusterConfigService {
     }
 
     /**
-     * Get cluster state list of all available machines of provided application.
+     * Get cluster state list of all available instances of provided application.
      *
      * @param app application name
-     * @return cluster state list of all available machines of the application
+     * @return cluster state list of all available instances of the application
      * @since 1.4.1
      */
     public CompletableFuture<List<ClusterUniversalStatePairVO>> getClusterUniversalState(String app) {
@@ -105,43 +105,43 @@ public class ClusterConfigService {
             return AsyncUtils.newFailedFuture(new IllegalArgumentException("app cannot be empty"));
         }
         AppInfo appInfo = appManagement.getDetailApp(app);
-        if (appInfo == null || appInfo.getMachines() == null) {
+        if (appInfo == null || appInfo.getInstances() == null) {
             return CompletableFuture.completedFuture(new ArrayList<>());
         }
 
-        List<CompletableFuture<ClusterUniversalStatePairVO>> futures = appInfo.getMachines().stream()
+        List<CompletableFuture<ClusterUniversalStatePairVO>> futures = appInfo.getInstances().stream()
             .filter(e -> e.isHealthy())
-            .map(machine -> getClusterUniversalState(app, machine.getIp(), machine.getPort())
-                .thenApply(e -> new ClusterUniversalStatePairVO(machine.getIp(), machine.getPort(), e)))
+            .map(instance -> getClusterUniversalState(app, instance.getIp(), instance.getPort())
+                .thenApply(e -> new ClusterUniversalStatePairVO(instance.getIp(), instance.getPort(), e)))
             .collect(Collectors.toList());
 
         return AsyncUtils.sequenceSuccessFuture(futures);
     }
 
-    public CompletableFuture<ClusterGroupEntity> getClusterUniversalStateForAppMachine(String app, String machineId) {
+    public CompletableFuture<ClusterGroupEntity> getClusterUniversalStateForAppInstance(String app, String instanceId) {
         if (StringUtil.isBlank(app)) {
             return AsyncUtils.newFailedFuture(new IllegalArgumentException("app cannot be empty"));
         }
         AppInfo appInfo = appManagement.getDetailApp(app);
-        if (appInfo == null || appInfo.getMachines() == null) {
-            return AsyncUtils.newFailedFuture(new IllegalArgumentException("app does not have machines"));
+        if (appInfo == null || appInfo.getInstances() == null) {
+            return AsyncUtils.newFailedFuture(new IllegalArgumentException("app does not have instances"));
         }
 
-        boolean machineOk = appInfo.getMachines().stream()
+        boolean instanceOk = appInfo.getInstances().stream()
             .filter(e -> e.isHealthy())
             .map(e -> e.getIp() + '@' + e.getPort())
-            .anyMatch(e -> e.equals(machineId));
-        if (!machineOk) {
-            return AsyncUtils.newFailedFuture(new IllegalStateException("machine does not exist or disconnected"));
+            .anyMatch(e -> e.equals(instanceId));
+        if (!instanceOk) {
+            return AsyncUtils.newFailedFuture(new IllegalStateException("instance does not exist or disconnected"));
         }
 
         return getClusterUniversalState(app)
             .thenApply(ClusterEntityUtils::wrapToClusterGroup)
             .thenCompose(e -> e.stream()
-                .filter(e1 -> e1.getMachineId().equals(machineId))
+                .filter(e1 -> e1.getInstanceId().equals(instanceId))
                 .findAny()
                 .map(CompletableFuture::completedFuture)
-                .orElse(AsyncUtils.newFailedFuture(new IllegalStateException("not a server: " + machineId)))
+                .orElse(AsyncUtils.newFailedFuture(new IllegalStateException("not a server: " + instanceId)))
             );
     }
 

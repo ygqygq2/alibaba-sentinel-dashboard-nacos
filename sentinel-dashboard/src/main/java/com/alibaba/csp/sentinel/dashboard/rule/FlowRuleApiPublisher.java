@@ -20,7 +20,7 @@ import java.util.Set;
 
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.InstanceInfo;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
@@ -47,14 +47,14 @@ public class FlowRuleApiPublisher implements DynamicRulePublisher<List<FlowRuleE
         if (rules == null) {
             return;
         }
-        Set<MachineInfo> set = appManagement.getDetailApp(app).getMachines();
+        Set<InstanceInfo> set = appManagement.getDetailApp(app).getInstances();
 
-        for (MachineInfo machine : set) {
-            if (!machine.isHealthy()) {
+        for (InstanceInfo instance : set) {
+            if (!instance.isHealthy()) {
                 continue;
             }
             // TODO: parse the results
-            sentinelApiClient.setFlowRuleOfMachine(app, machine.getIp(), machine.getPort(), rules);
+            sentinelApiClient.setFlowRuleOfInstance(app, instance.getIp(), instance.getPort(), rules);
         }
     }
 }

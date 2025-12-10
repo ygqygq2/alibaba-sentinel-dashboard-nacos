@@ -52,9 +52,9 @@ public interface AuthService<R> {
          */
         READ_METRIC,
         /**
-         * Add machine
+         * Add instance
          */
-        ADD_MACHINE,
+        ADD_INSTANCE,
         /**
          * All privileges above are granted.
          */

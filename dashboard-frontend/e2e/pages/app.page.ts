@@ -268,8 +268,8 @@ export class ClusterLinkPage {
     });
   }
 
-  async selectMachine(machineId: string) {
-    await this.page.click(`text=${machineId}`);
+  async selectInstance(instanceId: string) {
+    await this.page.click(`text=${instanceId}`);
     await this.page.waitForLoadState('networkidle');
   }
 
@@ -288,27 +288,27 @@ export class ClusterLinkPage {
 /**
  * 机器列表页面
  */
-export class MachinePage {
+export class InstancePage {
   constructor(private page: Page) {}
 
   async goto(appName: string) {
-    await this.page.goto(`/dashboard/apps/${appName}/machines`);
+    await this.page.goto(`/dashboard/apps/${appName}/instances`);
     await this.page.waitForLoadState('networkidle');
   }
 
   async expectLoaded() {
-    await expect(this.page.locator('main, [data-testid="machine-list"], table').first()).toBeVisible({
+    await expect(this.page.locator('main, [data-testid="instance-list"], table').first()).toBeVisible({
       timeout: 10000,
     });
   }
 
-  async getMachineCount(): Promise<number> {
-    const rows = this.page.locator('table tbody tr, [data-testid="machine-item"]');
+  async getInstanceCount(): Promise<number> {
+    const rows = this.page.locator('table tbody tr, [data-testid="instance-item"]');
     return await rows.count();
   }
 
-  async expectMachineHealthy(machineId: string) {
-    const machineRow = this.page.locator(`tr:has-text("${machineId}")`);
-    await expect(machineRow.locator('text=健康, text=Healthy, .status-healthy')).toBeVisible();
+  async expectInstanceHealthy(instanceId: string) {
+    const instanceRow = this.page.locator(`tr:has-text("${instanceId}")`);
+    await expect(instanceRow.locator('text=健康, text=Healthy, .status-healthy')).toBeVisible();
   }
 }

@@ -8,8 +8,8 @@
 export interface ClusterState {
   /** 应用名称 */
   app: string;
-  /** 机器 ID */
-  machineId: string;
+  /** 实例 ID */
+  instanceId: string;
   /** IP 地址 */
   ip: string;
   /** 端口 */
@@ -62,8 +62,8 @@ export interface ClusterServerConfig {
 export interface TokenServer {
   /** 应用名称 */
   app: string;
-  /** 机器 ID */
-  machineId: string;
+  /** 实例 ID */
+  instanceId: string;
   /** IP 地址 */
   ip: string;
   /** 端口 */
@@ -86,8 +86,8 @@ export interface TokenServer {
 export interface TokenClient {
   /** 应用名称 */
   app: string;
-  /** 机器 ID */
-  machineId: string;
+  /** 实例 ID */
+  instanceId: string;
   /** IP 地址 */
   ip: string;
   /** 端口 */
@@ -104,8 +104,8 @@ export interface TokenClient {
  * 集群分配请求
  */
 export interface ClusterAssignRequest {
-  /** Token Server 机器 ID */
-  machineId: string;
+  /** Token Server 实例 ID */
+  instanceId: string;
   /** 要分配的命名空间列表 */
   namespaceSet: string[];
   /** 是否为新的 Token Server */
@@ -118,8 +118,8 @@ export interface ClusterAssignRequest {
 export interface ClusterUnbindRequest {
   /** 应用名称 */
   app: string;
-  /** 机器 ID */
-  machineId: string;
+  /** 实例 ID */
+  instanceId: string;
 }
 
 /**
@@ -128,18 +128,18 @@ export interface ClusterUnbindRequest {
 export interface ClusterAssignState {
   /** 应用名称 */
   app: string;
-  /** 机器列表 */
-  machines: ClusterMachineState[];
+  /** 实例列表 */
+  instances: ClusterInstanceState[];
   /** 已分配的 Token Server */
   assignedServer?: TokenServer;
 }
 
 /**
- * 集群机器状态
+ * 集群实例状态
  */
-export interface ClusterMachineState {
-  /** 机器 ID */
-  machineId: string;
+export interface ClusterInstanceState {
+  /** 实例 ID */
+  instanceId: string;
   /** IP 地址 */
   ip: string;
   /** 端口 */

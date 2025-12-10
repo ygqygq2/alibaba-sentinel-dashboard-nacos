@@ -300,7 +300,7 @@ const wrapper = ({ children }) => <QueryClientProvider client={new QueryClient()
 describe("useApps", () => {
   it("should fetch apps successfully", async () => {
     vi.mock("@/lib/api/app", () => ({
-      getApps: vi.fn().mockResolvedValue([{ app: "sentinel-demo", machines: [] }]),
+      getApps: vi.fn().mockResolvedValue([{ app: "sentinel-demo", instances: [] }]),
     }));
 
     const { result } = renderHook(() => useApps(), { wrapper });

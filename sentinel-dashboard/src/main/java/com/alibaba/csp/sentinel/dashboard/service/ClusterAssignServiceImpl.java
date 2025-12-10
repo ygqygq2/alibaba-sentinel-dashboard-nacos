@@ -37,7 +37,7 @@ import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ClusterClientCon
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ServerFlowConfig;
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.config.ServerTransportConfig;
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.request.ClusterAppAssignMap;
-import com.alibaba.csp.sentinel.dashboard.util.MachineUtils;
+import com.alibaba.csp.sentinel.dashboard.util.InstanceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,18 +57,18 @@ public class ClusterAssignServiceImpl implements ClusterAssignService {
     @Autowired
     private ClusterConfigService clusterConfigService;
 
-    private boolean isMachineInApp(/*@NonEmpty*/ String machineId) {
-        return machineId.contains(":");
+    private boolean isInstanceInApp(/*@NonEmpty*/ String instanceId) {
+        return instanceId.contains(":");
     }
 
-    private ClusterAppAssignResultVO handleUnbindClusterServerNotInApp(String app, String machineId) {
+    private ClusterAppAssignResultVO handleUnbindClusterServerNotInApp(String app, String instanceId) {
         Set<String> failedSet = new HashSet<>();
         try {
             List<ClusterUniversalStatePairVO> list = clusterConfigService.getClusterUniversalState(app)
                 .get(10, TimeUnit.SECONDS);
             Set<String> toModifySet = list.stream()
                 .filter(e -> e.getState().getStateInfo().getMode() == ClusterStateManager.CLUSTER_CLIENT)
-                .filter(e -> machineId.equals(e.getState().getClient().getClientConfig().getServerHost() + ':' +
+                .filter(e -> instanceId.equals(e.getState().getClient().getClientConfig().getServerHost() + ':' +
                     e.getState().getClient().getClientConfig().getServerPort()))
                 .map(e -> e.getIp() + '@' + e.getCommandPort())
                 .collect(Collectors.toSet());
@@ -76,8 +76,8 @@ public class ClusterAssignServiceImpl implements ClusterAssignService {
             modifyToNonStarted(toModifySet, failedSet);
         } catch (Exception ex) {
             Throwable e = ex instanceof ExecutionException ? ex.getCause() : ex;
-            LOGGER.error("Failed to unbind machine <{}>", machineId, e);
-            failedSet.add(machineId);
+            LOGGER.error("Failed to unbind instance <{}>", instanceId, e);
+            failedSet.add(instanceId);
         }
         return new ClusterAppAssignResultVO()
             .setFailedClientSet(failedSet)
@@ -86,7 +86,7 @@ public class ClusterAssignServiceImpl implements ClusterAssignService {
 
     private void modifyToNonStarted(Set<String> toModifySet, Set<String> failedSet) {
         toModifySet.parallelStream()
-            .map(MachineUtils::parseCommandIpAndPort)
+            .map(InstanceUtils::parseCommandIpAndPort)
             .filter(Optional::isPresent)
             .map(Optional::get)
             .map(e -> {
@@ -97,19 +97,19 @@ public class ClusterAssignServiceImpl implements ClusterAssignService {
     }
 
     @Override
-    public ClusterAppAssignResultVO unbindClusterServer(String app, String machineId) {
+    public ClusterAppAssignResultVO unbindClusterServer(String app, String instanceId) {
         AssertUtil.assertNotBlank(app, "app cannot be blank");
-        AssertUtil.assertNotBlank(machineId, "machineId cannot be blank");
+        AssertUtil.assertNotBlank(instanceId, "instanceId cannot be blank");
 
-        if (isMachineInApp(machineId)) {
-            return handleUnbindClusterServerNotInApp(app, machineId);
+        if (isInstanceInApp(instanceId)) {
+            return handleUnbindClusterServerNotInApp(app, instanceId);
         }
         Set<String> failedSet = new HashSet<>();
         try {
-            ClusterGroupEntity entity = clusterConfigService.getClusterUniversalStateForAppMachine(app, machineId)
+            ClusterGroupEntity entity = clusterConfigService.getClusterUniversalStateForAppInstance(app, instanceId)
                 .get(10, TimeUnit.SECONDS);
             Set<String> toModifySet = new HashSet<>();
-            toModifySet.add(machineId);
+            toModifySet.add(instanceId);
             if (entity.getClientSet() != null) {
                 toModifySet.addAll(entity.getClientSet());
             }
@@ -117,8 +117,8 @@ public class ClusterAssignServiceImpl implements ClusterAssignService {
             modifyToNonStarted(toModifySet, failedSet);
         } catch (Exception ex) {
             Throwable e = ex instanceof ExecutionException ? ex.getCause() : ex;
-            LOGGER.error("Failed to unbind machine <{}>", machineId, e);
-            failedSet.add(machineId);
+            LOGGER.error("Failed to unbind instance <{}>", instanceId, e);
+            failedSet.add(instanceId);
         }
         return new ClusterAppAssignResultVO()
             .setFailedClientSet(failedSet)
@@ -126,14 +126,14 @@ public class ClusterAssignServiceImpl implements ClusterAssignService {
     }
 
     @Override
-    public ClusterAppAssignResultVO unbindClusterServers(String app, Set<String> machineIdSet) {
+    public ClusterAppAssignResultVO unbindClusterServers(String app, Set<String> instanceIdSet) {
         AssertUtil.assertNotBlank(app, "app cannot be blank");
-        AssertUtil.isTrue(machineIdSet != null && !machineIdSet.isEmpty(), "machineIdSet cannot be empty");
+        AssertUtil.isTrue(instanceIdSet != null && !instanceIdSet.isEmpty(), "instanceIdSet cannot be empty");
         ClusterAppAssignResultVO result = new ClusterAppAssignResultVO()
             .setFailedClientSet(new HashSet<>())
             .setFailedServerSet(new HashSet<>());
-        for (String machineId : machineIdSet) {
-            ClusterAppAssignResultVO resultVO = unbindClusterServer(app, machineId);
+        for (String instanceId : instanceIdSet) {
+            ClusterAppAssignResultVO resultVO = unbindClusterServer(app, instanceId);
             result.getFailedClientSet().addAll(resultVO.getFailedClientSet());
             result.getFailedServerSet().addAll(resultVO.getFailedServerSet());
         }
@@ -157,7 +157,7 @@ public class ClusterAssignServiceImpl implements ClusterAssignService {
                 int commandPort = parsePort(e);
                 CompletableFuture<Void> f = modifyMode(ip, commandPort, ClusterStateManager.CLUSTER_SERVER)
                     .thenCompose(v -> applyServerConfigChange(app, ip, commandPort, e));
-                return Tuple2.of(e.getMachineId(), f);
+                return Tuple2.of(e.getInstanceId(), f);
             })
             .forEach(t -> handleFutureSync(t, failedServerSet));
 
@@ -166,21 +166,21 @@ public class ClusterAssignServiceImpl implements ClusterAssignService {
             .filter(Objects::nonNull)
             .forEach(e -> applyAllClientConfigChange(app, e, failedClientSet));
 
-        // Unbind remaining (unassigned) machines.
-        applyAllRemainingMachineSet(app, remainingSet, failedClientSet);
+        // Unbind remaining (unassigned) instances.
+        applyAllRemainingInstanceSet(app, remainingSet, failedClientSet);
 
         return new ClusterAppAssignResultVO()
             .setFailedClientSet(failedClientSet)
             .setFailedServerSet(failedServerSet);
     }
 
-    private void applyAllRemainingMachineSet(String app, Set<String> remainingSet, Set<String> failedSet) {
+    private void applyAllRemainingInstanceSet(String app, Set<String> remainingSet, Set<String> failedSet) {
         if (remainingSet == null || remainingSet.isEmpty()) {
             return;
         }
         remainingSet.parallelStream()
             .filter(Objects::nonNull)
-            .map(MachineUtils::parseCommandIpAndPort)
+            .map(InstanceUtils::parseCommandIpAndPort)
             .filter(Optional::isPresent)
             .map(Optional::get)
             .map(ipPort -> {
@@ -201,7 +201,7 @@ public class ClusterAssignServiceImpl implements ClusterAssignService {
         final String serverIp = assignMap.getIp();
         final int serverPort = assignMap.getPort();
         clientSet.stream()
-            .map(MachineUtils::parseCommandIpAndPort)
+            .map(InstanceUtils::parseCommandIpAndPort)
             .filter(Optional::isPresent)
             .map(Optional::get)
             .map(ipPort -> {
@@ -264,7 +264,7 @@ public class ClusterAssignServiceImpl implements ClusterAssignService {
     }
 
     private int parsePort(ClusterAppAssignMap assignMap) {
-        return MachineUtils.parseCommandPort(assignMap.getMachineId())
+        return InstanceUtils.parseCommandPort(assignMap.getInstanceId())
             .orElse(ServerTransportConfig.DEFAULT_PORT);
     }
 }

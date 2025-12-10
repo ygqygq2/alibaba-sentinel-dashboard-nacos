@@ -24,9 +24,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.alibaba.csp.sentinel.dashboard.discovery.AppInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.InstanceInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
-import com.alibaba.csp.sentinel.dashboard.domain.vo.MachineInfoVo;
+import com.alibaba.csp.sentinel.dashboard.domain.vo.InstanceInfoVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -56,19 +56,19 @@ public class AppController {
         return Result.ofSuccess(list);
     }
 
-    @GetMapping(value = "/{app}/machines.json")
-    public Result<List<MachineInfoVo>> getMachinesByApp(@PathVariable("app") String app) {
+    @GetMapping(value = "/{app}/instances.json")
+    public Result<List<InstanceInfoVo>> getInstancesByApp(@PathVariable("app") String app) {
         AppInfo appInfo = appManagement.getDetailApp(app);
         if (appInfo == null) {
             return Result.ofSuccess(null);
         }
-        List<MachineInfo> list = new ArrayList<>(appInfo.getMachines());
-        Collections.sort(list, Comparator.comparing(MachineInfo::getApp).thenComparing(MachineInfo::getIp).thenComparingInt(MachineInfo::getPort));
-        return Result.ofSuccess(MachineInfoVo.fromMachineInfoList(list));
+        List<InstanceInfo> list = new ArrayList<>(appInfo.getInstances());
+        Collections.sort(list, Comparator.comparing(InstanceInfo::getApp).thenComparing(InstanceInfo::getIp).thenComparingInt(InstanceInfo::getPort));
+        return Result.ofSuccess(InstanceInfoVo.fromInstanceInfoList(list));
     }
     
-    @RequestMapping(value = "/{app}/machine/remove.json")
-    public Result<String> removeMachineById(
+    @RequestMapping(value = "/{app}/instance/remove.json")
+    public Result<String> removeInstanceById(
             @PathVariable("app") String app,
             @RequestParam(name = "ip") String ip,
             @RequestParam(name = "port") int port) {
@@ -76,7 +76,7 @@ public class AppController {
         if (appInfo == null) {
             return Result.ofSuccess(null);
         }
-        if (appManagement.removeMachine(app, ip, port)) {
+        if (appManagement.removeInstance(app, ip, port)) {
             return Result.ofSuccessMsg("success");
         } else {
             return Result.ofFail(1, "remove failed");

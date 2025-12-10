@@ -17,8 +17,8 @@ export const paths = {
     overview: '/dashboard',
     // 应用列表
     apps: '/dashboard/apps',
-    // 机器列表
-    machines: (app: string) => `/dashboard/apps/${app}/machines`,
+    // 实例列表
+    instances: (app: string) => `/dashboard/apps/${app}/instances`,
     // 实时监控
     metric: (app: string) => `/dashboard/apps/${app}/metric`,
     // 簇点链路

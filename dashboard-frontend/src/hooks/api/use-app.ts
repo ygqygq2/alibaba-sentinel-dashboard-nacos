@@ -1,5 +1,5 @@
 /**
- * 应用和机器相关 hooks
+ * 应用和实例相关 hooks
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -10,7 +10,7 @@ import { appApi } from '@/lib/api';
 export const appKeys = {
   all: ['apps'] as const,
   list: () => [...appKeys.all, 'list'] as const,
-  machines: (app: string) => [...appKeys.all, 'machines', app] as const,
+  instances: (app: string) => [...appKeys.all, 'instances', app] as const,
 };
 
 /**
@@ -25,28 +25,28 @@ export function useApps() {
 }
 
 /**
- * 获取机器列表
+ * 获取实例列表
  */
-export function useMachines(app: string) {
+export function useInstances(app: string) {
   return useQuery({
-    queryKey: appKeys.machines(app),
-    queryFn: () => appApi.getMachines(app),
+    queryKey: appKeys.instances(app),
+    queryFn: () => appApi.getInstances(app),
     enabled: !!app,
     refetchInterval: 10000, // 10秒刷新一次
   });
 }
 
 /**
- * 删除机器
+ * 删除实例
  */
-export function useRemoveMachine() {
+export function useRemoveInstance() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ app, ip, port }: { app: string; ip: string; port: number }) => appApi.removeMachine(app, ip, port),
+    mutationFn: ({ app, ip, port }: { app: string; ip: string; port: number }) => appApi.removeInstance(app, ip, port),
     onSuccess: (_, { app }) => {
-      // 刷新机器列表
-      queryClient.invalidateQueries({ queryKey: appKeys.machines(app) });
+      // 刷新实例列表
+      queryClient.invalidateQueries({ queryKey: appKeys.instances(app) });
       // 刷新应用列表
       queryClient.invalidateQueries({ queryKey: appKeys.list() });
     },

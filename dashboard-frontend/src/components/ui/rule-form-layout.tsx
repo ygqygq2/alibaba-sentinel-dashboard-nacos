@@ -8,8 +8,6 @@ import { Icon } from '@iconify/react';
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { useSettings } from '@/hooks/use-settings';
-
 export interface RuleFormLayoutProps {
   /** 表单标题 */
   title: string;
@@ -41,7 +39,6 @@ export function RuleFormLayout({
   helpContent,
 }: RuleFormLayoutProps): React.JSX.Element {
   const navigate = useNavigate();
-  const { settings } = useSettings();
 
   const formTitle = isEditMode ? `编辑${title}` : `新增${title}`;
 
@@ -69,7 +66,6 @@ export function RuleFormLayout({
             </Button>
             <Button
               type="submit"
-              
               loading={isSubmitting}
             >
               <Icon icon="mdi:check" />

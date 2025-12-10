@@ -23,7 +23,7 @@ import java.util.Set;
  */
 public class ClusterAppAssignMap {
 
-    private String machineId;
+    private String instanceId;
     private String ip;
     private Integer port;
 
@@ -34,12 +34,12 @@ public class ClusterAppAssignMap {
     private Set<String> namespaceSet;
     private Double maxAllowedQps;
 
-    public String getMachineId() {
-        return machineId;
+    public String getInstanceId() {
+        return instanceId;
     }
 
-    public ClusterAppAssignMap setMachineId(String machineId) {
-        this.machineId = machineId;
+    public ClusterAppAssignMap setInstanceId(String instanceId) {
+        this.instanceId = instanceId;
         return this;
     }
 
@@ -100,7 +100,7 @@ public class ClusterAppAssignMap {
     @Override
     public String toString() {
         return "ClusterAppAssignMap{" +
-            "machineId='" + machineId + '\'' +
+            "instanceId='" + instanceId + '\'' +
             ", ip='" + ip + '\'' +
             ", port=" + port +
             ", belongToApp=" + belongToApp +

@@ -1,0 +1,3 @@
+# 自定义带鉴权的心跳发送器
+# 优先级 -200，高于官方的 SimpleHttpHeartbeatSender (-100)
+com.alibaba.csp.tokenserver.heartbeat.AuthenticatedHeartbeatSender

@@ -18,9 +18,9 @@ export const clusterApi = {
   },
 
   /**
-   * 获取单个机器的集群状态
+   * 获取单个实例的集群状态
    */
-  getMachineClusterState(app: string, ip: string, port: number): Promise<ClusterState> {
+  getInstanceClusterState(app: string, ip: string, port: number): Promise<ClusterState> {
     return apiClient.get<ClusterState>('/cluster/state_single', {
       app,
       ip,
@@ -70,8 +70,8 @@ export const tokenServerApi = {
   /**
    * 解绑 Token Server
    */
-  unbindServer(app: string, machineId: string): Promise<void> {
-    return apiClient.post<void>('/cluster/unbind', null, { app, machineId });
+  unbindServer(app: string, instanceId: string): Promise<void> {
+    return apiClient.post<void>('/cluster/unbind', null, { app, instanceId });
   },
 
   /**

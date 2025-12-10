@@ -41,7 +41,7 @@ import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.MetricEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppInfo;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.InstanceInfo;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
@@ -62,7 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * Fetch metric of machines.
+ * Fetch metric of instances.
  *
  * @author leyou
  */
@@ -147,7 +147,7 @@ public class MetricFetcher {
     }
 
     /**
-     * Traverse each APP, and then pull the metric of all machines for that APP.
+     * Traverse each APP, and then pull the metric of all instances for that APP.
      */
     private void fetchAllApp() {
         List<String> apps = appManagement.getAppNames();
@@ -179,10 +179,10 @@ public class MetricFetcher {
             appManagement.removeApp(app);
             return;
         }
-        Set<MachineInfo> machines = appInfo.getMachines();
-        logger.debug("enter fetchOnce(" + app + "), machines.size()=" + machines.size()
+        Set<InstanceInfo> instances = appInfo.getInstances();
+        logger.debug("enter fetchOnce(" + app + "), instances.size()=" + instances.size()
             + ", time intervalMs [" + startTime + ", " + endTime + "]");
-        if (machines.isEmpty()) {
+        if (instances.isEmpty()) {
             return;
         }
         final String msg = "fetch";
@@ -193,21 +193,21 @@ public class MetricFetcher {
         long start = System.currentTimeMillis();
         /** app_resource_timeSecond -> metric */
         final Map<String, MetricEntity> metricMap = new ConcurrentHashMap<>(16);
-        final CountDownLatch latch = new CountDownLatch(machines.size());
-        for (final MachineInfo machine : machines) {
+        final CountDownLatch latch = new CountDownLatch(instances.size());
+        for (final InstanceInfo instance : instances) {
             // auto remove
-            if (machine.isDead()) {
+            if (instance.isDead()) {
                 latch.countDown();
-                appManagement.getDetailApp(app).removeMachine(machine.getIp(), machine.getPort());
-                logger.info("Dead machine removed: {}:{} of {}", machine.getIp(), machine.getPort(), app);
+                appManagement.getDetailApp(app).removeInstance(instance.getIp(), instance.getPort());
+                logger.info("Dead instance removed: {}:{} of {}", instance.getIp(), instance.getPort(), app);
                 continue;
             }
-            if (!machine.isHealthy()) {
+            if (!instance.isHealthy()) {
                 latch.countDown();
                 unhealthy.incrementAndGet();
                 continue;
             }
-            final String url = "http://" + machine.getIp() + ":" + machine.getPort() + "/" + METRIC_URL_PATH
+            final String url = "http://" + instance.getIp() + ":" + instance.getPort() + "/" + METRIC_URL_PATH
                 + "?startTime=" + startTime + "&endTime=" + endTime + "&refetch=" + false;
             final HttpGet httpGet = new HttpGet(url);
             httpGet.setHeader(HTTP.CONN_DIRECTIVE, HTTP.CONN_CLOSE);
@@ -215,7 +215,7 @@ public class MetricFetcher {
                 @Override
                 public void completed(final HttpResponse response) {
                     try {
-                        handleResponse(response, machine, metricMap);
+                        handleResponse(response, instance, metricMap);
                         success.incrementAndGet();
                     } catch (Exception e) {
                         logger.error(msg + " metric " + url + " error:", e);
@@ -253,7 +253,7 @@ public class MetricFetcher {
         }
         //long cost = System.currentTimeMillis() - start;
         //logger.info("finished " + msg + " metric for " + app + ", time intervalMs [" + startTime + ", " + endTime
-        //    + "], total machines=" + machines.size() + ", dead=" + dead + ", fetch success="
+        //    + "], total instances=" + instances.size() + ", dead=" + dead + ", fetch success="
         //    + success + ", fetch fail=" + fail + ", time cost=" + cost + " ms");
         writeMetric(metricMap);
     }
@@ -289,7 +289,7 @@ public class MetricFetcher {
         }
     }
 
-    private void handleResponse(final HttpResponse response, MachineInfo machine,
+    private void handleResponse(final HttpResponse response, InstanceInfo instance,
                                 Map<String, MetricEntity> metricMap) throws Exception {
         int code = response.getStatusLine().getStatusCode();
         if (code != HTTP_OK) {
@@ -306,17 +306,17 @@ public class MetricFetcher {
         }
         String body = EntityUtils.toString(response.getEntity(), charset != null ? charset : DEFAULT_CHARSET);
         if (StringUtil.isEmpty(body) || body.startsWith(NO_METRICS)) {
-            //logger.info(machine.getApp() + ":" + machine.getIp() + ":" + machine.getPort() + ", bodyStr is empty");
+            //logger.info(instance.getApp() + ":" + instance.getIp() + ":" + instance.getPort() + ", bodyStr is empty");
             return;
         }
         String[] lines = body.split("\n");
-        //logger.info(machine.getApp() + ":" + machine.getIp() + ":" + machine.getPort() +
+        //logger.info(instance.getApp() + ":" + instance.getIp() + ":" + instance.getPort() +
         //    ", bodyStr.length()=" + body.length() + ", lines=" + lines.length);
-        handleBody(lines, machine, metricMap);
+        handleBody(lines, instance, metricMap);
     }
 
-    private void handleBody(String[] lines, MachineInfo machine, Map<String, MetricEntity> map) {
-        //logger.info("handleBody() lines=" + lines.length + ", machine=" + machine);
+    private void handleBody(String[] lines, InstanceInfo instance, Map<String, MetricEntity> map) {
+        //logger.info("handleBody() lines=" + lines.length + ", instance=" + instance);
         if (lines.length < 1) {
             return;
         }
@@ -328,13 +328,16 @@ public class MetricFetcher {
                     continue;
                 }
                 /*
-                 * aggregation metrics by app_resource_timeSecond, ignore ip and port.
+                 * Store metrics by app_ip_port_resource_timeSecond to support multi-instance monitoring (K8s pods).
                  */
-                String key = buildMetricKey(machine.getApp(), node.getResource(), node.getTimestamp());
+                String key = buildMetricKey(instance.getApp(), instance.getIp(), instance.getPort(), 
+                                          node.getResource(), node.getTimestamp());
 
                 MetricEntity metricEntity = map.computeIfAbsent(key, s -> {
                     MetricEntity initMetricEntity = new MetricEntity();
-                    initMetricEntity.setApp(machine.getApp());
+                    initMetricEntity.setApp(instance.getApp());
+                    initMetricEntity.setIp(instance.getIp());
+                    initMetricEntity.setPort(instance.getPort());
                     initMetricEntity.setTimestamp(new Date(node.getTimestamp()));
                     initMetricEntity.setPassQps(0L);
                     initMetricEntity.setBlockQps(0L);
@@ -350,13 +353,13 @@ public class MetricFetcher {
                 metricEntity.addExceptionQps(node.getExceptionQps());
                 metricEntity.addCount(1);
             } catch (Exception e) {
-                logger.warn("handleBody line exception, machine: {}, line: {}", machine.toLogString(), line);
+                logger.warn("handleBody line exception, instance: {}, line: {}", instance.toLogString(), line);
             }
         }
     }
 
-    private String buildMetricKey(String app, String resource, long timestamp) {
-        return app + "__" + resource + "__" + (timestamp / 1000);
+    private String buildMetricKey(String app, String ip, int port, String resource, long timestamp) {
+        return app + "__" + ip + "__" + port + "__" + resource + "__" + (timestamp / 1000);
     }
 
     private boolean shouldFilterOut(String resource) {
@@ -370,6 +373,3 @@ public class MetricFetcher {
     }};
 
 }
-
-
-

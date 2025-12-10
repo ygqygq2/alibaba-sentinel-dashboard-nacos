@@ -1,8 +1,179 @@
 # 架构决策：限流模式选择与 Nacos 持久化方案
 
 > **创建时间**：2024-12-09  
-> **状态**：待确认  
+> **最后更新**：2024-12-10  
+> **状态**：已确认  
 > **目的**：明确项目的限流架构设计和数据持久化方案
+
+---
+
+## 1. 客户端鉴权设计（新增）
+
+### 1.1 官方 Sentinel 的鉴权范围
+
+根据官方文档和源码分析：
+
+| 层面                       | 官方支持      | 配置方式                                             |
+| -------------------------- | ------------- | ---------------------------------------------------- |
+| **Web UI 用户登录**        | ✅ 支持       | `auth.username=sentinel`<br>`auth.password=sentinel` |
+| **Web UI 操作权限**        | ⚠️ 示例级别   | 需自行扩展 RBAC                                      |
+| **客户端心跳鉴权**         | ❌ **不支持** | `/registry/machine` 在排除列表                       |
+| **Dashboard → Client API** | ❌ 不支持     | 无官方机制                                           |
+
+**🔴 严重安全风险**：
+
+Sentinel 客户端暴露的 API 端口（默认 8719）**完全没有鉴权保护**！
+
+```bash
+# 任何能访问 8719 端口的人都可以：
+curl http://client:8719/getRules?type=flow           # 读取所有规则
+curl http://client:8719/setRules?type=flow&data=[]   # 删除所有规则！
+curl http://client:8719/setRules?type=flow&data=[恶意规则]  # 注入恶意规则
+```
+
+**官方安全建议**：
+
+- Dashboard 和客户端部署在**同一内网**
+- 通过**网络隔离**保证安全（防火墙/Security Group/NetworkPolicy）
+- **不要将 8719 端口暴露到公网**
+- 仅对 Web UI 做登录鉴权
+
+### 1.2 我们的扩展方案
+
+为增强生产环境安全性，我们添加了 `AUTH_APP_SECRET` 机制：
+
+#### 配置方式
+
+```yaml
+# docker-compose.yml
+sentinel-dashboard:
+  environment:
+    - AUTH_APP_SECRET=${AUTH_APP_SECRET:-sentinel_app_secret}
+
+token-server:
+  environment:
+    - CSP_SENTINEL_APP_SECRET=${AUTH_APP_SECRET:-sentinel_app_secret}
+```
+
+#### 作用范围
+
+| 通信方向           | API                                                         | 鉴权方式        | 说明                                 |
+| ------------------ | ----------------------------------------------------------- | --------------- | ------------------------------------ |
+| Client → Dashboard | `/registry/instance`                                        | ❌ **不鉴权**   | 官方客户端不支持，遵循官方设计       |
+| Dashboard → Client | `/getRules`<br>`/setRules`<br>`/jsonTree`<br>`/clusterNode` | ✅ **自动鉴权** | Dashboard 自动携带 `app_secret` 参数 |
+
+#### 实现原理
+
+**1. Dashboard 端（`SentinelApiClient.java`）**
+
+```java
+// 所有 Dashboard → Client 的 API 调用自动添加 app_secret
+if (authProperties.isEnabled() && StringUtil.isNotBlank(authProperties.getAppSecret())) {
+    params.put("app_secret", authProperties.getAppSecret());
+}
+```
+
+**2. Client 端（需要应用自行实现）**
+
+客户端可以在 Sentinel 的 CommandHandler 中验证 `app_secret` 参数：
+
+```java
+// 自定义 CommandHandler 示例
+public class AuthenticatedFlowRuleHandler extends GetRulesCommandHandler {
+    @Override
+    public CommandResponse<String> handle(CommandRequest request) {
+        String appSecret = request.getParam("app_secret");
+        if (!isValidSecret(appSecret)) {
+            return CommandResponse.ofFailure(new IllegalArgumentException("Invalid app_secret"));
+        }
+        return super.handle(request);
+    }
+}
+```
+
+#### 优缺点分析
+
+**优点**：
+
+- ✅ 防止未授权的 Dashboard 修改客户端规则
+- ✅ Dashboard 端实现简单，自动注入参数
+- ✅ 不需要 fork Sentinel 客户端库
+- ✅ 保留 `AUTH_APP_SECRET` 变量供未来扩展
+
+**缺点**：
+
+- ⚠️ 客户端需要自行实现鉴权逻辑（扩展 CommandHandler）
+- ⚠️ 不符合官方设计哲学（官方依赖网络隔离）
+- ⚠️ `app_secret` 在 HTTP GET 请求中明文传输（建议使用 HTTPS）
+
+#### 使用建议
+
+**开发/测试环境**：
+
+- 可以暴露 8719 端口方便调试
+- `AUTH_APP_SECRET` 可选（Dashboard 会发送，Client 不验证）
+- 依赖 Docker 网络隔离即可
+
+**生产环境（重要！）**：
+
+**必须采取以下安全措施之一：**
+
+1. **【最推荐】网络隔离**
+
+   ```yaml
+   # docker-compose.prod.yml
+   token-server:
+     ports:
+       - "8081:8081" # ✅ 只暴露业务端口
+       # - "8719:8719"    # ❌ 不暴露 Sentinel API！
+   ```
+
+2. **防火墙/Security Group**
+
+   ```bash
+   # 只允许 Dashboard IP 访问
+   iptables -A INPUT -p tcp --dport 8719 -s <dashboard-ip> -j ACCEPT
+   iptables -A INPUT -p tcp --dport 8719 -j DROP
+   ```
+
+3. **Kubernetes NetworkPolicy**
+   ```yaml
+   ingress:
+     - from:
+         - podSelector:
+             matchLabels:
+               app: sentinel-dashboard
+       ports:
+         - protocol: TCP
+           port: 8719
+   ```
+
+**⚠️ 警告**：
+
+- `AUTH_APP_SECRET` 在客户端**无法生效**（Sentinel 1.8.9 API 限制）
+- 仅靠 `AUTH_APP_SECRET` **无法保护**客户端 API
+- 必须使用网络层防护
+
+---
+
+### 1.3 为什么客户端无法验证 app_secret？
+
+**技术原因**：
+
+1. Sentinel 1.8.9 的 `CommandHandler` API 不是公开的
+2. 无法通过继承/装饰器模式添加鉴权逻辑
+3. 需要 fork `sentinel-transport-simple-http` 库才能实现
+
+**解决方案对比**：
+
+| 方案              | 安全性     | 复杂度     | 维护成本   |
+| ----------------- | ---------- | ---------- | ---------- |
+| 网络隔离          | ⭐⭐⭐⭐⭐ | ⭐         | ⭐         |
+| 防火墙/iptables   | ⭐⭐⭐⭐   | ⭐⭐       | ⭐⭐       |
+| K8s NetworkPolicy | ⭐⭐⭐⭐⭐ | ⭐⭐       | ⭐         |
+| Fork transport 库 | ⭐⭐⭐⭐   | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+
+**结论**：**强烈建议使用网络隔离，不要 fork Sentinel 源码**
 
 ---
 

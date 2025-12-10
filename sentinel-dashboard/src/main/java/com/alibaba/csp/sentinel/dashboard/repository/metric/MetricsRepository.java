@@ -57,4 +57,15 @@ public interface MetricsRepository<T> {
      * @return list of resources
      */
     List<String> listResourcesOfApp(String app);
+
+    /**
+     * Get all metrics by application name between a period of time.
+     * Used for instance view to get metrics from all instances.
+     *
+     * @param app       application name for Sentinel
+     * @param startTime start timestamp
+     * @param endTime   end timestamp
+     * @return all metrics in query conditions
+     */
+    List<T> queryByAppBetween(String app, long startTime, long endTime);
 }

@@ -1,0 +1,31 @@
+# 生产环境配置示例
+# 使用方式：docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+services:
+  token-server:
+    environment:
+      # 生产环境：禁用 Dashboard 注册（避免心跳开销）
+      - REGISTER_TO_DASHBOARD=false
+      # 生产环境：禁用测试 API
+      - DEMO_API_ENABLED=false
+    ports:
+      # ✅ 只暴露业务端口
+      - "8081:8081"
+      - "18730:18730"
+      # ❌ 不暴露 Sentinel API 端口（安全）
+      # - "8719:8719"  # 已移除
+    restart: unless-stopped
+
+  sentinel-dashboard:
+    environment:
+      # 生产环境建议修改默认密码
+      - SENTINEL_DASHBOARD_AUTH_USERNAME=${DASHBOARD_USERNAME:-admin}
+      - SENTINEL_DASHBOARD_AUTH_PASSWORD=${DASHBOARD_PASSWORD:-change_me_in_production}
+      - AUTH_APP_SECRET=${AUTH_APP_SECRET:-change_me_in_production}
+    restart: unless-stopped
+
+  nacos:
+    environment:
+      # 生产环境建议修改 Nacos 密码
+      - NACOS_AUTH_TOKEN=${NACOS_AUTH_TOKEN} # 从环境变量读取，不硬编码
+    restart: unless-stopped

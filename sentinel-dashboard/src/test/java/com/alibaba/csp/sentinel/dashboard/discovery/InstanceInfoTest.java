@@ -24,25 +24,25 @@ import com.alibaba.csp.sentinel.dashboard.config.DashboardConfig;
 /**
  * @author Jason Joo
  */
-public class MachineInfoTest {
+public class InstanceInfoTest {
 
     @Test
     public void testHealthyAndDead() {
-        System.setProperty(DashboardConfig.CONFIG_UNHEALTHY_MACHINE_MILLIS, "60000");
-        System.setProperty(DashboardConfig.CONFIG_AUTO_REMOVE_MACHINE_MILLIS, "600000");
+        System.setProperty(DashboardConfig.CONFIG_UNHEALTHY_INSTANCE_MILLIS, "60000");
+        System.setProperty(DashboardConfig.CONFIG_AUTO_REMOVE_INSTANCE_MILLIS, "600000");
         DashboardConfig.clearCache();
-        MachineInfo machineInfo = new MachineInfo();
-        machineInfo.setHeartbeatVersion(1);
-        machineInfo.setLastHeartbeat(System.currentTimeMillis() - 10000);
-        assertTrue(machineInfo.isHealthy());
-        assertFalse(machineInfo.isDead());
+        InstanceInfo instanceInfo = new InstanceInfo();
+        instanceInfo.setHeartbeatVersion(1);
+        instanceInfo.setLastHeartbeat(System.currentTimeMillis() - 10000);
+        assertTrue(instanceInfo.isHealthy());
+        assertFalse(instanceInfo.isDead());
 
-        machineInfo.setLastHeartbeat(System.currentTimeMillis() - 100000);
-        assertFalse(machineInfo.isHealthy());
-        assertFalse(machineInfo.isDead());
+        instanceInfo.setLastHeartbeat(System.currentTimeMillis() - 100000);
+        assertFalse(instanceInfo.isHealthy());
+        assertFalse(instanceInfo.isDead());
 
-        machineInfo.setLastHeartbeat(System.currentTimeMillis() - 1000000);
-        assertFalse(machineInfo.isHealthy());
-        assertTrue(machineInfo.isDead());
+        instanceInfo.setLastHeartbeat(System.currentTimeMillis() - 1000000);
+        assertFalse(instanceInfo.isHealthy());
+        assertTrue(instanceInfo.isDead());
     }
 }

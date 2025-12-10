@@ -26,6 +26,14 @@ public class MetricEntity {
     private Date gmtModified;
     private String app;
     /**
+     * 机器 IP
+     */
+    private String ip;
+    /**
+     * 机器端口
+     */
+    private int port;
+    /**
      * 监控信息的时间戳
      */
     private Date timestamp;
@@ -53,6 +61,8 @@ public class MetricEntity {
         entity.setGmtCreate(oldEntity.getGmtCreate());
         entity.setGmtModified(oldEntity.getGmtModified());
         entity.setApp(oldEntity.getApp());
+        entity.setIp(oldEntity.getIp());
+        entity.setPort(oldEntity.getPort());
         entity.setTimestamp(oldEntity.getTimestamp());
         entity.setResource(oldEntity.getResource());
         entity.setPassQps(oldEntity.getPassQps());
@@ -126,6 +136,22 @@ public class MetricEntity {
 
     public void setApp(String app) {
         this.app = app;
+    }
+
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
     }
 
     public Date getTimestamp() {
@@ -204,6 +230,8 @@ public class MetricEntity {
             ", gmtCreate=" + gmtCreate +
             ", gmtModified=" + gmtModified +
             ", app='" + app + '\'' +
+            ", ip='" + ip + '\'' +
+            ", port=" + port +
             ", timestamp=" + timestamp +
             ", resource='" + resource + '\'' +
             ", passQps=" + passQps +

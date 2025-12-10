@@ -28,7 +28,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.InstanceInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
 
@@ -66,7 +66,7 @@ public class FlowControllerV1 {
 
     @GetMapping("/rules")
     @AuthAction(PrivilegeType.READ_RULE)
-    public Result<List<FlowRuleEntity>> apiQueryMachineRules(@RequestParam String app,
+    public Result<List<FlowRuleEntity>> apiQueryInstanceRules(@RequestParam String app,
                                                              @RequestParam String ip,
                                                              @RequestParam Integer port) {
         if (StringUtil.isEmpty(app)) {
@@ -78,11 +78,11 @@ public class FlowControllerV1 {
         if (port == null) {
             return Result.ofFail(-1, "port can't be null");
         }
-        if (!appManagement.isValidMachineOfApp(app, ip)) {
+        if (!appManagement.isValidInstanceOfApp(app, ip)) {
             return Result.ofFail(-1, "given ip does not belong to given app");
         }
         try {
-            List<FlowRuleEntity> rules = sentinelApiClient.fetchFlowRuleOfMachine(app, ip, port);
+            List<FlowRuleEntity> rules = sentinelApiClient.fetchFlowRuleOfInstance(app, ip, port);
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -101,7 +101,7 @@ public class FlowControllerV1 {
         if (entity.getPort() == null) {
             return Result.ofFail(-1, "port can't be null");
         }
-        if (!appManagement.isValidMachineOfApp(entity.getApp(), entity.getIp())) {
+        if (!appManagement.isValidInstanceOfApp(entity.getApp(), entity.getIp())) {
             return Result.ofFail(-1, "given ip does not belong to given app");
         }
         if (StringUtil.isBlank(entity.getLimitApp())) {
@@ -275,7 +275,7 @@ public class FlowControllerV1 {
     }
 
     private CompletableFuture<Void> publishRules(String app, String ip, Integer port) {
-        List<FlowRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.setFlowRuleOfMachineAsync(app, ip, port, rules);
+        List<FlowRuleEntity> rules = repository.findAllByInstance(InstanceInfo.of(app, ip, port));
+        return sentinelApiClient.setFlowRuleOfInstanceAsync(app, ip, port, rules);
     }
 }

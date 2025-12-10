@@ -17,12 +17,12 @@ package com.alibaba.csp.sentinel.dashboard.datasource.entity;
 
 import java.util.Date;
 
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.InstanceInfo;
 
 /**
  * @author leyou
  */
-public class MachineEntity {
+public class InstanceEntity {
     private Long id;
     private Date gmtCreate;
     private Date gmtModified;
@@ -96,22 +96,22 @@ public class MachineEntity {
         this.port = port;
     }
 
-    public MachineInfo toMachineInfo() {
-        MachineInfo machineInfo = new MachineInfo();
+    public InstanceInfo toInstanceInfo() {
+        InstanceInfo instanceInfo = new InstanceInfo();
 
-        machineInfo.setApp(app);
-        machineInfo.setHostname(hostname);
-        machineInfo.setIp(ip);
-        machineInfo.setPort(port);
-        machineInfo.setLastHeartbeat(timestamp.getTime());
-        machineInfo.setHeartbeatVersion(timestamp.getTime());
+        instanceInfo.setApp(app);
+        instanceInfo.setHostname(hostname);
+        instanceInfo.setIp(ip);
+        instanceInfo.setPort(port);
+        instanceInfo.setLastHeartbeat(timestamp.getTime());
+        instanceInfo.setHeartbeatVersion(timestamp.getTime());
 
-        return machineInfo;
+        return instanceInfo;
     }
 
     @Override
     public String toString() {
-        return "MachineEntity{" +
+        return "InstanceEntity{" +
             "id=" + id +
             ", gmtCreate=" + gmtCreate +
             ", gmtModified=" + gmtModified +

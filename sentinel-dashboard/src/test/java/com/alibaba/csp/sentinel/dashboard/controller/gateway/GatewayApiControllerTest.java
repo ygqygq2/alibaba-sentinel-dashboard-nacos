@@ -20,7 +20,7 @@ import com.alibaba.csp.sentinel.dashboard.config.NoAuthConfigurationTest;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.ApiDefinitionEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.ApiPredicateItemEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
-import com.alibaba.csp.sentinel.dashboard.discovery.SimpleMachineDiscovery;
+import com.alibaba.csp.sentinel.dashboard.discovery.SimpleInstanceDiscovery;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.domain.vo.gateway.api.AddApiReqVo;
 import com.alibaba.csp.sentinel.dashboard.domain.vo.gateway.api.ApiPredicateItemVo;
@@ -73,7 +73,7 @@ import static org.mockito.BDDMockito.verify;
  */
 @RunWith(SpringRunner.class)
 @WebMvcTest(GatewayApiController.class)
-@Import({NoAuthConfigurationTest.class, InMemApiDefinitionStore.class, AppManagement.class, SimpleMachineDiscovery.class})
+@Import({NoAuthConfigurationTest.class, InMemApiDefinitionStore.class, AppManagement.class, SimpleInstanceDiscovery.class})
 public class GatewayApiControllerTest {
 
     private static final String TEST_APP = "test_app";

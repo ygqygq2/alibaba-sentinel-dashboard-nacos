@@ -33,7 +33,7 @@ GET /app/briefinfos.json
     {
       "app": "my-app",
       "appType": 0,
-      "machines": [
+      "instances": [
         {
           "app": "my-app",
           "ip": "192.168.1.100",
@@ -50,7 +50,7 @@ GET /app/briefinfos.json
 ### 获取应用机器列表
 
 ```http
-GET /app/{app}/machines.json
+GET /app/{app}/instances.json
 ```
 
 **参数:**

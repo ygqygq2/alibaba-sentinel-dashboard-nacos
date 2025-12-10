@@ -19,7 +19,7 @@ import com.alibaba.csp.sentinel.dashboard.config.AuthProperties;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
+import com.alibaba.csp.sentinel.dashboard.discovery.InstanceInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 
 import org.apache.http.conn.util.InetAddressUtils;
@@ -36,9 +36,9 @@ import java.util.regex.Pattern;
 
 @Controller
 @RequestMapping(value = "/registry", produces = MediaType.APPLICATION_JSON_VALUE)
-public class MachineRegistryController {
+public class InstanceRegistryController {
 
-    private final Logger logger = LoggerFactory.getLogger(MachineRegistryController.class);
+    private final Logger logger = LoggerFactory.getLogger(InstanceRegistryController.class);
 
     @Autowired
     private AuthProperties authProperties;
@@ -70,7 +70,7 @@ public class MachineRegistryController {
     }
 
     @ResponseBody
-    @RequestMapping("/machine")
+    @RequestMapping("/instance")
     public Result<?> receiveHeartBeat(String app,
                                       @RequestParam(value = "app_type", required = false, defaultValue = "0")
                                           Integer appType, Long version, String v, String hostname, String ip,
@@ -113,16 +113,16 @@ public class MachineRegistryController {
 
         version = version == null ? System.currentTimeMillis() : version;
         try {
-            MachineInfo machineInfo = new MachineInfo();
-            machineInfo.setApp(app);
-            machineInfo.setAppType(appType);
-            machineInfo.setHostname(hostname);
-            machineInfo.setIp(ip);
-            machineInfo.setPort(port);
-            machineInfo.setHeartbeatVersion(version);
-            machineInfo.setLastHeartbeat(System.currentTimeMillis());
-            machineInfo.setVersion(sentinelVersion);
-            appManagement.addMachine(machineInfo);
+            InstanceInfo instanceInfo = new InstanceInfo();
+            instanceInfo.setApp(app);
+            instanceInfo.setAppType(appType);
+            instanceInfo.setHostname(hostname);
+            instanceInfo.setIp(ip);
+            instanceInfo.setPort(port);
+            instanceInfo.setHeartbeatVersion(version);
+            instanceInfo.setLastHeartbeat(System.currentTimeMillis());
+            instanceInfo.setVersion(sentinelVersion);
+            appManagement.addInstance(instanceInfo);
             return Result.ofSuccessMsg("success");
         } catch (Exception e) {
             logger.error("Receive heartbeat error", e);

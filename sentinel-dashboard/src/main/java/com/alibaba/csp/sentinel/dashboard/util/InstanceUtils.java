@@ -23,14 +23,14 @@ import com.alibaba.csp.sentinel.util.function.Tuple2;
 /**
  * @author Eric Zhao
  */
-public final class MachineUtils {
+public final class InstanceUtils {
 
-    public static Optional<Integer> parseCommandPort(String machineIp) {
+    public static Optional<Integer> parseCommandPort(String instanceIp) {
         try {
-            if (!machineIp.contains("@")) {
+            if (!instanceIp.contains("@")) {
                 return Optional.empty();
             }
-            String[] str = machineIp.split("@");
+            String[] str = instanceIp.split("@");
             if (str.length <= 1) {
                 return Optional.empty();
             }
@@ -40,12 +40,12 @@ public final class MachineUtils {
         }
     }
 
-    public static Optional<Tuple2<String, Integer>> parseCommandIpAndPort(String machineIp) {
+    public static Optional<Tuple2<String, Integer>> parseCommandIpAndPort(String instanceIp) {
         try {
-            if (StringUtil.isEmpty(machineIp) || !machineIp.contains("@")) {
+            if (StringUtil.isEmpty(instanceIp) || !instanceIp.contains("@")) {
                 return Optional.empty();
             }
-            String[] str = machineIp.split("@");
+            String[] str = instanceIp.split("@");
             if (str.length <= 1) {
                 return Optional.empty();
             }
@@ -55,5 +55,5 @@ public final class MachineUtils {
         }
     }
 
-    private MachineUtils() {}
+    private InstanceUtils() {}
 }

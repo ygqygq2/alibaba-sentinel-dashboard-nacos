@@ -34,7 +34,7 @@ import java.util.List;
  * <ul>
  * <li>index url: {@code /}</li>
  * <li>authentication request url: {@code /login}, {@code /logout}</li>
- * <li>machine registry: {@code /registry/machine}</li>
+ * <li>instance registry: {@code /registry/instance}</li>
  * <li>static resources</li>
  * </ul>
  * <p>
@@ -50,7 +50,7 @@ public class DefaultLoginAuthenticationFilter implements LoginAuthenticationFilt
     private static final String URL_SUFFIX_DOT = ".";
 
     /**
-     * Some urls which needn't auth, such as /auth/login, /registry/machine and so on.
+     * Some urls which needn't auth, such as /auth/login, /registry/instance and so on.
      */
     @Value("#{'${auth.filter.exclude-urls}'.split(',')}")
     private List<String> authFilterExcludeUrls;

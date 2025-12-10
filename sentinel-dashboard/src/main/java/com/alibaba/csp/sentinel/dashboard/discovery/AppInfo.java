@@ -30,7 +30,7 @@ public class AppInfo {
 
     private Integer appType = 0;
 
-    private Set<MachineInfo> machines = ConcurrentHashMap.newKeySet();
+    private Set<InstanceInfo> instances = ConcurrentHashMap.newKeySet();
 
     public AppInfo() {}
 
@@ -60,29 +60,29 @@ public class AppInfo {
     }
 
     /**
-     * Get the current machines.
+     * Get the current instances.
      *
-     * @return a new copy of the current machines.
+     * @return a new copy of the current instances.
      */
-    public Set<MachineInfo> getMachines() {
-        return new HashSet<>(machines);
+    public Set<InstanceInfo> getInstances() {
+        return new HashSet<>(instances);
     }
 
     @Override
     public String toString() {
-        return "AppInfo{" + "app='" + app + ", machines=" + machines + '}';
+        return "AppInfo{" + "app='" + app + ", instances=" + instances + '}';
     }
 
-    public boolean addMachine(MachineInfo machineInfo) {
-        machines.remove(machineInfo);
-        return machines.add(machineInfo);
+    public boolean addInstance(InstanceInfo instanceInfo) {
+        instances.remove(instanceInfo);
+        return instances.add(instanceInfo);
     }
 
-    public synchronized boolean removeMachine(String ip, int port) {
-        Iterator<MachineInfo> it = machines.iterator();
+    public synchronized boolean removeInstance(String ip, int port) {
+        Iterator<InstanceInfo> it = instances.iterator();
         while (it.hasNext()) {
-            MachineInfo machine = it.next();
-            if (machine.getIp().equals(ip) && machine.getPort() == port) {
+            InstanceInfo instance = it.next();
+            if (instance.getIp().equals(ip) && instance.getPort() == port) {
                 it.remove();
                 return true;
             }
@@ -90,30 +90,30 @@ public class AppInfo {
         return false;
     }
 
-    public Optional<MachineInfo> getMachine(String ip, int port) {
-        return machines.stream()
+    public Optional<InstanceInfo> getInstance(String ip, int port) {
+        return instances.stream()
             .filter(e -> e.getIp().equals(ip) && e.getPort().equals(port))
             .findFirst();
     }
 
-    public Optional<MachineInfo> getMachine(String ip) {
-        return machines.stream()
+    public Optional<InstanceInfo> getInstance(String ip) {
+        return instances.stream()
             .filter(e -> e.getIp().equals(ip))
             .findFirst();
     }
 
     private boolean heartbeatJudge(final int threshold) {
-        if (machines.size() == 0) {
+        if (instances.size() == 0) {
             return false;
         }
         if (threshold > 0) {
-            long healthyCount = machines.stream()
-                .filter(MachineInfo::isHealthy)
+            long healthyCount = instances.stream()
+                .filter(InstanceInfo::isHealthy)
                 .count();
             if (healthyCount == 0) {
-                // No healthy machines.
-                return machines.stream()
-                    .max(Comparator.comparingLong(MachineInfo::getLastHeartbeat))
+                // No healthy instances.
+                return instances.stream()
+                    .max(Comparator.comparingLong(InstanceInfo::getLastHeartbeat))
                     .map(e -> System.currentTimeMillis() - e.getLastHeartbeat() < threshold)
                     .orElse(false);
             }
@@ -122,20 +122,20 @@ public class AppInfo {
     }
 
     /**
-     * Check whether current application has no healthy machines and should not be displayed.
+     * Check whether current application has no healthy instances and should not be displayed.
      *
      * @return true if the application should be displayed in the sidebar, otherwise false
      */
     public boolean isShown() {
-        return heartbeatJudge(DashboardConfig.getHideAppNoMachineMillis());
+        return heartbeatJudge(DashboardConfig.getHideAppNoInstanceMillis());
     }
 
     /**
-     * Check whether current application has no healthy machines and should be removed.
+     * Check whether current application has no healthy instances and should be removed.
      *
      * @return true if the application is dead and should be removed, otherwise false
      */
     public boolean isDead() {
-        return !heartbeatJudge(DashboardConfig.getRemoveAppNoMachineMillis());
+        return !heartbeatJudge(DashboardConfig.getRemoveAppNoInstanceMillis());
     }
 }

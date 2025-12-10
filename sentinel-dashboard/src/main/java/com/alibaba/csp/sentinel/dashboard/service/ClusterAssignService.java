@@ -31,26 +31,26 @@ public interface ClusterAssignService {
      * Unbind a specific cluster server and its clients.
      *
      * @param app app name
-     * @param machineId valid machine ID ({@code host@commandPort})
+     * @param instanceId valid instance ID ({@code host@commandPort})
      * @return assign result
      */
-    ClusterAppAssignResultVO unbindClusterServer(String app, String machineId);
+    ClusterAppAssignResultVO unbindClusterServer(String app, String instanceId);
 
     /**
      * Unbind a set of cluster servers and its clients.
      *
      * @param app app name
-     * @param machineIdSet set of valid machine ID ({@code host@commandPort})
+     * @param instanceIdSet set of valid instance ID ({@code host@commandPort})
      * @return assign result
      */
-    ClusterAppAssignResultVO unbindClusterServers(String app, Set<String> machineIdSet);
+    ClusterAppAssignResultVO unbindClusterServers(String app, Set<String> instanceIdSet);
 
     /**
      * Apply cluster server and client assignment for provided app.
      *
      * @param app app name
      * @param clusterMap cluster assign map (server -> clients)
-     * @param remainingSet unassigned set of machine ID
+     * @param remainingSet unassigned set of instance ID
      * @return assign result
      */
     ClusterAppAssignResultVO applyAssignToApp(String app, List<ClusterAppAssignMap> clusterMap,

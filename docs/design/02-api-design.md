@@ -79,7 +79,7 @@
       "app": "sentinel-demo",
       "appType": 0,
       "activeConsole": 1,
-      "machines": [
+      "instances": [
         {
           "app": "sentinel-demo",
           "ip": "192.168.1.100",
@@ -99,13 +99,13 @@
 
 ### 5.1 获取机器列表
 
-- **URL**: `/machine/machines.json`
+- **URL**: `/instance/instances.json`
 - **Method**: GET
 - **参数**: `app` (应用名)
 
 ### 5.2 移除机器
 
-- **URL**: `/app/{app}/machine/remove.json`
+- **URL**: `/app/{app}/instance/remove.json`
 - **Method**: DELETE
 - **参数**: `ip`, `port`
 
@@ -283,7 +283,7 @@
 
 ### 12.1 获取资源列表（簇点链路）
 
-- **URL**: `/resource/machineResource.json`
+- **URL**: `/resource/instanceResource.json`
 - **Method**: GET
 - **参数**: `app`, `ip`, `port`, `searchKey`
 

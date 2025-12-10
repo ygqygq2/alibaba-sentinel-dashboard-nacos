@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { DASHBOARD_URL, APP_NAME, API } from '../config';
-import { login, authHeaders, getMachineInfo } from '../helpers';
+import { login, authHeaders, getInstanceInfo } from '../helpers';
 
 /**
  * 规则 API 测试
@@ -64,20 +64,20 @@ test.describe('流控规则 API', () => {
 
 test.describe('其他规则 API (v1)', () => {
   let cookies: string;
-  let machineIp: string;
-  let machinePort: number;
+  let instanceIp: string;
+  let instancePort: number;
 
   test.beforeAll(async ({ request }) => {
     cookies = await login(request);
     // v1 API 需要机器 ip 和 port
-    const machine = await getMachineInfo(request, cookies);
-    machineIp = machine.ip;
-    machinePort = machine.port;
+    const instance = await getInstanceInfo(request, cookies);
+    instanceIp = instance.ip;
+    instancePort = instance.port;
   });
 
   test('获取熔断规则', async ({ request }) => {
     const response = await request.get(`${DASHBOARD_URL}${API.dashboard.degradeRules}`, {
-      params: { app: APP_NAME, ip: machineIp, port: machinePort },
+      params: { app: APP_NAME, ip: instanceIp, port: instancePort },
       headers: authHeaders(cookies),
     });
 
@@ -87,7 +87,7 @@ test.describe('其他规则 API (v1)', () => {
 
   test('获取系统规则', async ({ request }) => {
     const response = await request.get(`${DASHBOARD_URL}${API.dashboard.systemRules}`, {
-      params: { app: APP_NAME, ip: machineIp, port: machinePort },
+      params: { app: APP_NAME, ip: instanceIp, port: instancePort },
       headers: authHeaders(cookies),
     });
 
@@ -97,7 +97,7 @@ test.describe('其他规则 API (v1)', () => {
 
   test('获取授权规则', async ({ request }) => {
     const response = await request.get(`${DASHBOARD_URL}${API.dashboard.authorityRules}`, {
-      params: { app: APP_NAME, ip: machineIp, port: machinePort },
+      params: { app: APP_NAME, ip: instanceIp, port: instancePort },
       headers: authHeaders(cookies),
     });
 
@@ -107,7 +107,7 @@ test.describe('其他规则 API (v1)', () => {
 
   test('获取热点规则', async ({ request }) => {
     const response = await request.get(`${DASHBOARD_URL}${API.dashboard.paramFlowRules}`, {
-      params: { app: APP_NAME, ip: machineIp, port: machinePort },
+      params: { app: APP_NAME, ip: instanceIp, port: instancePort },
       headers: authHeaders(cookies),
     });
 

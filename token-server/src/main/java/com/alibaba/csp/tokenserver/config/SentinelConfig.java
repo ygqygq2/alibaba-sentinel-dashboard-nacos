@@ -2,11 +2,12 @@ package com.alibaba.csp.tokenserver.config;
 
 import com.alibaba.csp.sentinel.annotation.aspectj.SentinelResourceAspect;
 import com.alibaba.csp.sentinel.command.CommandHandler;
-import com.alibaba.csp.sentinel.command.CommandHandlerProvider;
 import com.alibaba.csp.sentinel.command.handler.AuthenticatedFetchActiveRuleCommandHandler;
 import com.alibaba.csp.sentinel.command.handler.AuthenticatedModifyClusterModeCommandHandler;
 import com.alibaba.csp.sentinel.command.handler.AuthenticatedModifyRulesCommandHandler;
 import com.alibaba.csp.sentinel.init.InitExecutor;
+import com.alibaba.csp.sentinel.transport.config.TransportConfig;
+import com.alibaba.csp.sentinel.transport.heartbeat.HeartbeatMessage;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
+import java.lang.reflect.Field;
 import java.util.Map;
 
 /**
@@ -31,6 +33,10 @@ import java.util.Map;
  * - 如果未配置 app_secret，则不启用鉴权
  * - 生产环境建议同时使用网络层访问控制
  * 
+ * 心跳路径配置：
+ * - 默认使用 /registry/instance 路径（与 Dashboard 新 API 匹配）
+ * - 自动在心跳中添加 app_secret 参数（如果已配置）
+ * 
  * 注意：
  * - Cluster Token Server 的启动在 ClusterServerConfig 中处理
  */
@@ -38,10 +44,19 @@ import java.util.Map;
 public class SentinelConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(SentinelConfig.class);
+    
+    /**
+     * 默认心跳 API 路径（与 Dashboard 的新 Instance API 匹配）
+     */
+    private static final String DEFAULT_HEARTBEAT_API_PATH = "/registry/instance";
 
     @PostConstruct
     public void init() {
         logger.info("Initializing Sentinel Transport components...");
+        
+        // 设置默认心跳路径（如果用户未手动配置）
+        // 必须在 InitExecutor.doInit() 之前设置
+        configureDefaultHeartbeatPath();
         
         // 强制设置 Dashboard 地址（确保心跳发送器能读取到）
         String dashboardServer = System.getProperty("csp.sentinel.dashboard.server");
@@ -56,18 +71,9 @@ public class SentinelConfig {
         InitExecutor.doInit();
         logger.info("Sentinel Transport initialized successfully");
         
-        // 强制触发心跳发送器启动
+        // 注入 app_secret 到心跳消息中（用于 Dashboard 鉴权）
         if (StringUtil.isNotBlank(dashboardServer)) {
-            try {
-                // 通过反射触发 HeartbeatSender 的启动
-                Class<?> heartbeatSenderClass = Class.forName(
-                    "com.alibaba.csp.sentinel.transport.heartbeat.HeartbeatSender");
-                Object instance = heartbeatSenderClass.getMethod("getInstance").invoke(null);
-                logger.info("HeartbeatSender instance obtained: {}", instance != null ? "SUCCESS" : "FAILED");
-            } catch (Exception e) {
-                logger.warn("Failed to obtain HeartbeatSender instance: {}", e.getMessage());
-                // 心跳发送器会在第一次资源访问时自动启动，这里失败不影响功能
-            }
+            injectAppSecretToHeartbeat();
         }
         
         // 由于 Spring Boot Fat JAR 的类加载问题，SPI 无法正常加载自定义 Handler
@@ -81,9 +87,66 @@ public class SentinelConfig {
             logger.info("  - getRules command: requires app_secret parameter");
             logger.info("  - setRules command: requires app_secret parameter");
             logger.info("  - setClusterMode command: requires app_secret parameter");
+            logger.info("  - heartbeat: includes app_secret parameter");
         } else {
             logger.warn("Client API authentication DISABLED (app_secret not configured)");
             logger.warn("  Port 8719 is UNPROTECTED - use network-level access control in production!");
+        }
+    }
+    
+    /**
+     * 配置默认心跳路径
+     * 如果用户未手动指定 csp.sentinel.heartbeat.api.path，则使用项目默认值
+     */
+    private void configureDefaultHeartbeatPath() {
+        String existingPath = com.alibaba.csp.sentinel.config.SentinelConfig.getConfig(TransportConfig.HEARTBEAT_API_PATH);
+        if (StringUtil.isBlank(existingPath)) {
+            // 设置为新的 Instance API 路径
+            com.alibaba.csp.sentinel.config.SentinelConfig.setConfig(TransportConfig.HEARTBEAT_API_PATH, DEFAULT_HEARTBEAT_API_PATH);
+            logger.info("Heartbeat API path set to default: {}", DEFAULT_HEARTBEAT_API_PATH);
+        } else {
+            logger.info("Heartbeat API path already configured: {}", existingPath);
+        }
+    }
+    
+    /**
+     * 注入 app_secret 到心跳消息中
+     * 通过反射访问 HeartbeatSender 的 HeartbeatMessage 实例
+     */
+    private void injectAppSecretToHeartbeat() {
+        String appSecret = System.getProperty("csp.sentinel.app.secret");
+        if (StringUtil.isBlank(appSecret)) {
+            logger.info("No app_secret configured, heartbeat will not include authentication");
+            return;
+        }
+        
+        try {
+            // 获取 HeartbeatSenderProvider 中的 HeartbeatSender 实例
+            Class<?> heartbeatSenderProviderClass = Class.forName(
+                "com.alibaba.csp.sentinel.transport.HeartbeatSenderProvider");
+            Field senderField = heartbeatSenderProviderClass.getDeclaredField("heartbeatSender");
+            senderField.setAccessible(true);
+            Object heartbeatSender = senderField.get(null);
+            
+            if (heartbeatSender == null) {
+                logger.warn("HeartbeatSender not initialized, cannot inject app_secret");
+                return;
+            }
+            
+            // 获取 HeartbeatSender 中的 HeartbeatMessage 实例
+            Field heartbeatField = heartbeatSender.getClass().getDeclaredField("heartBeat");
+            heartbeatField.setAccessible(true);
+            HeartbeatMessage heartbeatMessage = (HeartbeatMessage) heartbeatField.get(heartbeatSender);
+            
+            if (heartbeatMessage != null) {
+                // 注册 app_secret 到心跳消息
+                heartbeatMessage.registerInformation("app_secret", appSecret);
+                logger.info("Successfully injected app_secret into heartbeat message");
+            } else {
+                logger.warn("HeartbeatMessage not found in HeartbeatSender");
+            }
+        } catch (Exception e) {
+            logger.error("Failed to inject app_secret into heartbeat: {}", e.getMessage(), e);
         }
     }
     

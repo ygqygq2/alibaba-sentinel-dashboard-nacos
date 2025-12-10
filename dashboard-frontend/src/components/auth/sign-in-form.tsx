@@ -112,12 +112,14 @@ export function SignInForm(): React.JSX.Element {
                 render={({ field }) => (
                   <Field.Root invalid={Boolean(errors.password)}>
                     <Field.Label>密码</Field.Label>
-                    <Box position="relative">
+                    <Box
+                      position="relative"
+                      width="100%"
+                    >
                       <Input
                         {...field}
                         type={showPassword ? 'text' : 'password'}
                         placeholder="请输入密码"
-                        pr="3rem"
                       />
                       <Box
                         position="absolute"

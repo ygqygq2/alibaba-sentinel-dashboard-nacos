@@ -123,7 +123,7 @@ public class SentinelConfig {
         try {
             // 获取 HeartbeatSenderProvider 中的 HeartbeatSender 实例
             Class<?> heartbeatSenderProviderClass = Class.forName(
-                "com.alibaba.csp.sentinel.transport.HeartbeatSenderProvider");
+                "com.alibaba.csp.sentinel.heartbeat.HeartbeatSenderProvider");
             Field senderField = heartbeatSenderProviderClass.getDeclaredField("heartbeatSender");
             senderField.setAccessible(true);
             Object heartbeatSender = senderField.get(null);

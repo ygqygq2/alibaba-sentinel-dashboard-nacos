@@ -84,6 +84,7 @@ export function InstanceFilter({ app, value, onChange }: InstanceFilterProps): R
     >
       <Input
         size="sm"
+        variant="outline"
         value={isOpen ? searchTerm : displayValue}
         onChange={handleInputChange}
         onFocus={handleInputFocus}
@@ -113,6 +114,7 @@ export function InstanceFilter({ app, value, onChange }: InstanceFilterProps): R
             overflowY="auto"
             bg="bg"
             borderWidth="1px"
+            borderColor="border"
             borderRadius="md"
             boxShadow="lg"
             zIndex={1000}
@@ -126,8 +128,8 @@ export function InstanceFilter({ app, value, onChange }: InstanceFilterProps): R
                     px={3}
                     py={2}
                     cursor="pointer"
-                    bg={value === hostPort ? 'bg.muted' : 'bg'}
-                    _hover={{ bg: 'bg.muted' }}
+                    bg={value === hostPort ? 'colorPalette.subtle' : 'bg'}
+                    _hover={{ bg: 'bg.emphasized' }}
                     onClick={() => handleSelect(hostPort)}
                     fontSize="sm"
                   >

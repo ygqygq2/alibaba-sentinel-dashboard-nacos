@@ -12,12 +12,15 @@ export const Input = defineSlotRecipe({
       alignItems: 'center',
       alignSelf: 'stretch',
       display: 'inline-flex',
+      '--focus-color': 'colors.colorPalette.focusRing',
+      '--error-color': 'colors.border.error',
       '&::placeholder': {
         color: 'fg.muted',
         opacity: 1,
       },
-      '&:-webkit-autofill': {
-        borderRadius: 'inherit',
+      _invalid: {
+        focusRingColor: 'var(--error-color)',
+        borderColor: 'var(--error-color)',
       },
     },
     addon: {
@@ -43,8 +46,22 @@ export const Input = defineSlotRecipe({
         },
       },
     },
+    variant: {
+      outline: {
+        field: {
+          bg: 'transparent',
+          borderWidth: '1px',
+          borderColor: 'border',
+          _focusVisible: {
+            borderColor: 'var(--focus-color)',
+            boxShadow: '0 0 0 1px var(--focus-color)',
+          },
+        },
+      },
+    },
   },
   defaultVariants: {
     size: 'md',
+    variant: 'outline',
   },
 });

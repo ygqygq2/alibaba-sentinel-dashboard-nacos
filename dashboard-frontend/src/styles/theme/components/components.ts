@@ -4,6 +4,7 @@ import { Button } from './button';
 import { Card } from './card';
 import { Checkbox } from './checkbox';
 import { IconButton } from './icon-button';
+import { Input } from './input';
 import { Link } from './link';
 import { Popover } from './popover';
 import { Switch } from './switch';
@@ -18,6 +19,7 @@ export const components = {
   button: Button,
   card: Card,
   checkbox: Checkbox,
+  input: Input,
   tag: Tag,
   switch: Switch,
   tabs: Tabs,

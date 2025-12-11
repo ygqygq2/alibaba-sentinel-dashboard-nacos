@@ -8,6 +8,8 @@
 
 ## AI 助手行为规范
 
+**每次任务先建 todolist**
+
 ### 脚本优先原则
 
 - **优先使用项目提供的一键脚本** `./scripts/dev.sh`，避免手动执行多个命令
@@ -20,7 +22,7 @@
 # 服务管理（推荐使用 make 命令）
 make build              # 仅构建镜像
 make up                 # 启动所有服务（不构建）
-make up-build           # 构建并启动所有服务
+make up-build           # 构建并启动所有服务，AI 你就用这个，用这个，用这个并别打断它
 make down               # 停止服务
 make restart            # 重启服务（不构建）
 make restart-build      # 重新构建并启动

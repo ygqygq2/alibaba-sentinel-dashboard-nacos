@@ -12,10 +12,10 @@
 
 **缺失测试：**
 
-- ❌ **组件单元测试**：InstanceFilter, ChartContainer, RuleForm 等关键组件无测试
-- ❌ **工具函数测试**：lib/utils/ 中的工具函数无覆盖
-- ❌ **状态管理测试**：stores/ 中的 Zustand store 无测试
-- ❌ **完整用户流程**：规则创建 → 编辑 → 删除完整流程覆盖不足
+- ⚠️ **组件单元测试**：InstanceFilter 已添加，但**表单组件不适合单元测试**（应用 E2E）
+- ❌ **工具函数测试**：lib/utils/ 中的工具函数无覆盖（**高优先级**）
+- ❌ **状态管理测试**：stores/ 中的 Zustand store 无测试（低优先级）
+- ⚠️ **完整用户流程**：核心流程已覆盖，其他规则流程可增强
 
 ### 1.2 后端测试现状
 
@@ -39,40 +39,49 @@
 
 ### 2.1 前端测试完善（优先级高）
 
-#### Phase 1: 组件单元测试
+#### Phase 1: 工具函数单元测试（调整策略）
 
-**目标组件：**
+**⚠️ 策略调整：表单/页面组件不适合单元测试，应该用 E2E**
 
-1. **InstanceFilter** - 实例选择下拉框
-2. **ChartContainer** - 图表容器
-3. **RuleForm** 系列 - FlowRuleForm, DegradeRuleForm, SystemRuleForm
-4. **DataTable** - 数据表格
-5. **FilterButton** - 筛选按钮
+**目标函数（高优先级）：**
+
+1. ✅ **InstanceFilter** - 已完成基础测试
+2. ❌ **lib/utils/instance.ts** - 实例地址工具函数（必须）
+3. ❌ **lib/is-nav-item-active.ts** - 导航激活判断（必须）
+4. ❌ **lib/get-site-url.ts** - 站点 URL 获取（推荐）
+5. ❌ **lib/logger.ts** - 日志工具类（可选）
+
+**删除不适合的测试：**
+
+- ❌ RuleForm 系列 - 应该用 E2E 测试表单功能
+- ❌ ChartContainer - 涉及 Canvas 渲染，E2E 更合适
+- ❌ DataTable - 复杂交互，E2E 更合适
 
 **测试工具：**
 
-- Vitest
-- @testing-library/react
-- @testing-library/user-event
+- Vitest（纯函数测试）
 
 **示例测试文件：**
 
 ```typescript
-// src/components/dashboard/metric/__tests__/InstanceFilter.test.tsx
-import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, test, expect, vi } from "vitest";
-import { InstanceFilter } from "../InstanceFilter";
+// src/lib/utils/__tests__/instance.test.ts
+import { describe, test, expect } from "vitest";
+import { getInstanceAddress, getInstanceHostPort, getInstanceDisplayName } from "../instance";
 
-describe("InstanceFilter", () => {
-  test("显示加载状态", () => {
-    render(<InstanceFilter app="test-app" value={null} onChange={vi.fn()} />);
-    expect(screen.getByPlaceholderText("加载中...")).toBeInTheDocument();
+describe("instance utils", () => {
+  test("getInstanceAddress - 优先使用 name", () => {
+    const instance = { name: "app-1", domain: "example.com", ip: "1.2.3.4", port: 8080 };
+    expect(getInstanceAddress(instance)).toBe("app-1");
   });
 
-  test("选择实例时触发回调", async () => {
-    const onChange = vi.fn();
-    render(<InstanceFilter app="test-app" value={null} onChange={onChange} />);
-    // ... 测试交互
+  test("getInstanceAddress - name 为空时使用 domain", () => {
+    const instance = { name: "", domain: "example.com", ip: "1.2.3.4", port: 8080 };
+    expect(getInstanceAddress(instance)).toBe("example.com");
+  });
+
+  test("getInstanceHostPort - 返回地址:端口", () => {
+    const instance = { ip: "1.2.3.4", port: 8080 };
+    expect(getInstanceHostPort(instance)).toBe("1.2.3.4:8080");
   });
 });
 ```
@@ -169,33 +178,30 @@ class NacosIntegrationTest {
 
 ## 三、实施步骤
 
-### Step 1: 前端组件单元测试（本周）
+### Step 1: 前端工具函数单元测试（本周）
 
 创建测试文件：
 
 ```bash
-dashboard-frontend/src/components/
-├── dashboard/
-│   ├── metric/
-│   │   └── __tests__/
-│   │       └── InstanceFilter.test.tsx
-│   ├── rules/
-│   │   └── __tests__/
-│   │       ├── FlowRuleForm.test.tsx
-│   │       └── DegradeRuleForm.test.tsx
-│   └── chart/
-│       └── __tests__/
-│           └── ChartContainer.test.tsx
-└── core/
-    └── __tests__/
-        ├── DataTable.test.tsx
-        └── FilterButton.test.tsx
+dashboard-frontend/src/lib/
+├── utils/
+│   └── __tests__/
+│       └── instance.test.ts         ✅ 必须
+├── __tests__/
+│   ├── is-nav-item-active.test.ts   ✅ 必须
+│   ├── get-site-url.test.ts         ⚠️  推荐
+│   └── logger.test.ts               ⚠️  可选
 ```
+
+**已完成：**
+
+- ✅ InstanceFilter 组件测试（dashboard/metric/**tests**/）
 
 **验收标准：**
 
-- [ ] 5 个关键组件有单元测试
-- [ ] 每个组件测试覆盖率 > 70%
+- [x] InstanceFilter 测试已通过
+- [ ] 3 个核心工具函数有单元测试
+- [ ] 所有纯函数测试覆盖率 > 80%
 - [ ] 测试通过 `pnpm test`
 
 ### Step 2: 扩展 E2E 测试（下周）

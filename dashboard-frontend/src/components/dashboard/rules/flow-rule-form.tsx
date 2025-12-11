@@ -52,11 +52,11 @@ const THRESHOLD_TYPE_OPTIONS = [
 /** 默认表单值 */
 const defaultValues: Omit<FlowRuleBase, 'app'> = {
   resource: '',
-  grade: 1,
-  count: 0,
-  strategy: 0,
-  controlBehavior: 0,
-  limitApp: 'default',
+  grade: 1, // QPS模式（必须有值，因为是select下拉框）
+  count: undefined as unknown as number, // 强制用户填写
+  strategy: 0, // 直接拒绝（必须有值，因为是select下拉框）
+  controlBehavior: 0, // 快速失败（必须有值，因为是select下拉框）
+  limitApp: '', // 强制用户填写，避免误操作
   clusterMode: false,
 };
 
@@ -88,7 +88,9 @@ export function FlowRuleForm({
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
     if (!formData.resource.trim()) newErrors.resource = '资源名称不能为空';
-    if (formData.count < 0) newErrors.count = '阈值不能为负数';
+    if (formData.count === undefined || formData.count === null || isNaN(formData.count))
+      newErrors.count = '阈值必须填写';
+    if (!formData.limitApp?.trim()) newErrors.limitApp = '针对来源不能为空（填写 default 表示不区分来源）';
     if (formData.strategy === 1 && !formData.refResource?.trim()) newErrors.refResource = '关联模式下必须填写关联资源';
     if (formData.controlBehavior === 1 && (!formData.warmUpPeriodSec || formData.warmUpPeriodSec <= 0))
       newErrors.warmUpPeriodSec = 'Warm Up 模式下必须设置预热时长';
@@ -162,6 +164,7 @@ export function FlowRuleForm({
       <FormSection>
         <FormInput
           label="资源名称"
+          name="resource"
           required
           value={formData.resource}
           onChange={(v) => handleChange('resource', v)}
@@ -171,18 +174,22 @@ export function FlowRuleForm({
         />
         <FormSelect
           label="阈值类型"
+          name="grade"
           value={formData.grade}
           onChange={(v) => handleChange('grade', Number(v))}
           options={GRADE_OPTIONS}
         />
         <FormInput
           label="阈值"
+          name="count"
           required
           type="number"
-          value={formData.count}
+          value={formData.count ?? ''}
           onChange={(v) => handleChange('count', Number(v))}
           min={0}
+          placeholder="10"
           error={errors.count}
+          helperText="每秒最大请求数（QPS）或并发线程数"
         />
       </FormSection>
 
@@ -190,18 +197,24 @@ export function FlowRuleForm({
       <FormSection>
         <FormInput
           label="针对来源"
+          name="limitApp"
+          required
           value={formData.limitApp}
           onChange={(v) => handleChange('limitApp', v)}
           placeholder="default"
+          error={errors.limitApp}
+          helperText="填写 'default' 表示不区分来源，对所有调用方生效"
         />
         <FormSelect
           label="流控模式"
+          name="strategy"
           value={formData.strategy}
           onChange={(v) => handleChange('strategy', Number(v))}
           options={STRATEGY_OPTIONS}
         />
         <FormSelect
           label="流控效果"
+          name="controlBehavior"
           value={formData.controlBehavior}
           onChange={(v) => handleChange('controlBehavior', Number(v))}
           options={CONTROL_BEHAVIOR_OPTIONS}
@@ -213,6 +226,7 @@ export function FlowRuleForm({
         {formData.strategy === 1 && (
           <FormInput
             label="关联资源"
+            name="refResource"
             required
             value={formData.refResource || ''}
             onChange={(v) => handleChange('refResource', v)}
@@ -250,6 +264,7 @@ export function FlowRuleForm({
       <FormRow>
         <FormSwitch
           label="集群模式"
+          name="clusterMode"
           checked={formData.clusterMode ?? false}
           onChange={(v) => handleChange('clusterMode', v)}
         />

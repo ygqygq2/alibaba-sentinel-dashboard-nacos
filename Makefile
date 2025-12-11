@@ -4,7 +4,7 @@
 
 .PHONY: help build up up-build down restart restart-build logs ps clean \
         test test-api test-ui test-smoke test-all test-dev test-dev-ui \
-        fe-check fe-type fe-lint fe-test dev-fe gen-metric
+        fe-check fe-type fe-lint fe-test dev-fe gen-metric test-backend-api
 
 # 目录定义
 SCRIPTS := ./scripts
@@ -31,13 +31,14 @@ help:
 	@echo "  make clean         - 清理所有（包括卷和镜像）"
 	@echo ""
 	@echo "🧪 E2E 测试:"
-	@echo "  make test          - 运行 API 测试（默认）"
-	@echo "  make test-api      - 运行 API 测试"
-	@echo "  make test-ui       - 运行 UI 测试（CI 模式，访问 8080）"
-	@echo "  make test-smoke    - 运行冒烟测试"
-	@echo "  make test-all      - 运行全部测试"
-	@echo "  make test-dev      - 开发模式测试（需先 make dev-fe）"
-	@echo "  make test-dev-ui   - 开发模式 UI 测试（有头）"
+	@echo "  make test             - 运行 API 测试（默认）"
+	@echo "  make test-api         - 运行 API 测试"
+	@echo "  make test-ui          - 运行 UI 测试（CI 模式，访问 8080）"
+	@echo "  make test-smoke       - 运行冒烟测试"
+	@echo "  make test-all         - 运行全部测试"
+	@echo "  make test-dev         - 开发模式测试（需先 make dev-fe）"
+	@echo "  make test-dev-ui      - 开发模式 UI 测试（有头）"
+	@echo "  make test-backend-api - 测试后端 REST API（规则 CRUD）"
 	@echo ""
 	@echo "🔍 前端检查:"
 	@echo "  make fe-check   - 运行所有前端检查（type + lint + test）"
@@ -136,3 +137,10 @@ dev-fe:
 gen-metric:
 	@echo "📊 生成监控数据..."
 	@$(SCRIPTS)/generate-metric-data.sh
+
+# ========================================
+# 后端 API 测试
+# ========================================
+test-backend-api:
+	@echo "🔌 测试后端 REST API..."
+	@$(SCRIPTS)/test-backend-api.sh

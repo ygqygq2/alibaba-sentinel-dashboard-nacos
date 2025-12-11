@@ -74,15 +74,16 @@ export function SystemRuleForm({
   backPath,
 }: SystemRuleFormProps): React.JSX.Element {
   const [ruleType, setRuleType] = React.useState<RuleType>(() => (initialData ? getRuleType(initialData) : 'qps'));
-  const [threshold, setThreshold] = React.useState<number>(() =>
-    initialData ? getThresholdValue(initialData, getRuleType(initialData)) : 0
+  const [threshold, setThreshold] = React.useState<number | undefined>(
+    () => (initialData ? getThresholdValue(initialData, getRuleType(initialData)) : undefined) // 强制用户填写
   );
   const [errors, setErrors] = React.useState<Record<string, string>>({});
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
-    if (threshold < 0) newErrors.threshold = '阈值不能为负数';
-    if (ruleType === 'cpu' && threshold > 1) newErrors.threshold = 'CPU 使用率必须在 0-1 之间';
+    if (threshold === undefined || threshold === null || isNaN(threshold)) {
+      newErrors.threshold = '阈值必须填写';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -148,6 +149,7 @@ export function SystemRuleForm({
       <FormSection columns={{ base: 1, md: 2 }}>
         <FormSelect
           label="阈值类型"
+          name="ruleType"
           value={ruleType}
           onChange={(v) => {
             setRuleType(v as RuleType);
@@ -159,9 +161,10 @@ export function SystemRuleForm({
         />
         <FormInput
           label={`阈值${typeInfo.unit ? ` (${typeInfo.unit})` : ''}`}
+          name="threshold"
           required
           type="number"
-          value={threshold}
+          value={threshold ?? ''}
           onChange={(v) => {
             setThreshold(Number(v));
             if (errors.threshold) {

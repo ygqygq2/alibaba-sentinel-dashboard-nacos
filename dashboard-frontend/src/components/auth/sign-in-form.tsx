@@ -81,7 +81,6 @@ export function SignInForm(): React.JSX.Element {
       <Stack gap={1}>
         <Text fontSize="2xl">登录 Sentinel Dashboard</Text>
         <Text
-          color="gray.500"
           fontSize="sm"
         >
           请输入您的账号信息

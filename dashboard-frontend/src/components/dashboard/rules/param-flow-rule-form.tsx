@@ -43,11 +43,11 @@ const GRADE_OPTIONS = [
 /** 默认表单值 */
 const defaultValues: Omit<ParamFlowRule, 'app' | 'id'> = {
   resource: '',
-  paramIdx: 0,
-  grade: 1,
-  count: 0,
-  durationInSec: 1,
-  controlBehavior: 0,
+  paramIdx: undefined as unknown as number, // 强制用户填写
+  grade: 1, // QPS模式（必须有值，因为是select下拉框）
+  count: undefined as unknown as number, // 强制用户填写
+  durationInSec: undefined as unknown as number, // 强制用户填写
+  controlBehavior: 0, // 快速失败（必须有值，因为是select下拉框）
   paramFlowItemList: [],
   clusterMode: false,
 };
@@ -103,9 +103,12 @@ export function ParamFlowRuleForm({
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
     if (!formData.resource.trim()) newErrors.resource = '资源名称不能为空';
-    if (formData.paramIdx < 0) newErrors.paramIdx = '参数索引不能为负数';
-    if (formData.count < 0) newErrors.count = '阈值不能为负数';
-    if (formData.durationInSec <= 0) newErrors.durationInSec = '统计窗口必须大于 0';
+    if (formData.paramIdx === undefined || formData.paramIdx === null || isNaN(formData.paramIdx))
+      newErrors.paramIdx = '参数索引必须填写';
+    if (formData.count === undefined || formData.count === null || isNaN(formData.count))
+      newErrors.count = '阈值必须填写';
+    if (formData.durationInSec === undefined || formData.durationInSec === null || formData.durationInSec <= 0)
+      newErrors.durationInSec = '统计窗口必须大于 0';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -155,6 +158,7 @@ export function ParamFlowRuleForm({
       <FormSection>
         <FormInput
           label="资源名称"
+          name="resource"
           required
           value={formData.resource}
           onChange={(v) => handleChange('resource', v)}
@@ -164,16 +168,19 @@ export function ParamFlowRuleForm({
         />
         <FormInput
           label="参数索引"
+          name="paramIdx"
           required
           type="number"
-          value={formData.paramIdx}
+          value={formData.paramIdx ?? ''}
           onChange={(v) => handleChange('paramIdx', Number(v))}
           min={0}
+          placeholder="0"
           error={errors.paramIdx}
           helperText="从 0 开始，表示第几个参数"
         />
         <FormSelect
           label="阈值类型"
+          name="grade"
           value={formData.grade}
           onChange={(v) => handleChange('grade', Number(v))}
           options={GRADE_OPTIONS}
@@ -183,21 +190,27 @@ export function ParamFlowRuleForm({
       <FormSection>
         <FormInput
           label="单机阈值"
+          name="count"
           required
           type="number"
-          value={formData.count}
+          value={formData.count ?? ''}
           onChange={(v) => handleChange('count', Number(v))}
           min={0}
+          placeholder="10"
           error={errors.count}
+          helperText="每秒最大请求数"
         />
         <FormInput
           label="统计窗口(秒)"
+          name="durationInSec"
           required
           type="number"
-          value={formData.durationInSec}
+          value={formData.durationInSec ?? ''}
           onChange={(v) => handleChange('durationInSec', Number(v))}
           min={1}
+          placeholder="1"
           error={errors.durationInSec}
+          helperText="流控统计的时间窗口"
         />
       </FormSection>
 
@@ -205,6 +218,7 @@ export function ParamFlowRuleForm({
       <FormRow>
         <FormSwitch
           label="集群模式"
+          name="clusterMode"
           checked={formData.clusterMode ?? false}
           onChange={(v) => handleChange('clusterMode', v)}
         />

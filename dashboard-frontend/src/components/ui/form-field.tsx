@@ -22,6 +22,8 @@ interface BaseFieldProps {
 
 /** 输入框属性 */
 export interface FormInputProps extends BaseFieldProps {
+  /** 字段名称（用于表单提交和测试定位） */
+  name?: string;
   /** 值 */
   value: string | number;
   /** 值变化回调 */
@@ -39,6 +41,7 @@ export interface FormInputProps extends BaseFieldProps {
 /** 通用输入框组件 */
 export function FormInput({
   label,
+  name,
   required,
   error,
   helperText,
@@ -57,6 +60,7 @@ export function FormInput({
         {required && ' *'}
       </Field.Label>
       <Input
+        name={name}
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -79,6 +83,8 @@ export interface SelectOption {
 
 /** 下拉框属性 */
 export interface FormSelectProps extends BaseFieldProps {
+  /** 字段名称（用于表单提交和测试定位） */
+  name?: string;
   /** 值 */
   value: string | number;
   /** 值变化回调 */
@@ -92,6 +98,7 @@ export interface FormSelectProps extends BaseFieldProps {
 /** 通用下拉框组件 */
 export function FormSelect({
   label,
+  name,
   required,
   error,
   helperText,
@@ -109,6 +116,7 @@ export function FormSelect({
       </Field.Label>
       <NativeSelect.Root disabled={disabled}>
         <NativeSelect.Field
+          name={name}
           value={value}
           onChange={(e) => onChange(e.target.value)}
         >
@@ -141,6 +149,8 @@ export function FormSelect({
 export interface FormSwitchProps {
   /** 字段标签 */
   label: string;
+  /** 字段名称 */
+  name?: string;
   /** 值 */
   checked: boolean;
   /** 值变化回调 */
@@ -152,7 +162,14 @@ export interface FormSwitchProps {
 }
 
 /** 通用开关组件 */
-export function FormSwitch({ label, checked, onChange, disabled, helperText }: FormSwitchProps): React.JSX.Element {
+export function FormSwitch({
+  label,
+  name,
+  checked,
+  onChange,
+  disabled,
+  helperText,
+}: FormSwitchProps): React.JSX.Element {
   return (
     <Field.Root>
       <Switch.Root
@@ -160,7 +177,7 @@ export function FormSwitch({ label, checked, onChange, disabled, helperText }: F
         onCheckedChange={(e) => onChange(e.checked)}
         disabled={disabled}
       >
-        <Switch.HiddenInput />
+        <Switch.HiddenInput name={name} />
         <Switch.Control>
           <Switch.Thumb />
         </Switch.Control>
@@ -173,6 +190,8 @@ export function FormSwitch({ label, checked, onChange, disabled, helperText }: F
 
 /** 文本域属性 */
 export interface FormTextareaProps extends BaseFieldProps {
+  /** 字段名称 */
+  name?: string;
   /** 值 */
   value: string;
   /** 值变化回调 */
@@ -186,6 +205,7 @@ export interface FormTextareaProps extends BaseFieldProps {
 /** 通用文本域组件 */
 export function FormTextarea({
   label,
+  name,
   required,
   error,
   helperText,
@@ -202,6 +222,7 @@ export function FormTextarea({
         {required && ' *'}
       </Field.Label>
       <Textarea
+        name={name}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}

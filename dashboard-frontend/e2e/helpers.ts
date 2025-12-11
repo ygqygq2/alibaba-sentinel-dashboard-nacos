@@ -50,6 +50,37 @@ export function sleep(ms: number): Promise<void> {
 }
 
 /**
+ * 规则测试通用流程
+ */
+export interface RuleTestHelpers {
+  /**
+   * 创建规则
+   * @param request API 请求上下文
+   * @param cookies 认证 cookie
+   * @param ruleData 规则数据
+   * @returns 创建的规则 ID
+   */
+  createRule: (request: APIRequestContext, cookies: string, ruleData: any) => Promise<number>;
+
+  /**
+   * 获取规则列表
+   * @param request API 请求上下文
+   * @param cookies 认证 cookie
+   * @param app 应用名
+   * @returns 规则列表
+   */
+  getRules: (request: APIRequestContext, cookies: string, app: string) => Promise<any[]>;
+
+  /**
+   * 删除规则
+   * @param request API 请求上下文
+   * @param cookies 认证 cookie
+   * @param ruleId 规则 ID
+   */
+  deleteRule: (request: APIRequestContext, cookies: string, ruleId: number) => Promise<void>;
+}
+
+/**
  * 触发 Token Server 产生资源数据
  */
 export async function triggerResourceData(count = 5): Promise<void> {

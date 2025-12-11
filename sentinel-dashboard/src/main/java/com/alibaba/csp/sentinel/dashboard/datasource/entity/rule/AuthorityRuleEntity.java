@@ -43,8 +43,6 @@ public class AuthorityRuleEntity extends AbstractRuleEntity<AuthorityRule> {
         return entity;
     }
 
-    @JsonIgnore
-    @JSONField(serialize = false)
     public String getLimitApp() {
         return rule.getLimitApp();
     }
@@ -53,8 +51,6 @@ public class AuthorityRuleEntity extends AbstractRuleEntity<AuthorityRule> {
         rule.setLimitApp(limitApp);
     }
 
-    @JsonIgnore
-    @JSONField(serialize = false)
     public String getResource() {
         return rule.getResource();
     }
@@ -63,8 +59,6 @@ public class AuthorityRuleEntity extends AbstractRuleEntity<AuthorityRule> {
         rule.setResource(resource);
     }
 
-    @JsonIgnore
-    @JSONField(serialize = false)
     public int getStrategy() {
         return rule.getStrategy();
     }

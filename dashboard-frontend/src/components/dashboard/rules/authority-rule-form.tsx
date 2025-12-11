@@ -33,7 +33,7 @@ const STRATEGY_OPTIONS = [
 const defaultValues: Omit<AuthorityRule, 'app' | 'id'> = {
   resource: '',
   limitApp: '',
-  strategy: 0,
+  strategy: 0, // 白名单（必须有值，因为是select下拉框）
 };
 
 export function AuthorityRuleForm({
@@ -116,6 +116,7 @@ export function AuthorityRuleForm({
       <FormSection columns={{ base: 1, md: 2 }}>
         <FormInput
           label="资源名称"
+          name="resource"
           required
           value={formData.resource}
           onChange={(v) => handleChange('resource', v)}
@@ -125,6 +126,7 @@ export function AuthorityRuleForm({
         />
         <FormSelect
           label="授权类型"
+          name="strategy"
           value={formData.strategy}
           onChange={(v) => handleChange('strategy', Number(v))}
           options={STRATEGY_OPTIONS}
@@ -135,6 +137,7 @@ export function AuthorityRuleForm({
       <FormSection columns={{ base: 1, md: 1 }}>
         <FormTextarea
           label="流控应用"
+          name="limitApp"
           required
           value={formData.limitApp}
           onChange={(v) => handleChange('limitApp', v)}

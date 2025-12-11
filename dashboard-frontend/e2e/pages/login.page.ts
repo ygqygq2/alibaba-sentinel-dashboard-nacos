@@ -24,9 +24,11 @@ export class LoginPage {
   }
 
   async expectLoginError() {
-    // 登录失败应该显示 Chakra UI Alert 错误提示
-    // 等待错误消息出现（可能需要一些时间处理请求）
+    // 登录失败应该显示 Chakra UI Toast 错误提示
+    // Toast 通常使用特定的 data-* 属性或类名
     await this.page.waitForLoadState('networkidle');
-    await expect(this.page.locator('[role="alert"]')).toBeVisible({ timeout: 10000 });
+    // Chakra UI Toast 通常有 role="status" 和特定的 CSS 类
+    // 等待包含"登录失败"文本的提示出现
+    await expect(this.page.locator('[role="status"]').filter({ hasText: '登录失败' })).toBeVisible({ timeout: 10000 });
   }
 }

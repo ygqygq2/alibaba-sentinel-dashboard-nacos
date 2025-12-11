@@ -10,8 +10,8 @@ import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router-dom';
 
 import { InstanceSelector, ResourceTable } from '@/components/dashboard/identity';
-import { useDebounce } from '@/hooks/use-debounce';
 import { useInstanceResources } from '@/hooks/api';
+import { useDebounce } from '@/hooks/use-debounce';
 
 type ViewMode = 'tree' | 'list';
 

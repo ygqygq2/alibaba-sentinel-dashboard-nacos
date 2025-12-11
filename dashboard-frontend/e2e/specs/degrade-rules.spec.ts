@@ -123,8 +123,8 @@ test.describe('降级规则完整流程', () => {
     await deleteButton.click();
     await page.waitForTimeout(1000);
 
-    // 验证删除成功
-    await expect(page.getByText(testResource)).not.toBeVisible({ timeout: 3000 });
+    // 验证删除成功 - 检查表格中是否还有该资源
+    await expect(page.locator(`tr:has-text("${testResource}")`)).not.toBeVisible({ timeout: 3000 });
   });
 
   test('创建异常比例规则', async ({ page }) => {

@@ -177,6 +177,7 @@ export function SystemRuleForm({
           }}
           min={0}
           max={ruleType === 'cpu' ? 1 : undefined}
+          step={ruleType === 'cpu' ? 0.01 : 1}
           error={errors.threshold}
         />
       </FormSection>

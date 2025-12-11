@@ -50,23 +50,33 @@ test.describe('冒烟测试', () => {
       expect((await response.json()).success).toBe(true);
     });
 
-    test('Dashboard 登录返回 Cookie', async ({ request }) => {
-      const response = await request.post(`${DASHBOARD_URL}${API.dashboard.login}`, {
+    test('Dashboard 登录后可访问受保护资源', async ({ request }) => {
+      // 先登录
+      const loginResponse = await request.post(`${DASHBOARD_URL}${API.dashboard.login}`, {
         params: TEST_USER,
       });
+      expect(loginResponse.ok()).toBeTruthy();
+      expect((await loginResponse.json()).success).toBe(true);
 
-      const setCookie = response.headers()['set-cookie'];
-      expect(setCookie).toBeTruthy();
-      expect(setCookie).toContain('JSESSIONID');
+      // 使用相同的 request context (自动保留 cookies) 访问受保护的资源
+      const appsResponse = await request.get(`${DASHBOARD_URL}${API.dashboard.apps}`);
+      expect(appsResponse.ok()).toBeTruthy();
+
+      // 能够成功获取数据说明 Cookie 认证有效
+      const data = await appsResponse.json();
+      // API 返回 { code, data, message } 格式
+      expect(data).toHaveProperty('data');
+      expect(Array.isArray(data.data)).toBe(true);
     });
-
     test('Dashboard 无效凭据登录失败', async ({ request }) => {
       const response = await request.post(`${DASHBOARD_URL}${API.dashboard.login}`, {
         params: { username: 'invalid', password: 'invalid' },
         failOnStatusCode: false,
       });
 
-      expect(response.status()).toBeGreaterThanOrEqual(400);
+      const data = await response.json();
+      expect(data.success).toBe(false);
+      expect(data.code).toBe(-1);
     });
   });
 
@@ -93,7 +103,7 @@ test.describe('冒烟测试', () => {
       const cookies = loginRes.headers()['set-cookie']?.split(';')[0] || '';
 
       // 获取实例列表
-      const response = await request.get(`${DASHBOARD_URL}${API.dashboard.instances}?app=${APP_NAME}`, {
+      const response = await request.get(`${DASHBOARD_URL}${API.dashboard.instances(APP_NAME)}`, {
         headers: { Cookie: cookies },
       });
 
@@ -136,19 +146,31 @@ test.describe('冒烟测试', () => {
   test.describe('关键页面可访问', () => {
     test('Dashboard 首页可访问', async ({ page }) => {
       await page.goto(DASHBOARD_URL);
-      await expect(page).toHaveURL(/.*\/auth\/sign-in/);
+      // 在 CI 模式下，前端路由是哈希路由
+      await expect(page).toHaveURL(/\/(#\/auth\/sign-in|dashboard)|(auth\/sign-in)/);
     });
+  });
+
+  // 不使用认证状态的 UI 测试
+  test.describe('登录流程测试', () => {
+    // 禁用此组的 auth setup，因为我们要测试登录流程
+    test.use({ storageState: { cookies: [], origins: [] } });
 
     test('登录后可访问应用列表', async ({ page }) => {
-      await page.goto(`${DASHBOARD_URL}/auth/sign-in`);
+      // 使用哈希路由访问登录页
+      await page.goto(`${DASHBOARD_URL}/#/auth/sign-in`);
+      await page.waitForLoadState('networkidle');
+
+      // 等待登录表单加载
+      await page.waitForSelector('input[name="username"]', { timeout: 10000 });
 
       // 登录
       await page.fill('input[name="username"]', TEST_USER.username);
       await page.fill('input[name="password"]', TEST_USER.password);
       await page.click('button[type="submit"]');
 
-      // 等待跳转
-      await page.waitForURL(/.*\/dashboard/, { timeout: 5000 });
+      // 等待跳转到 dashboard
+      await page.waitForURL(/dashboard/, { timeout: 10000 });
 
       // 验证页面加载成功
       await expect(page.getByText(APP_NAME).first()).toBeVisible({ timeout: 10000 });

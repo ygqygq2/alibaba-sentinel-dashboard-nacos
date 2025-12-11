@@ -36,6 +36,8 @@ export interface FormInputProps extends BaseFieldProps {
   min?: number;
   /** 最大值（number 类型） */
   max?: number;
+  /** 步进值（number 类型） */
+  step?: number;
 }
 
 /** 通用输入框组件 */
@@ -52,6 +54,7 @@ export function FormInput({
   type = 'text',
   min,
   max,
+  step,
 }: FormInputProps): React.JSX.Element {
   return (
     <Field.Root invalid={!!error}>
@@ -68,6 +71,7 @@ export function FormInput({
         disabled={disabled}
         min={min}
         max={max}
+        step={step}
       />
       {helperText && !error && <Field.HelperText>{helperText}</Field.HelperText>}
       {error && <Field.ErrorText>{error}</Field.ErrorText>}

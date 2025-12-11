@@ -2,16 +2,17 @@
  * InstanceFilter 组件单元测试
  */
 
+import { ChakraProvider, defaultSystem } from '@chakra-ui/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
-import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
-import { ChakraProvider, defaultSystem } from '@chakra-ui/react';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { InstanceFilter } from '../InstanceFilter';
 import { appApi } from '@/lib/api';
 import type { InstanceInfo } from '@/types/sentinel';
+
+import { InstanceFilter } from '../InstanceFilter';
 
 // Mock API
 vi.mock('@/lib/api', () => ({

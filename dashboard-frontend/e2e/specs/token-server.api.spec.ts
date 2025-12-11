@@ -16,9 +16,9 @@ test.describe('Token Server - 基础接口', () => {
     expect(response.ok()).toBeTruthy();
 
     const data = await response.json();
-    expect(data.resourceA).toBe('success');
-    expect(data.resourceB).toBe('success');
-    expect(data.resourceC).toBe('success');
+    expect(data.paymentService).toBe('success');
+    expect(data.orderService).toBe('success');
+    expect(data.userService).toBe('success');
   });
 });
 

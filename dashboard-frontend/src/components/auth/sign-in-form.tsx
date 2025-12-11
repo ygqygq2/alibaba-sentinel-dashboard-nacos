@@ -80,11 +80,7 @@ export function SignInForm(): React.JSX.Element {
       </div>
       <Stack gap={1}>
         <Text fontSize="2xl">登录 Sentinel Dashboard</Text>
-        <Text
-          fontSize="sm"
-        >
-          请输入您的账号信息
-        </Text>
+        <Text fontSize="sm">请输入您的账号信息</Text>
       </Stack>
       <Stack gap={3}>
         <Stack gap={2}>

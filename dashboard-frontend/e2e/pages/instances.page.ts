@@ -19,7 +19,10 @@ export class InstancesPage {
   }
 
   async getInstanceCount(): Promise<number> {
-    const rows = await this.page.locator('tbody tr').count();
+    // 等待表格加载
+    await this.page.waitForTimeout(1000);
+    // 尝试多个可能的选择器
+    const rows = await this.page.locator('tbody tr, [data-testid="instance-row"], .instance-item').count();
     return rows;
   }
 

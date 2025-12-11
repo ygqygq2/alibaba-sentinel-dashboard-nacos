@@ -8,7 +8,7 @@ const APP_NAME = 'sentinel-token-server';
 const API_BASE_URL = DASHBOARD_URL;
 
 test.describe('后端 API 验证测试', () => {
-  test.use({ storageState: '.auth/user.json' });
+  test.use({ storageState: 'e2e/.auth/user.json' });
 
   test('测试降级规则（慢调用比例，grade=0）', async ({ request }) => {
     const rule = {

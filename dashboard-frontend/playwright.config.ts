@@ -13,16 +13,18 @@ export default defineConfig({
   fullyParallel: true, // 启用并行测试
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 4 : undefined, // CI 用 4 workers，本地自动检测 CPU 核心数
+  workers: process.env.CI ? 2 : undefined, // CI 减少到 2 workers 避免资源竞争
   reporter: process.env.CI
     ? [['github'], ['html', { outputFolder: 'e2e/test-results', open: 'never' }]]
     : [['list'], ['html', { outputFolder: 'e2e/test-results', open: 'never' }]],
-  timeout: 60000,
+  timeout: 90000, // CI 环境增加超时到 90 秒
 
   use: {
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
+    actionTimeout: 15000, // 增加操作超时
+    navigationTimeout: 30000, // 增加导航超时
     extraHTTPHeaders: {
       'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
     },

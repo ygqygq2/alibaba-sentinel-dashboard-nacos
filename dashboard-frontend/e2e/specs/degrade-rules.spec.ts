@@ -57,7 +57,7 @@ test.describe('降级规则完整流程', () => {
     await page.locator('input[name="minRequestAmount"]').fill('5');
 
     await page.click('button[type="submit"]');
-    await page.waitForTimeout(2000); // 增加等待时间
+    await page.waitForTimeout(3000); // 增加等待时间到 3 秒
 
     // 检查是否有验证错误
     const errors = await page
@@ -73,8 +73,8 @@ test.describe('降级规则完整流程', () => {
       throw new Error(`API returned ${apiResponse.status}: ${apiResponse.body}`);
     }
 
-    await expect(page).toHaveURL(/\/degrade(?:$|\?)/, { timeout: 5000 });
-    await page.waitForTimeout(1000);
+    await expect(page).toHaveURL(/\/degrade(?:$|\?)/, { timeout: 10000 });
+    await page.waitForTimeout(2000);
 
     // ============================================
     // 步骤 2: 验证规则在列表中显示

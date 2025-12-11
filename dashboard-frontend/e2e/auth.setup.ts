@@ -1,8 +1,15 @@
 import { test as setup, expect } from '@playwright/test';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const authFile = 'e2e/.auth/user.json';
 
 setup('authenticate', async ({ page, baseURL }) => {
+  // 确保 .auth 目录存在
+  const authDir = path.dirname(authFile);
+  if (!fs.existsSync(authDir)) {
+    fs.mkdirSync(authDir, { recursive: true });
+  }
   // 使用 playwright.config.ts 中配置的 baseURL
   // 开发模式：localhost:3000，CI 模式：localhost:8080
   const loginUrl = `${baseURL}/#/auth/sign-in`;

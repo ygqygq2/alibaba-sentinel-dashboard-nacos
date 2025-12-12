@@ -22,8 +22,8 @@ import { RecentApps } from '../recent-apps';
 import { navColorStyles } from './styles';
 
 const logoColors = {
-  dark: { blend_in: 'dark', discrete: 'dark', evident: 'dark' },
-  light: { blend_in: 'light', discrete: 'light', evident: 'light' },
+  dark: { blend_in: 'light', discrete: 'light', evident: 'light' },
+  light: { blend_in: 'dark', discrete: 'dark', evident: 'light' },
 } as Record<ColorMode, Record<NavColor, 'dark' | 'light'>>;
 
 // 自定义的 useDisclosure hook

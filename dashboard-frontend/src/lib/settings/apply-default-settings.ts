@@ -7,7 +7,6 @@ export function applyDefaultSettings(settings: Partial<Settings>): Settings {
     primaryColor: config.site.primaryColor,
     direction: 'ltr',
     navColor: 'evident',
-    layout: 'vertical',
     ...settings,
   };
 }

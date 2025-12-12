@@ -32,7 +32,7 @@ const STRATEGY_OPTIONS = [
 /** 默认表单值 */
 const defaultValues: Omit<AuthorityRule, 'app' | 'id'> = {
   resource: '',
-  limitApp: '',
+  limitApp: 'default',
   strategy: 0, // 白名单（必须有值，因为是select下拉框）
 };
 

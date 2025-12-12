@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { AuthGuard } from '@/components/auth/auth-guard';
-import { DynamicLayout } from '@/components/dashboard/layout/dynamic-layout';
+import { VerticalLayout } from '@/components/dashboard/layout/vertical/vertical-layout';
 import { SearchProvider } from '@/contexts/search-context';
 
 interface LayoutProps {
@@ -12,7 +12,7 @@ export function Layout({ children }: LayoutProps): React.JSX.Element {
   return (
     <AuthGuard>
       <SearchProvider>
-        <DynamicLayout>{children}</DynamicLayout>
+        <VerticalLayout>{children}</VerticalLayout>
       </SearchProvider>
     </AuthGuard>
   );

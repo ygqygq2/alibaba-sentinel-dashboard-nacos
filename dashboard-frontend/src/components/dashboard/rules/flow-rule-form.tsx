@@ -56,7 +56,7 @@ const defaultValues: Omit<FlowRuleBase, 'app'> = {
   count: undefined as unknown as number, // 强制用户填写
   strategy: 0, // 直接拒绝（必须有值，因为是select下拉框）
   controlBehavior: 0, // 快速失败（必须有值，因为是select下拉框）
-  limitApp: '', // 强制用户填写，避免误操作
+  limitApp: 'default', // 默认值 'default' 表示不区分来源，对所有调用方生效
   clusterMode: false,
 };
 

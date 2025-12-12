@@ -65,7 +65,7 @@ services:
       # 客户端鉴权密钥（所有客户端必须提供相同的密钥才能注册）
       - AUTH_APP_SECRET=${AUTH_APP_SECRET:-sentinel_app_secret}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
-      - JAVA_OPTS=-Xms256m -Xmx512m
+      - JAVA_OPTS=-Xms128m -Xmx256m
     ports:
       - "8080:8080"
     healthcheck:

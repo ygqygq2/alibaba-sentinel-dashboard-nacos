@@ -1,6 +1,6 @@
 # Change Log
 
-All notable changes to the "chinge-admin" will be documented in this file.
+All notable changes to the "sentinel-dashboard-frontend" will be documented in this file.
 
 # [0.0.1]
 

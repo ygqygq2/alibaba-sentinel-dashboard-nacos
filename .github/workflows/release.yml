@@ -132,42 +132,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
+      - run: |
+          # 使用sed命令提取最新的版本记录
+          cat CHANGELOG.md | awk '/^# \[/ {if (flag) exit; flag=1} flag {print}' > body.md
+      - name: Publish release
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
-          generate_release_notes: true
-          body: |
-            ## 🐳 Docker Images
-
-            ### Sentinel Frontend
-            ```bash
-            docker pull ${{ env.REGISTRY }}/${{ github.repository }}/sentinel-frontend:${{ github.ref_name }}
-            ```
-
-            ### Sentinel Dashboard
-            ```bash
-            docker pull ${{ env.REGISTRY }}/${{ github.repository }}/sentinel-dashboard:${{ github.ref_name }}
-            ```
-
-            ### Token Server
-            ```bash
-            docker pull ${{ env.REGISTRY }}/${{ github.repository }}/sentinel-token-server:${{ github.ref_name }}
-            ```
-
-            ## 📦 Supported Architectures
-            - `linux/amd64`
-            - `linux/arm64`
-
-            ## 🚀 Quick Start
-            ```bash
-            git clone ${{ github.server_url }}/${{ github.repository }}.git
-            cd alibaba-sentinel-dashboard-nacos
-            docker compose up -d
-            ```
-
-            Open http://localhost:8080 (user: sentinel, password: sentinel)
-          draft: false
-          prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
+          bodyFile: 'body.md'

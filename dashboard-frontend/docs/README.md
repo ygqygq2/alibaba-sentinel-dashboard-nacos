@@ -1,6 +1,6 @@
-# Chinge Admin 文档索引
+# Sentinel Dashboard 前端文档索引
 
-本目录包含 Chinge Admin 项目的架构设计、实现细节和最佳实践文档。
+本目录包含 Sentinel Dashboard 项目的架构设计、实现细节和最佳实践文档。
 
 ## 📚 文档列表
 

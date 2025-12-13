@@ -15,6 +15,7 @@
 ### Q: 是否兼容旧版 Sentinel Dashboard？
 
 **A:** 后端 API 保持兼容，但前端完全重写。数据迁移需注意：
+
 - 旧版规则不会自动迁移
 - 需要重新配置规则并推送到 Nacos
 
@@ -31,20 +32,22 @@
 **A:** 常见原因和解决方案：
 
 1. **端口占用**：
+
    ```bash
    # 检查端口占用
    lsof -i :8080  # Dashboard
    lsof -i :8848  # Nacos
    lsof -i :8081  # Token Server
-   
+
    # 修改 docker-compose.yml 中的端口映射
    ```
 
 2. **依赖服务未就绪**：
+
    ```bash
    # 等待 Nacos 启动完成
    docker-compose logs nacos
-   
+
    # 重启 Dashboard
    docker-compose restart dashboard
    ```
@@ -72,12 +75,13 @@
 **A:** 可以。前端构建产物在 `dashboard-frontend/dist/`，可以：
 
 1. **Nginx 托管**：
+
    ```nginx
    location / {
      root /usr/share/nginx/html;
      try_files $uri $uri/ /index.html;
    }
-   
+
    location /api/ {
      proxy_pass http://dashboard-backend:8080/;
    }
@@ -94,12 +98,14 @@
 **A:** 检查以下配置：
 
 1. **网络连通性**：
+
    ```bash
    # 从 Dashboard 容器测试
    docker exec dashboard curl -f http://nacos:8848/nacos/v1/console/health/readiness
    ```
 
 2. **配置正确性**：
+
    ```properties
    # application.properties
    nacos.addr=nacos:8848
@@ -115,6 +121,7 @@
 **A:** 排查步骤：
 
 1. **检查客户端配置**：
+
    ```properties
    # 客户端必须配置 Nacos 数据源
    spring.cloud.sentinel.datasource.flow.nacos.server-addr=nacos:8848
@@ -161,11 +168,13 @@ spring.cloud.sentinel.datasource.flow.nacos.group-id=APP_B_GROUP
 **A:** 检查：
 
 1. **网络连通性**：
+
    ```bash
    telnet token-server 18730
    ```
 
 2. **客户端配置**：
+
    ```properties
    csp.sentinel.cluster.client.server.host=token-server
    csp.sentinel.cluster.client.server.port=18730
@@ -197,8 +206,8 @@ csp.sentinel.cluster.client.reconnect.interval=3000
 # docker-compose.yml
 sentinel-dashboard:
   environment:
-    - AUTH_USERNAME=admin
-    - AUTH_PASSWORD=your_secure_password
+    - SENTINEL_DASHBOARD_AUTH_USERNAME=admin
+    - SENTINEL_DASHBOARD_AUTH_PASSWORD=your_secure_password
 ```
 
 ### Q: 客户端 API 如何防护？
@@ -206,10 +215,12 @@ sentinel-dashboard:
 **A:** **重要**：Sentinel 客户端 API（8719 端口）默认无鉴权。生产环境必须：
 
 1. **网络隔离**（推荐）：
+
    - 不暴露 8719 端口到公网
    - 使用 Security Group / NetworkPolicy 限制访问
 
 2. **防火墙规则**：
+
    ```bash
    iptables -A INPUT -p tcp --dport 8719 -s <dashboard-ip> -j ACCEPT
    iptables -A INPUT -p tcp --dport 8719 -j DROP
@@ -227,10 +238,10 @@ sentinel-dashboard:
 server {
     listen 443 ssl;
     server_name dashboard.example.com;
-    
+
     ssl_certificate /path/to/cert.pem;
     ssl_certificate_key /path/to/key.pem;
-    
+
     location / {
         proxy_pass http://dashboard:8080;
     }
@@ -246,6 +257,7 @@ server {
 **A:** 优化建议：
 
 1. **增加内存**：
+
    ```yaml
    sentinel-dashboard:
      environment:
@@ -253,6 +265,7 @@ server {
    ```
 
 2. **调整连接池**：
+
    ```properties
    # application.properties
    spring.datasource.hikari.maximum-pool-size=20
@@ -284,9 +297,10 @@ pnpm dev  # 启动开发服务器
 
 ### Q: 如何调试后端代码？
 
-**A:** 
+**A:**
 
 1. **IDEA 远程调试**：
+
    ```yaml
    sentinel-dashboard:
      environment:
@@ -319,6 +333,7 @@ pnpm dev  # 启动开发服务器
 **A:** 检查：
 
 1. 客户端是否连接 Dashboard：
+
    ```properties
    csp.sentinel.dashboard.server=dashboard:8080
    ```
@@ -340,14 +355,16 @@ sentinel.datasource.flow.nacos.server-addr=nacos:8848
 
 ### Q: 如何查看详细日志？
 
-**A:** 
+**A:**
 
 1. **Dashboard 日志**：
+
    ```bash
    docker-compose logs -f dashboard
    ```
 
 2. **Nacos 日志**：
+
    ```bash
    docker-compose logs -f nacos
    ```

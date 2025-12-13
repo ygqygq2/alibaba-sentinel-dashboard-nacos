@@ -258,8 +258,9 @@ public class ClusterConfigController {
                         if (servers != null) {
                             for (AppClusterServerStateWrapVO server : servers) {
                                 // 只添加独立模式的 Token Server
-                                if (server.getState() != null && 
-                                    Boolean.FALSE.equals(server.getState().getEmbedded())) {
+                                // 注意：部分实现/版本下 embedded 可能为 null（字段缺失），此时应按“非嵌入”处理。
+                                if (server.getState() != null &&
+                                    !Boolean.TRUE.equals(server.getState().getEmbedded())) {
                                     result.add(server);
                                 }
                             }

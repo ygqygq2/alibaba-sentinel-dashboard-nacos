@@ -63,20 +63,7 @@ export function Page(): React.JSX.Element {
                   p={8}
                   textAlign="center"
                 >
-                  <Text color="fg.muted">暂无独立 Token Server</Text>
-                  <Text
-                    color="fg.muted"
-                    fontSize="sm"
-                    mt={2}
-                  >
-                    独立 Token Server 是专门的令牌服务器，不属于任何业务应用
-                  </Text>
-                  <Text
-                    color="fg.muted"
-                    fontSize="sm"
-                  >
-                    通常命名为 sentinel-token-server 并独立部署
-                  </Text>
+                  <Text color="fg.muted">暂无 Token Server</Text>
                 </Box>
               ) : (
                 <Table.Root>

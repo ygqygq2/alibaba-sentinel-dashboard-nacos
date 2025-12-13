@@ -37,19 +37,20 @@ type ViewMode = 'aggregate' | 'instance';
 interface ResourceChartProps {
   resource: string;
   data: MetricData[];
+  viewMode: ViewMode;
   isExpanded?: boolean;
   onToggle?: () => void;
 }
 
-function ResourceChart({ resource, data, isExpanded = false, onToggle }: ResourceChartProps) {
-  // 提取资源名（实例视图格式：instance/resource，只显示资源名部分）
+function ResourceChart({ resource, data, viewMode, isExpanded = false, onToggle }: ResourceChartProps) {
+  // 实例视图：resource 使用 instance/resource 作为 key，仅剥离第一个 "/" 前的 instance 前缀。
+  // 汇总视图：resource 就是原始资源名，可能包含前导 "/"，必须保留（否则会把 "/api/hello" 显示成 "api/hello"）。
   const displayTitle = React.useMemo(() => {
-    if (resource.includes('/')) {
-      const [, ...resourceParts] = resource.split('/');
-      return resourceParts.join('/');
-    }
-    return resource;
-  }, [resource]);
+    if (viewMode !== 'instance') return resource;
+    const firstSlash = resource.indexOf('/');
+    if (firstSlash < 0) return resource;
+    return resource.slice(firstSlash + 1);
+  }, [resource, viewMode]);
 
   // 格式化数据用于图表
   const chartData = React.useMemo(() => {
@@ -704,6 +705,7 @@ export function Page(): React.JSX.Element {
                       key={group.resource}
                       resource={group.resource}
                       data={group.data}
+                      viewMode={viewMode}
                       isExpanded={expandedResources.has(group.resource)}
                       onToggle={() => toggleResource(group.resource)}
                     />

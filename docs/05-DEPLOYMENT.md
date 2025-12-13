@@ -121,14 +121,14 @@ spec:
 
 ## 环境变量详解
 
-| 变量名                             | 默认值         | 说明                 |
-| ---------------------------------- | -------------- | -------------------- |
-| `SERVER_PORT`                      | 8080           | Dashboard 服务端口   |
-| `NACOS_SERVER_ADDR`                | localhost:8848 | Nacos 服务器地址     |
-| `NACOS_NAMESPACE`                  | public         | Nacos 命名空间       |
-| `NACOS_GROUP`                      | DEFAULT_GROUP  | Nacos 分组           |
-| `SENTINEL_DASHBOARD_AUTH_USERNAME` | sentinel       | Dashboard 登录用户名 |
-| `SENTINEL_DASHBOARD_AUTH_PASSWORD` | sentinel       | Dashboard 登录密码   |
+| 变量名                             | 默认值         | 说明                             |
+| ---------------------------------- | -------------- | -------------------------------- |
+| `SENTINEL_DASHBOARD_SERVER_PORT`   | 8080           | Dashboard 服务端口               |
+| `NACOS_SERVER_ADDR`                | localhost:8848 | Nacos 服务器地址                 |
+| `NACOS_NAMESPACE`                  | （空字符串）   | Nacos 命名空间 ID，public 用空值 |
+| `NACOS_GROUP`                      | DEFAULT_GROUP  | Nacos 分组                       |
+| `SENTINEL_DASHBOARD_AUTH_USERNAME` | sentinel       | Dashboard 登录用户名             |
+| `SENTINEL_DASHBOARD_AUTH_PASSWORD` | sentinel       | Dashboard 登录密码               |
 
 ## 性能调优
 

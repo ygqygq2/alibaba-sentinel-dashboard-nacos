@@ -340,8 +340,12 @@ pnpm dev  # 启动开发服务器
 
 2. 心跳是否正常：
    ```bash
-   # Dashboard 日志
-   grep "Receive heartbeat" /var/log/sentinel/sentinel.log
+   # Dashboard 日志（默认在 ${user.home}/logs/csp/sentinel-dashboard.log）
+   # Docker 部署
+   docker-compose logs dashboard | grep "Receive heartbeat"
+   
+   # 本地运行
+   grep "Receive heartbeat" ~/logs/csp/sentinel-dashboard.log
    ```
 
 ### Q: 规则保存后立即丢失？

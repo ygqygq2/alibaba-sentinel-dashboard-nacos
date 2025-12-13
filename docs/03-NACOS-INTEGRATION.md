@@ -61,9 +61,10 @@ SENTINEL_DASHBOARD_AUTH_USERNAME=sentinel
 SENTINEL_DASHBOARD_AUTH_PASSWORD=sentinel
 
 # Dashboard 服务器配置
-SERVER_PORT=8080
-CSP_SENTINEL_DASHBOARD_SERVER=localhost:8080
-PROJECT_NAME=sentinel-dashboard
+SENTINEL_DASHBOARD_SERVER_PORT=8080
+
+# 客户端鉴权密钥（可选，生产环境建议配置）
+AUTH_APP_SECRET=sentinel_app_secret
 ```
 
 ### 应用端配置（Java 系统属性）
@@ -140,11 +141,11 @@ mvn clean package
 
 ```bash
 java -Dserver.port=8080 \
-  -Dcsp.sentinel.dashboard.server=localhost:8080 \
-  -Dproject.name=sentinel-dashboard \
-  -Dnacos.server.addr=localhost:8848 \
-  -Dnacos.namespace=public \
-  -Dnacos.group=DEFAULT_GROUP \
+  -Dsentinel.dashboard.auth.username=sentinel \
+  -Dsentinel.dashboard.auth.password=sentinel \
+  -Dnacos.server-addr=localhost:8848 \
+  -Dnacos.namespace= \
+  -Dnacos.group-id=DEFAULT_GROUP \
   -jar target/sentinel-dashboard.jar
 ```
 

@@ -50,7 +50,11 @@ mvn clean package -DskipTests
 
 # 运行
 java -Dserver.port=8080 \
-     -Dnacos.server.addr=localhost:8848 \
+     -Dnacos.server-addr=localhost:8848 \
+     -Dnacos.namespace= \
+     -Dnacos.group-id=DEFAULT_GROUP \
+     -Dsentinel.dashboard.auth.username=sentinel \
+     -Dsentinel.dashboard.auth.password=sentinel \
      -jar target/sentinel-dashboard.jar
 ```
 

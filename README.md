@@ -1,6 +1,31 @@
-# 项目概述
+# Sentinel Dashboard with Nacos
 
-本项目是对 Alibaba Sentinel Dashboard 的改造和扩展，添加了 Nacos 作为规则持久化存储。
+> 基于 React + TypeScript 的现代化 Sentinel Dashboard，完整支持 Nacos 规则持久化和集群流控
+
+[![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
+[![Release](https://img.shields.io/badge/release-v1.0.0-green.svg)](CHANGELOG.md)
+
+本项目是对 Alibaba Sentinel Dashboard 的现代化重构，采用 React 19 + TypeScript 重写前端，增强了 Nacos 集成和集群流控功能。
+
+## ✨ 主要特性
+
+- 🎨 **现代化 UI**：React 19 + TypeScript + Chakra UI，支持暗色主题
+- 💾 **Nacos 持久化**：规则自动持久化到 Nacos，支持动态推送
+- 🔗 **完整集群流控**：Token Server/Client 管理，支持自动降级
+- 🔒 **安全增强**：客户端 API 鉴权，生产环境安全建议
+- 📊 **实时监控**：QPS、RT、并发数等指标的实时图表
+- 🧪 **测试完善**：130+ E2E 测试用例，保证质量
+
+## 📚 文档
+
+- [快速开始](docs/01-QUICK-START.md) - 5 分钟快速部署
+- [架构设计](docs/02-ARCHITECTURE.md) - 技术选型和设计决策
+- [Nacos 集成](docs/03-NACOS-INTEGRATION.md) - 规则持久化方案
+- [集群流控](docs/04-CLUSTER-FLOW-CONTROL.md) - Token Server 配置
+- [FAQ](docs/FAQ.md) - 常见问题解答
+- [CHANGELOG](CHANGELOG.md) - 版本更新日志
+
+## 🎯 项目概述
 
 ## 快速开始
 

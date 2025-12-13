@@ -564,7 +564,7 @@ Dashboard UI 配置规则
 - 多 Pod 环境配置自动同步
 - 客户端能从 Nacos 加载规则
 
-### 阶段 2：集群流控（已实现，需完善）
+### 阶段 2：集群流控（已实现）
 
 **目标**：生产级的集群流控支持
 
@@ -572,12 +572,21 @@ Dashboard UI 配置规则
 
 - ✅ Token Server 独立部署（docker-compose）
 - ✅ 基础的集群流控功能
-- ⬜ 多 Token Server 高可用（未实现）
-- ⬜ 客户端降级策略（需完善）
+- ✅ 客户端降级策略（内置支持）
 
-**优化方向**：
+**客户端降级策略**：
 
-1. Token Server 多实例部署
+Sentinel 客户端具备原生的自动降级能力，无需额外实现：
+
+1. **降级触发**：Token Server 不可用时自动降级到单机模式
+2. **恢复机制**：定期重连，连接恢复后自动切回集群模式
+3. **配置项**：
+   - `csp.sentinel.cluster.client.request.timeout=5000`（请求超时）
+   - `csp.sentinel.cluster.client.fail.count=2`（失败次数阈值）
+
+**未来优化方向**：
+
+1. Token Server 多实例部署（HA）
 2. 客户端连接池优化
 3. 监控指标完善（令牌申请延迟、拒绝率等）
 

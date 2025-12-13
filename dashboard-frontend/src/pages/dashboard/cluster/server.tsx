@@ -20,8 +20,10 @@ export function Page(): React.JSX.Element {
   };
 
   const handleAssign = () => {
-    // TODO: 打开分配 Token Server 对话框
-    console.log('Assign Token Server');
+    // 注意：Token Server 分配功能需要复杂的实例选择和配置流程
+    // 当前版本建议使用 API 或脚本完成初始配置
+    // 参考：scripts/setup-cluster.sh
+    console.warn('Token Server 分配功能暂未实现 UI，请使用 scripts/setup-cluster.sh 或直接调用 API');
   };
 
   if (!app) {

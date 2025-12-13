@@ -9,22 +9,22 @@
 
 基于旧版 Sentinel Dashboard 功能，前端需要实现以下页面：
 
-| 页面     | 路径                                  | 说明                   | 状态          |
-| -------- | ------------------------------------- | ---------------------- | ------------- |
-| 登录     | `/auth/sign-in`                       | 用户登录               | ✅ 完成       |
-| 首页     | `/dashboard`                          | 应用列表总览           | ✅ 基础完成   |
-| 簇点链路 | `/dashboard/apps/:app/identity`       | 资源调用链路           | ❌ 待开发     |
-| 实时监控 | `/dashboard/apps/:app/metric`         | 实时 QPS 监控          | 🔄 需完善图表 |
-| 流控规则 | `/dashboard/apps/:app/flow`           | 流控规则 CRUD          | ✅ 基础完成   |
-| 降级规则 | `/dashboard/apps/:app/degrade`        | 熔断降级规则           | ✅ 基础完成   |
-| 热点规则 | `/dashboard/apps/:app/param-flow`     | 热点参数规则           | ✅ 基础完成   |
-| 系统规则 | `/dashboard/apps/:app/system`         | 系统保护规则           | 🔄 缺少编辑   |
-| 授权规则 | `/dashboard/apps/:app/authority`      | 黑白名单规则           | ✅ 基础完成   |
-| 机器列表 | `/dashboard/apps/:app/instances`      | 机器管理               | ✅ 基础完成   |
-| 集群流控 | `/dashboard/cluster/server`           | 全局 Token Server 管理 | ✅ 完成       |
-| 集群流控 | `/dashboard/cluster/client`           | 全局 Token Client 管理 | ✅ 完成       |
-| 集群流控 | `/dashboard/apps/:app/cluster/server` | 应用级 Token Server    | 🔄 需完善     |
-| 集群流控 | `/dashboard/apps/:app/cluster/client` | 应用级 Token Client    | 🔄 需完善     |
+| 页面     | 路径                                  | 说明                   | 状态        |
+| -------- | ------------------------------------- | ---------------------- | ----------- |
+| 登录     | `/auth/sign-in`                       | 用户登录               | ✅ 完成     |
+| 首页     | `/dashboard`                          | 应用列表总览           | ✅ 基础完成 |
+| 簇点链路 | `/dashboard/apps/:app/identity`       | 资源调用链路           | ✅ 完成     |
+| 实时监控 | `/dashboard/apps/:app/metric`         | 实时 QPS 监控          | ✅ 完成     |
+| 流控规则 | `/dashboard/apps/:app/flow`           | 流控规则 CRUD          | ✅ 基础完成 |
+| 降级规则 | `/dashboard/apps/:app/degrade`        | 熔断降级规则           | ✅ 基础完成 |
+| 热点规则 | `/dashboard/apps/:app/param-flow`     | 热点参数规则           | ✅ 基础完成 |
+| 系统规则 | `/dashboard/apps/:app/system`         | 系统保护规则           | ✅ 完成     |
+| 授权规则 | `/dashboard/apps/:app/authority`      | 黑白名单规则           | ✅ 基础完成 |
+| 机器列表 | `/dashboard/apps/:app/instances`      | 机器管理               | ✅ 基础完成 |
+| 集群流控 | `/dashboard/cluster/server`           | 全局 Token Server 管理 | ✅ 完成     |
+| 集群流控 | `/dashboard/cluster/client`           | 全局 Token Client 管理 | ✅ 完成     |
+| 集群流控 | `/dashboard/apps/:app/cluster/server` | 应用级 Token Server    | ✅ 完成     |
+| 集群流控 | `/dashboard/apps/:app/cluster/client` | 应用级 Token Client    | ✅ 完成     |
 
 ---
 

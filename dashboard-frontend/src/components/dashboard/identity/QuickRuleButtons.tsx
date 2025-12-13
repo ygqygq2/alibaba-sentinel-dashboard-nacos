@@ -5,7 +5,6 @@
 import { Button, HStack } from '@chakra-ui/react';
 import { Icon } from '@iconify/react';
 import * as React from 'react';
-import { useNavigate } from 'react-router-dom';
 
 import { paths } from '@/paths';
 
@@ -21,32 +20,41 @@ export interface QuickRuleButtonsProps {
 /**
  * 快速添加规则按钮组
  * 支持快速跳转到流控、降级、热点、授权规则创建页面
+ * 在新标签页打开，编辑完成后自动关闭
  */
 export function QuickRuleButtons({ app, resource, size = 'xs' }: QuickRuleButtonsProps): React.JSX.Element {
-  const navigate = useNavigate();
+  /**
+   * 在新标签页打开规则创建页面
+   * 使用 sessionStorage 传递参数，避免 URL 过长
+   */
+  const openInNewTab = (path: string) => {
+    // 生成唯一 ID 用于传递数据
+    const dataId = `rule-create-data-${Date.now()}`;
+
+    // 通过 sessionStorage 传递资源名称
+    sessionStorage.setItem(dataId, JSON.stringify({ resource }));
+
+    // 在 URL 中添加标记，表示这是在新标签页打开的
+    const url = `${path}?opened_in_new_tab=true&data_id=${dataId}`;
+
+    // 打开新标签页
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
 
   const handleAddFlow = () => {
-    navigate(paths.dashboard.flow.create(app), {
-      state: { resource },
-    });
+    openInNewTab(paths.dashboard.flow.create(app));
   };
 
   const handleAddDegrade = () => {
-    navigate(paths.dashboard.degrade.create(app), {
-      state: { resource },
-    });
+    openInNewTab(paths.dashboard.degrade.create(app));
   };
 
   const handleAddParamFlow = () => {
-    navigate(paths.dashboard.paramFlow.create(app), {
-      state: { resource },
-    });
+    openInNewTab(paths.dashboard.paramFlow.create(app));
   };
 
   const handleAddAuthority = () => {
-    navigate(paths.dashboard.authority.create(app), {
-      state: { resource },
-    });
+    openInNewTab(paths.dashboard.authority.create(app));
   };
 
   return (

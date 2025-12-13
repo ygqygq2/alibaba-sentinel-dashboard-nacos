@@ -9,6 +9,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import { DegradeRuleForm } from '@/components/dashboard/rules';
 import { useDegradeRules, useUpdateDegradeRule } from '@/hooks/api';
+import { useOpenedInNewTab } from '@/hooks/use-opened-in-new-tab';
 import { paths } from '@/paths';
 import type { DegradeRule } from '@/types/rule';
 
@@ -17,6 +18,7 @@ export function Page(): React.JSX.Element {
   const navigate = useNavigate();
   const { data: rules, isLoading } = useDegradeRules(app ?? '');
   const updateRule = useUpdateDegradeRule();
+  const { isOpenedInNewTab, closeTab } = useOpenedInNewTab();
 
   const rule = React.useMemo(() => {
     if (!rules || !id) return undefined;
@@ -26,8 +28,16 @@ export function Page(): React.JSX.Element {
   const handleSubmit = async (data: Omit<DegradeRule, 'id'>) => {
     if (!rule?.id) return;
     await updateRule.mutateAsync({ ...data, id: rule.id });
-    // 保存成功后跳转回列表页
-    navigate(paths.dashboard.degrade.list(app!));
+
+    if (isOpenedInNewTab) {
+      closeTab();
+    } else {
+      navigate(paths.dashboard.degrade.list(app!));
+    }
+  };
+
+  const handleCancel = () => {
+    closeTab();
   };
 
   if (!app || !id) {
@@ -64,6 +74,7 @@ export function Page(): React.JSX.Element {
             app={app}
             initialData={rule}
             onSubmit={handleSubmit}
+            onCancel={handleCancel}
             isSubmitting={updateRule.isPending}
             backPath={paths.dashboard.degrade.list(app)}
           />

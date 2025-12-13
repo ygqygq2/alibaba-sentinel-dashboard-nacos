@@ -15,9 +15,11 @@ export interface ParamFlowRuleFormProps {
   /** 应用名称 */
   app: string;
   /** 初始值（编辑模式） */
-  initialData?: ParamFlowRule;
+  initialData?: Partial<ParamFlowRule>;
   /** 提交处理 */
   onSubmit: (data: Omit<ParamFlowRule, 'id'>) => Promise<void>;
+  /** 取消处理（可选） */
+  onCancel?: () => void;
   /** 是否提交中 */
   isSubmitting?: boolean;
   /** 返回路径 */
@@ -56,6 +58,7 @@ export function ParamFlowRuleForm({
   app,
   initialData,
   onSubmit,
+  onCancel,
   isSubmitting,
   backPath,
 }: ParamFlowRuleFormProps): React.JSX.Element {
@@ -152,6 +155,7 @@ export function ParamFlowRuleForm({
       isSubmitting={isSubmitting}
       backPath={backPath}
       onSubmit={handleSubmit}
+      onCancel={onCancel}
       helpContent={helpContent}
     >
       {/* 基础配置 */}

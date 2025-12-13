@@ -14,9 +14,11 @@ export interface FlowRuleFormProps {
   /** 应用名称 */
   app: string;
   /** 初始值（编辑模式） */
-  initialData?: FlowRule;
+  initialData?: Partial<FlowRule>;
   /** 提交处理 */
   onSubmit: (data: FlowRuleBase) => Promise<void>;
+  /** 取消处理（可选） */
+  onCancel?: () => void;
   /** 是否提交中 */
   isSubmitting?: boolean;
   /** 返回路径 */
@@ -64,6 +66,7 @@ export function FlowRuleForm({
   app,
   initialData,
   onSubmit,
+  onCancel,
   isSubmitting,
   backPath,
 }: FlowRuleFormProps): React.JSX.Element {
@@ -158,6 +161,7 @@ export function FlowRuleForm({
       isSubmitting={isSubmitting}
       backPath={backPath}
       onSubmit={handleSubmit}
+      onCancel={onCancel}
       helpContent={helpContent}
     >
       {/* 基础配置 */}

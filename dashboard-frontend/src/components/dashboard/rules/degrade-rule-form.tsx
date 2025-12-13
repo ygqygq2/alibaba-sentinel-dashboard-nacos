@@ -14,9 +14,11 @@ export interface DegradeRuleFormProps {
   /** 应用名称 */
   app: string;
   /** 初始值（编辑模式） */
-  initialData?: DegradeRule;
+  initialData?: Partial<DegradeRule>;
   /** 提交处理 */
   onSubmit: (data: Omit<DegradeRule, 'id'>) => Promise<void>;
+  /** 取消处理（可选） */
+  onCancel?: () => void;
   /** 是否提交中 */
   isSubmitting?: boolean;
   /** 返回路径 */
@@ -45,6 +47,7 @@ export function DegradeRuleForm({
   app,
   initialData,
   onSubmit,
+  onCancel,
   isSubmitting,
   backPath,
 }: DegradeRuleFormProps): React.JSX.Element {
@@ -157,6 +160,7 @@ export function DegradeRuleForm({
       isSubmitting={isSubmitting}
       backPath={backPath}
       onSubmit={handleSubmit}
+      onCancel={onCancel}
       helpContent={helpContent}
     >
       {/* 基础配置 */}

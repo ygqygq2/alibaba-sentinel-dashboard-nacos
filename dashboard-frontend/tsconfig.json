@@ -2,11 +2,11 @@
   "extends": "@ygqygq2/typescript-config/react.json",
   "compilerOptions": {
     "rootDir": ".",
-    "baseUrl": ".",
     "outDir": "dist",
     "moduleResolution": "bundler",
+    "ignoreDeprecations": "5.0",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", "**/*.d.ts"],

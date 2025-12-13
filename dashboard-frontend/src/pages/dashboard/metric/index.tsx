@@ -23,6 +23,7 @@ import { useParams } from 'react-router-dom';
 
 import { CHART_COLORS, ChartContainer } from '@/components/dashboard/chart-container';
 import { InstanceFilter } from '@/components/dashboard/metric';
+import { ViewSwitcher } from '@/components/ui/view-switcher';
 import { useGlobalSearch } from '@/contexts/search-context';
 import { useMetricByViewMode } from '@/hooks/api';
 import { useColorMode } from '@/hooks/use-color-mode';
@@ -571,27 +572,14 @@ export function Page(): React.JSX.Element {
               alignItems="center"
             >
               {/* 视图模式切换 */}
-              <Flex
-                gap={1}
-                borderWidth="1px"
-                borderRadius="md"
-                p={0.5}
-              >
-                <Button
-                  size="sm"
-                  variant={viewMode === 'aggregate' ? 'solid' : 'ghost'}
-                  onClick={() => handleViewModeChange('aggregate')}
-                >
-                  汇总视图
-                </Button>
-                <Button
-                  size="sm"
-                  variant={viewMode === 'instance' ? 'solid' : 'ghost'}
-                  onClick={() => handleViewModeChange('instance')}
-                >
-                  实例视图
-                </Button>
-              </Flex>
+              <ViewSwitcher
+                value={viewMode}
+                options={[
+                  { value: 'aggregate', label: '汇总视图' },
+                  { value: 'instance', label: '实例视图' },
+                ]}
+                onChange={handleViewModeChange}
+              />
               {autoRefresh && (
                 <Badge colorPalette="green">
                   <Icon icon="mdi:sync" />

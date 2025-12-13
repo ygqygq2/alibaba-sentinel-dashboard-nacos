@@ -14,9 +14,11 @@ export interface AuthorityRuleFormProps {
   /** 应用名称 */
   app: string;
   /** 初始值（编辑模式） */
-  initialData?: AuthorityRule;
+  initialData?: Partial<AuthorityRule>;
   /** 提交处理 */
   onSubmit: (data: Omit<AuthorityRule, 'id'>) => Promise<void>;
+  /** 取消处理（可选） */
+  onCancel?: () => void;
   /** 是否提交中 */
   isSubmitting?: boolean;
   /** 返回路径 */
@@ -40,6 +42,7 @@ export function AuthorityRuleForm({
   app,
   initialData,
   onSubmit,
+  onCancel,
   isSubmitting,
   backPath,
 }: AuthorityRuleFormProps): React.JSX.Element {
@@ -111,6 +114,7 @@ export function AuthorityRuleForm({
       isSubmitting={isSubmitting}
       backPath={backPath}
       onSubmit={handleSubmit}
+      onCancel={onCancel}
       helpContent={helpContent}
     >
       <FormSection columns={{ base: 1, md: 2 }}>

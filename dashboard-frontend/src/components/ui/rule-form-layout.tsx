@@ -19,6 +19,8 @@ export interface RuleFormLayoutProps {
   backPath: string;
   /** 表单提交处理 */
   onSubmit: (e: React.FormEvent) => void;
+  /** 取消按钮处理（可选，默认使用 navigate(backPath)） */
+  onCancel?: () => void;
   /** 表单内容（分组） */
   children: React.ReactNode;
   /** 帮助面板内容（可选） */
@@ -35,12 +37,21 @@ export function RuleFormLayout({
   isSubmitting,
   backPath,
   onSubmit,
+  onCancel,
   children,
   helpContent,
 }: RuleFormLayoutProps): React.JSX.Element {
   const navigate = useNavigate();
 
   const formTitle = isEditMode ? `编辑${title}` : `新增${title}`;
+
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
+    } else {
+      navigate(backPath);
+    }
+  };
 
   const formContent = (
     <Card.Root>
@@ -59,7 +70,7 @@ export function RuleFormLayout({
           >
             <Button
               variant="outline"
-              onClick={() => navigate(backPath)}
+              onClick={handleCancel}
               disabled={isSubmitting}
             >
               取消

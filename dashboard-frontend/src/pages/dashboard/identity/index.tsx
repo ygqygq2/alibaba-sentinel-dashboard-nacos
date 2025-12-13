@@ -3,13 +3,14 @@
  * 显示应用的资源调用链路，支持快速添加规则
  */
 
-import { Box, Button, ButtonGroup, Card, Flex, Heading, HStack, Input, Stack, Text } from '@chakra-ui/react';
+import { Box, Button, Card, Flex, Heading, HStack, Stack, Text } from '@chakra-ui/react';
 import { Icon } from '@iconify/react';
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router-dom';
 
 import { InstanceSelector, ResourceTable } from '@/components/dashboard/identity';
+import { ViewSwitcher } from '@/components/ui/view-switcher';
 import { useInstanceResources } from '@/hooks/api';
 import { useDebounce } from '@/hooks/use-debounce';
 
@@ -24,7 +25,7 @@ export function Page(): React.JSX.Element {
     port: number;
   } | null>(null);
   const [viewMode, setViewMode] = React.useState<ViewMode>('list');
-  const [searchKey, setSearchKey] = React.useState('');
+  const [searchKey, _setSearchKey] = React.useState('');
   const [autoSelectedRef] = React.useState({ hasAutoSelected: false });
   const debouncedSearchKey = useDebounce(searchKey, 300);
 
@@ -94,26 +95,14 @@ export function Page(): React.JSX.Element {
               </Text>
             </Box>
             {/* 视图切换 */}
-            <ButtonGroup
-              size="sm"
-              variant="outline"
-              attached
-            >
-              <Button
-                colorPalette={viewMode === 'tree' ? 'blue' : 'gray'}
-                variant={viewMode === 'tree' ? 'solid' : 'outline'}
-                onClick={() => setViewMode('tree')}
-              >
-                树状视图
-              </Button>
-              <Button
-                colorPalette={viewMode === 'list' ? 'blue' : 'gray'}
-                variant={viewMode === 'list' ? 'solid' : 'outline'}
-                onClick={() => setViewMode('list')}
-              >
-                列表视图
-              </Button>
-            </ButtonGroup>
+            <ViewSwitcher
+              value={viewMode}
+              options={[
+                { value: 'tree', label: '树状视图' },
+                { value: 'list', label: '列表视图' },
+              ]}
+              onChange={(value) => setViewMode(value as ViewMode)}
+            />
           </Flex>
 
           {/* 工具栏 */}

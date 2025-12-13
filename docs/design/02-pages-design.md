@@ -34,20 +34,23 @@
 
 ```
 ┌─────────────────────────────┐
-│ 🔍 [应用名搜索]      [搜索] │
-├─────────────────────────────┤
 │ 🏠 首页                     │
-├─────────────────────────────┤
-│ ▼ {应用名}           (1/1)  │  <- 应用名 + (健康机器/总机器)
+├──────────────────────────────┤
+│ ▼ 选择服务              │  <- 服务选择器（可搜索）
+├──────────────────────────────┤
+│ 服务功能                   │  <- 选择服务后显示
 │   ├─ 📊 实时监控            │
-│   ├─ 🔗 簇点链路            │  <- 新增
+│   ├─ 🔗 簇点链路            │
 │   ├─ 🚦 流控规则            │
 │   ├─ ⚡ 熔断规则            │
 │   ├─ 🔥 热点规则            │
 │   ├─ 🖥️ 系统规则            │
 │   ├─ 🔐 授权规则            │
-│   ├─ 👥 集群流控            │
-│   └─ 💻 机器列表            │
+│   └─ 💻 实例列表            │
+├──────────────────────────────┤
+│ 集群管理                   │  <- 全局级集群管理
+│   ├─ Token Server 列表   │
+│   └─ Token Client 列表   │
 └─────────────────────────────┘
 ```
 
@@ -63,8 +66,13 @@ const appMenuItems = [
   { key: "param-flow", title: "热点规则", icon: "fire", path: "/param-flow" },
   { key: "system", title: "系统规则", icon: "cog", path: "/system" },
   { key: "authority", title: "授权规则", icon: "key", path: "/authority" },
-  { key: "cluster", title: "集群流控", icon: "users", path: "/cluster/server" },
-  { key: "instances", title: "机器列表", icon: "desktop", path: "/instances" },
+  { key: "instances", title: "实例列表", icon: "desktop", path: "/instances" },
+];
+
+// 全局级集群管理菜单（不依赖应用选择）
+const clusterMenuItems = [
+  { key: "cluster-server", title: "Token Server 列表", icon: "hard-drives", path: "/cluster/server" },
+  { key: "cluster-client", title: "Token Client 列表", icon: "laptop", path: "/cluster/client" },
 ];
 ```
 

@@ -30,7 +30,7 @@ test.describe('仪表盘', () => {
     await page.waitForTimeout(1000);
 
     // 验证关键导航项存在（更宽松的选择器）
-    const navItems = ['首页', '实例'];
+    const navItems = ['首页', '集群管理'];
     for (const item of navItems) {
       const navLink = page.locator(
         `a:has-text("${item}"), button:has-text("${item}"), [role="navigation"] >> text="${item}"`

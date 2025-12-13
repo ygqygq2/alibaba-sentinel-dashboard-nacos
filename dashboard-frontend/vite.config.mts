@@ -9,10 +9,16 @@ export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, root, '');
   const apiBaseUrl = env.VITE_API_BASE_URL || 'http://localhost:8080';
 
+  // 关键：生产构建默认使用绝对路径（/），否则当用户/测试直接访问深层路由
+  // 如 /dashboard/apps/<app>/metric 时，Vite 生成的相对资源路径会变成
+  // /dashboard/apps/<app>/assets/*，被后端当作 SPA 路由返回 index.html，导致白屏。
+  // 如需 GitHub Pages 等场景，可通过 VITE_BASE 覆盖为 './' 或 '/<repo>/'。
+  const defaultBase = command === 'serve' ? '/' : '/';
+  const base = (env.VITE_BASE || process.env.VITE_BASE || defaultBase).trim() || defaultBase;
+
   return {
     root,
-    // dev 环境使用 /，prod 环境使用 './'
-    base: command === 'serve' ? '/' : './',
+    base,
     plugins: [react()],
     build: {
       outDir: 'dist/vite',

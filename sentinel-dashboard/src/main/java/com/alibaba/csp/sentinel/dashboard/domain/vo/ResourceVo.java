@@ -26,8 +26,8 @@ import com.alibaba.csp.sentinel.dashboard.domain.ResourceTreeNode;
  * @author leyou
  */
 public class ResourceVo {
-    private String parentTtId;
-    private String ttId;
+    private String parentId;
+    private String id;
     private String resource;
 
     private Integer threadNum;
@@ -54,8 +54,8 @@ public class ResourceVo {
         List<ResourceVo> list = new ArrayList<>();
         for (NodeVo nodeVo : nodeVos) {
             ResourceVo vo = new ResourceVo();
-            vo.parentTtId = nodeVo.getParentId();
-            vo.ttId = nodeVo.getId();
+            vo.parentId = nodeVo.getParentId();
+            vo.id = nodeVo.getId();
             vo.resource = nodeVo.getResource();
             vo.threadNum = nodeVo.getThreadNum();
             vo.passQps = nodeVo.getPassQps();
@@ -93,8 +93,8 @@ public class ResourceVo {
         //boolean visible = node.isVisible();
         if (visible) {
             ResourceVo vo = new ResourceVo();
-            vo.parentTtId = node.getParentId();
-            vo.ttId = node.getId();
+            vo.parentId = node.getParentId();
+            vo.id = node.getId();
             vo.resource = node.getResource();
             vo.threadNum = node.getThreadNum();
             vo.passQps = node.getPassQps();
@@ -114,20 +114,20 @@ public class ResourceVo {
         }
     }
 
-    public String getParentTtId() {
-        return parentTtId;
+    public String getParentId() {
+        return parentId;
     }
 
-    public void setParentTtId(String parentTtId) {
-        this.parentTtId = parentTtId;
+    public void setParentId(String parentId) {
+        this.parentId = parentId;
     }
 
-    public String getTtId() {
-        return ttId;
+    public String getId() {
+        return id;
     }
 
-    public void setTtId(String ttId) {
-        this.ttId = ttId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getResource() {

@@ -16,13 +16,25 @@ export interface InstanceSelectorProps {
   value?: string;
   /** 选择变化回调 */
   onChange: (instance: { ip: string; port: number } | null) => void;
+  /** 自动选择回调（当有健康实例且未手动选择时触发） */
+  onAutoSelect?: (instance: { ip: string; port: number } | null) => void;
 }
 
-export function InstanceSelector({ app, value, onChange }: InstanceSelectorProps): React.JSX.Element {
+export function InstanceSelector({ app, value, onChange, onAutoSelect }: InstanceSelectorProps): React.JSX.Element {
   const { data: instances = [], isLoading } = useInstances(app);
 
   // 只显示健康的实例
   const healthyInstances = React.useMemo(() => instances.filter((m: InstanceInfo) => m.healthy), [instances]);
+
+  // 自动选择第一个实例
+  React.useEffect(() => {
+    if (onAutoSelect && healthyInstances.length > 0 && !value && !isLoading) {
+      const firstInstance = healthyInstances[0];
+      if (firstInstance) {
+        onAutoSelect({ ip: firstInstance.ip, port: firstInstance.port });
+      }
+    }
+  }, [healthyInstances, value, isLoading, onAutoSelect]);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = e.target.value;
@@ -51,9 +63,8 @@ export function InstanceSelector({ app, value, onChange }: InstanceSelectorProps
       <NativeSelect.Field
         value={value ?? ''}
         onChange={handleChange}
-        placeholder={isLoading ? '加载中...' : '选择实例'}
+        placeholder={isLoading ? '加载中...' : healthyInstances.length === 0 ? '无可用实例' : '选择实例'}
       >
-        <option value="">{isLoading ? '加载中...' : healthyInstances.length === 0 ? '无可用实例' : '选择实例'}</option>
         {healthyInstances.map((instance: InstanceInfo) => {
           const hostPort = getInstanceHostPort(instance);
           return (

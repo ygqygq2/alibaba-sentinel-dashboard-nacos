@@ -25,6 +25,7 @@ export function Page(): React.JSX.Element {
   } | null>(null);
   const [viewMode, setViewMode] = React.useState<ViewMode>('list');
   const [searchKey, setSearchKey] = React.useState('');
+  const [autoSelectedRef] = React.useState({ hasAutoSelected: false });
   const debouncedSearchKey = useDebounce(searchKey, 300);
 
   // 获取资源数据
@@ -44,11 +45,23 @@ export function Page(): React.JSX.Element {
 
   const handleInstanceChange = (instance: { ip: string; port: number } | null) => {
     setSelectedInstance(instance);
+    autoSelectedRef.hasAutoSelected = false; // 重置自动选择标记
   };
 
   const handleRefresh = () => {
     refetch();
   };
+
+  // 如果没有手动选择实例，则自动选择第一个实例（仅首次加载时）
+  const handleAutoSelectInstance = React.useCallback(
+    (instance: { ip: string; port: number } | null) => {
+      if (instance && !selectedInstance && !autoSelectedRef.hasAutoSelected) {
+        setSelectedInstance(instance);
+        autoSelectedRef.hasAutoSelected = true;
+      }
+    },
+    [selectedInstance, autoSelectedRef]
+  );
 
   if (!app) {
     return (
@@ -124,6 +137,7 @@ export function Page(): React.JSX.Element {
                       app={app}
                       value={selectedInstance ? `${selectedInstance.ip}:${selectedInstance.port}` : undefined}
                       onChange={handleInstanceChange}
+                      onAutoSelect={handleAutoSelectInstance}
                     />
                   </HStack>
                   <HStack gap={2}>

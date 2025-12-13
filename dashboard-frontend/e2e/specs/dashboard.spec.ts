@@ -29,14 +29,13 @@ test.describe('仪表盘', () => {
     // 等待导航加载
     await page.waitForTimeout(1000);
 
-    // 验证关键导航项存在（更宽松的选择器）
-    const navItems = ['首页', '集群管理'];
-    for (const item of navItems) {
-      const navLink = page.locator(
-        `a:has-text("${item}"), button:has-text("${item}"), [role="navigation"] >> text="${item}"`
-      );
-      await expect(navLink.first()).toBeVisible({ timeout: 10000 });
-    }
+    // 验证首页导航链接
+    const homeLink = page.locator('a:has-text("首页"), [role="navigation"] >> text="首页"');
+    await expect(homeLink.first()).toBeVisible({ timeout: 10000 });
+
+    // 验证集群管理标题（Text元素，不是链接）
+    const clusterTitle = page.locator('[role="navigation"] >> text="集群管理"').first();
+    await expect(clusterTitle).toBeVisible({ timeout: 10000 });
   });
 
   test('显示应用列表', async ({ page }) => {

@@ -76,11 +76,15 @@ export function RecentApps(): React.JSX.Element {
         px="20px"
         py="6px"
         bg="transparent"
-        cursor="pointer"
-        _hover={{ bg: 'bg.muted' }}
-        transition="all 0.2s"
         borderRadius="md"
+        cursor="pointer"
+        transition="all 0.2s"
+        color="var(--NavItem-color)"
+        _hover={{ bg: 'var(--NavItem-hover-background)' }}
         onClick={() => setIsOpen(!isOpen)}
+        style={{
+          border: 'none',
+        }}
       >
         <Box
           display="flex"
@@ -89,26 +93,30 @@ export function RecentApps(): React.JSX.Element {
         >
           <Icon
             icon="ph:star"
-            style={{ fontSize: '1rem' }}
+            style={{ fontSize: '1rem', color: 'var(--NavItem-icon-color)' }}
           />
           <Text
             fontSize="sm"
             fontWeight={600}
+            color="inherit"
           >
             最近访问
           </Text>
         </Box>
         <Icon
           icon={isOpen ? 'ph:caret-up' : 'ph:caret-down'}
-          style={{ fontSize: '0.875rem' }}
+          style={{ fontSize: '0.875rem', color: 'var(--NavItem-expand-color)' }}
         />
       </Box>
 
       {/* 最近应用列表 */}
       {isOpen && (
         <Box
-          pl={3}
           mt={1}
+          ml={2}
+          borderLeft="1px solid"
+          borderLeftColor="border.default"
+          pl={2}
           display="flex"
           flexDirection="column"
           gap={0}
@@ -126,18 +134,32 @@ export function RecentApps(): React.JSX.Element {
               textAlign="left"
               cursor="pointer"
               borderRadius="sm"
-              _hover={{ bg: 'bg.muted' }}
+              color="var(--NavItem-color)"
+              _hover={{ bg: 'var(--NavItem-hover-background)' }}
               transition="background 0.15s"
               onClick={() => handleAppSelect(app.app)}
+              style={{
+                border: 'none',
+              }}
             >
-              <Icon
-                icon={app.appType === 1 ? 'ph:cloud' : 'ph:cube'}
-                style={{ fontSize: '0.875rem', flexShrink: 0 }}
-              />
+              <Box
+                w="0.875rem"
+                h="0.875rem"
+                flexShrink={0}
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Icon
+                  icon={app.appType === 1 ? 'ph:cloud' : 'ph:cube'}
+                  style={{ fontSize: '0.875rem', color: 'var(--NavItem-icon-color)' }}
+                />
+              </Box>
               <Text
                 fontSize="sm"
                 truncate
                 flex={1}
+                color="inherit"
               >
                 {app.app}
               </Text>

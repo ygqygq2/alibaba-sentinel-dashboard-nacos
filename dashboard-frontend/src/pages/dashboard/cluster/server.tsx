@@ -120,52 +120,59 @@ export function Page(): React.JSX.Element {
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
-                    {servers.map((server: TokenServer, index: number) => (
-                      <Table.Row key={`${server.ip}-${server.port}-${index}`}>
-                        <Table.Cell>
-                          <Text fontWeight="medium">{server.ip}</Text>
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Text>{server.port}</Text>
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Badge colorPalette={server.embedded ? 'blue' : 'green'}>
-                            {server.embedded ? '嵌入模式' : '独立模式'}
-                          </Badge>
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Text>{server.currentClientCount ?? 0}</Text>
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Text
-                            color="fg.muted"
-                            maxW="200px"
-                            truncate
-                          >
-                            {server.namespaceSet?.join(', ') ?? '-'}
-                          </Text>
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Flex gap={2}>
-                            <IconButton
-                              aria-label="详情"
-                              size="sm"
-                              variant="ghost"
+                    {servers.map((server: TokenServer, index: number) => {
+                      const embedded = server.state?.embedded;
+                      const namespaces = server.state?.namespaceSet?.join(', ') || '-';
+                      const clientCount =
+                        server.state?.connection?.reduce((sum, conn) => sum + (conn.connectedCount || 0), 0) || 0;
+
+                      return (
+                        <Table.Row key={`${server.ip}-${server.port}-${index}`}>
+                          <Table.Cell>
+                            <Text fontWeight="medium">{server.ip}</Text>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <Text>{server.port}</Text>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <Badge colorPalette={embedded ? 'blue' : 'green'}>
+                              {embedded ? '嵌入模式' : '独立模式'}
+                            </Badge>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <Text>{clientCount}</Text>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <Text
+                              color="fg.muted"
+                              maxW="200px"
+                              truncate
                             >
-                              <Icon icon="mdi:information-outline" />
-                            </IconButton>
-                            <IconButton
-                              aria-label="配置"
-                              size="sm"
-                              variant="ghost"
-                              colorPalette="blue"
-                            >
-                              <Icon icon="mdi:cog" />
-                            </IconButton>
-                          </Flex>
-                        </Table.Cell>
-                      </Table.Row>
-                    ))}
+                              {namespaces}
+                            </Text>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <Flex gap={2}>
+                              <IconButton
+                                aria-label="详情"
+                                size="sm"
+                                variant="ghost"
+                              >
+                                <Icon icon="mdi:information-outline" />
+                              </IconButton>
+                              <IconButton
+                                aria-label="配置"
+                                size="sm"
+                                variant="ghost"
+                                colorPalette="blue"
+                              >
+                                <Icon icon="mdi:cog" />
+                              </IconButton>
+                            </Flex>
+                          </Table.Cell>
+                        </Table.Row>
+                      );
+                    })}
                   </Table.Body>
                 </Table.Root>
               )}

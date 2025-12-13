@@ -305,38 +305,10 @@ public class ClusterConfigController {
             logger.error("Error when fetching token client list", ex.getCause());
             return errorResponse(ex);
         } catch (Throwable throwable) {
-            logger.erroAppClusterClientStateWrapVO>> apiGetTokenClientList(
-            @RequestParam(required = false) String app) {
-        try {
-            if (StringUtil.isBlank(app)) {
-                // 查询所有应用的 Token Client
-                List<String> appNames = appManagement.getAppNames();
-                List<AppClusterClientStateWrapVO> result = new java.util.ArrayList<>();
-                for (String appName : appNames) {
-                    try {
-                        List<AppClusterClientStateWrapVO> clients = 
-                            clusterConfigService.getClusterClientStateOfApp(appName).get();
-                        if (clients != null) {
-                            result.addAll(clients);
-                        }
-                    } catch (Exception ex) {
-                        logger.warn("Failed to get client list for app: " + appName, ex);
-                    }
-                }
-                return Result.ofSuccess(result);
-            } else {
-                // 查询指定应用的 Token Client
-                return clusterConfigService.getClusterClientStateOfApp(app)
-                    .thenApply(Result::ofSuccess)
-                    .get();
-            }
-        } catch (ExecutionException ex) {
-            logger.error("Error when fetching token client list", ex.getCause());
-            return errorResponse(ex);
-        } catch (Throwable throwable) {
             logger.error("Error when fetching token client list", throwable);
             return Result.ofFail(-1, throwable.getMessage());
         }
+    }
 
     private <R> Result<R> unsupportedVersion() {
         return Result.ofFail(4041, "Sentinel client not supported for cluster flow control (unsupported version or dependency absent)");

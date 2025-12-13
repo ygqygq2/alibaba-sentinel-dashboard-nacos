@@ -34,16 +34,18 @@ export const Button = defineRecipe({
       // Chakra UI v3 标准 variant: outline
       outline: {
         borderWidth: '1px',
-        borderColor: 'colorPalette.500',
-        color: 'colorPalette.700',
+        borderColor: { base: 'colorPalette.500', _dark: 'colorPalette.400' },
+        color: { base: 'colorPalette.700', _dark: 'colorPalette.300' },
         _hover: {
-          bg: 'colorPalette.50',
+          bg: { base: 'colorPalette.50', _dark: 'colorPalette.900/20' },
+          borderColor: { base: 'colorPalette.600', _dark: 'colorPalette.300' },
+          color: { base: 'colorPalette.800', _dark: 'colorPalette.200' },
           _disabled: {
             bg: 'transparent',
           },
         },
         _active: {
-          bg: 'colorPalette.100',
+          bg: { base: 'colorPalette.100', _dark: 'colorPalette.900/30' },
         },
       },
       // Chakra UI v3 标准 variant: ghost

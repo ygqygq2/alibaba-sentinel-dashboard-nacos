@@ -607,6 +607,7 @@ export function Page(): React.JSX.Element {
               </Button>
               <Button
                 variant="outline"
+                size="sm"
                 onClick={handleRefresh}
               >
                 <Icon icon="mdi:refresh" />

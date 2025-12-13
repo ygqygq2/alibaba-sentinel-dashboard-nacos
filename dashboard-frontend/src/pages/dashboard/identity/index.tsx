@@ -144,8 +144,8 @@ export function Page(): React.JSX.Element {
                   </HStack>
                 </HStack>
                 <Button
+                  variant="outline"
                   size="sm"
-                  colorPalette="blue"
                   onClick={handleRefresh}
                   disabled={!selectedInstance}
                 >

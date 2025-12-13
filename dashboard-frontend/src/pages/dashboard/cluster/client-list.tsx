@@ -33,6 +33,7 @@ export function Page(): React.JSX.Element {
             </Box>
             <Button
               variant="outline"
+              size="sm"
               onClick={handleRefresh}
             >
               <Icon icon="mdi:refresh" />

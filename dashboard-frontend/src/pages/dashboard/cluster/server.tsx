@@ -56,6 +56,7 @@ export function Page(): React.JSX.Element {
             <Flex gap={2}>
               <Button
                 variant="outline"
+                size="sm"
                 onClick={handleRefresh}
               >
                 <Icon icon="mdi:refresh" />

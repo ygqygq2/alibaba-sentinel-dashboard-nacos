@@ -58,26 +58,62 @@ export interface ClusterServerConfig {
 
 /**
  * Token Server 信息
+ * 对应后端 AppClusterServerStateWrapVO
  */
 export interface TokenServer {
-  /** 应用名称 */
-  app: string;
-  /** 实例 ID */
-  instanceId: string;
+  /** 实例 ID (ip@port) */
+  id: string;
   /** IP 地址 */
   ip: string;
-  /** 端口 */
+  /** 应用端口 */
   port: number;
+  /** 当前连接数 */
+  connectedCount?: number;
+  /** 是否属于应用 */
+  belongToApp?: boolean;
+  /** 服务器状态详情 */
+  state?: TokenServerState;
+}
+
+/**
+ * Token Server 状态详情
+ * 对应后端 ClusterServerStateVO
+ */
+export interface TokenServerState {
+  /** 应用名称 */
+  appName?: string;
   /** Token Server 端口 */
-  tokenServerPort?: number;
+  port?: number;
   /** 命名空间集合 */
   namespaceSet?: string[];
   /** 是否嵌入模式 */
-  embedded: boolean;
-  /** 当前客户端数量 */
-  currentClientCount?: number;
+  embedded?: boolean;
+  /** 连接组信息 */
+  connection?: ConnectionGroup[];
+  /** 流控配置 */
+  flow?: ServerFlowConfig;
+}
+
+/**
+ * 连接组信息
+ */
+export interface ConnectionGroup {
+  /** 命名空间 */
+  namespace: string;
+  /** 连接数 */
+  connectedCount?: number;
+}
+
+/**
+ * 服务器流控配置
+ */
+export interface ServerFlowConfig {
   /** 最大允许 QPS */
   maxAllowedQps?: number;
+  /** 采样统计窗口时长（毫秒） */
+  sampleCount?: number;
+  /** 统计窗口数量 */
+  windowIntervalMs?: number;
 }
 
 /**

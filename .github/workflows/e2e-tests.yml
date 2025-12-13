@@ -161,12 +161,30 @@ jobs:
         working-directory: dashboard-frontend
         run: pnpm exec playwright install --with-deps chromium
 
+      - name: Generate metric data for tests
+        run: |
+          echo "🚀 生成监控数据（后台运行）..."
+          ./scripts/generate-metric-data.sh &
+          METRIC_PID=$!
+          echo "METRIC_PID=$METRIC_PID" >> $GITHUB_ENV
+          echo "监控数据生成器 PID: $METRIC_PID"
+          sleep 5
+          echo "✅ 监控数据生成器已启动"
+
       - name: Run E2E tests (API + UI)
         run: |
           ./scripts/dev.sh test all --ci
         env:
           DASHBOARD_URL: ${{ env.DASHBOARD_URL }}
           TOKEN_SERVER_URL: ${{ env.TOKEN_SERVER_URL }}
+
+      - name: Stop metric data generator
+        if: always()
+        run: |
+          if [ -n "$METRIC_PID" ]; then
+            echo "停止监控数据生成器 (PID: $METRIC_PID)..."
+            kill $METRIC_PID 2>/dev/null || true
+          fi
 
       - name: Add test summary
         if: always()

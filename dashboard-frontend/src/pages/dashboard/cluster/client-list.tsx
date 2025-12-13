@@ -30,13 +30,6 @@ export function Page(): React.JSX.Element {
           >
             <Box>
               <Heading size="lg">Token Client 列表</Heading>
-              <Text
-                color="fg.muted"
-                fontSize="sm"
-                mt={1}
-              >
-                全局 Token Client 管理
-              </Text>
             </Box>
             <Button
               variant="outline"

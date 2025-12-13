@@ -31,7 +31,9 @@ import com.alibaba.csp.sentinel.dashboard.domain.cluster.request.ClusterClientMo
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.request.ClusterModifyRequest;
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.request.ClusterServerModifyRequest;
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.state.AppClusterClientStateWrapVO;
+import com.alibaba.csp.sentinel.dashboard.domain.cluster.state.AppClusterClientStateWrapVO;
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.state.AppClusterServerStateWrapVO;
+import com.alibaba.csp.sentinel.dashboard.domain.cluster.state.ClusterServerStateVO;
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.state.ClusterUniversalStatePairVO;
 import com.alibaba.csp.sentinel.dashboard.domain.cluster.state.ClusterUniversalStateVO;
 import com.alibaba.csp.sentinel.dashboard.service.ClusterConfigService;
@@ -201,41 +203,140 @@ public class ClusterConfigController {
         }
     }
 
-    private boolean isNotSupported(Throwable ex) {
-        return ex instanceof CommandNotFoundException;
-    }
-
-    private boolean checkIfSupported(String app, String ip, int port) {
+    /**
+     * 获取 Token Server 列表
+     * 
+     * 设计理念：
+     * 1. 不传 app 参数：返回独立模式的 Token Server（standalone token server，如 token-server 应用）
+     *    - 这些是专门的 Token Server，为多个应用提供集群限流服务
+     *    - 在 K8s 环境下可以独立扩容
+     * 
+     * 2. 传 app 参数：返回指定应用内部的 Token Server（embedded mode）
+     *    - 某个应用的实例被配置为 Token Server，为该应用的其他实例提供服务
+     *    - 用于应用级别的集群管理
+     * 
+     * @param app 可选，应用名称。不传则返回独立模式的 Token Server
+     */
+    @GetMapping("/server_list")
+    public Result<List<AppClusterServerStateWrapVO>> apiGetTokenServerList(
+            @RequestParam(required = false) String app) {
         try {
-            return Optional.ofNullable(appManagement.getDetailApp(app))
-                .flatMap(e -> e.getInstance(ip, port))
-                .flatMap(m -> VersionUtils.parseVersion(m.getVersion())
-                    .map(v -> v.greaterOrEqual(version140)))
-                .orElse(true);
-            // If error occurred or cannot retrieve instance info, return true.
-        } catch (Exception ex) {
-            return true;
+            if (StringUtil.isBlank(app)) {
+                // 全局查询：只返回独立模式的 Token Server（embedded=false）
+                // 独立 Token Server 通常命名为 sentinel-token-server 或类似名称
+                List<String> appNames = appManagement.getAppNames();
+                List<AppClusterServerStateWrapVO> result = new java.util.ArrayList<>();
+                
+                for (String appName : appNames) {
+                    try {
+                        List<AppClusterServerStateWrapVO> servers = 
+                            clusterConfigService.getClusterServerStateOfApp(appName).get();
+                        
+                        if (servers != null) {
+                            // 过滤：只保留独立模式的 Token Server
+                            for (AppClusterServerStateWrapVO server : servers) {
+                                if (server.getState() != null && 
+                                    Boolean.FALSE.equals(server.getState().getEmbedded())) {
+                                    result.add(server);
+                                }
+                            }
+                        }
+                    } catch (Exception ex) {
+                        logger.warn("Failed to get server list for app: " + appName, ex);
+                    }
+                }
+                
+                logger.info("Global token server list query returned {} standalone servers", result.size());
+                return Result.ofSuccess(result);
+            } else {
+                // 按应用查询：返回该应用的所有 Token Server（包括嵌入模式）
+                return clusterConfigService.getClusterServerStateOfApp(app)
+                    .thenApply(Result::ofSuccess)
+                    .get();
+            }
+        } catch (ExecutionException ex) {
+            logger.error("Error when fetching token server list", ex.getCause());
+            return errorResponse(ex);
+        } catch (Throwable throwable) {
+            logger.error("Error when fetching token server list", throwable);
+            return Result.ofFail(-1, throwable.getMessage());
         }
     }
 
-    private Result<Boolean> checkValidRequest(ClusterModifyRequest request) {
-        if (StringUtil.isEmpty(request.getApp())) {
-            return Result.ofFail(-1, "app cannot be empty");
+    /**
+     * 获取 Token Client 列表
+     * 支持全局查询和按应用查询
+     */
+    @GetMapping("/client_list")
+    public Result<List<TokenClientVO>> apiGetTokenClientList(
+            @RequestParam(required = false) String app) {
+        try {
+            if (StringUtil.isBlank(app)) {
+                // 查询所有应用的 Token Client
+                List<String> appNames = appManagement.getAppNames();
+                List<TokenClientVO> result = new java.util.ArrayList<>();
+                for (String appName : appNames) {
+                    try {
+                        List<AppClusterClientStateWrapVO> clients = 
+                            clusterConfigService.getClusterClientStateOfApp(appName).get();
+                        if (clients != null) {
+                            for (AppClusterClientStateWrapVO client : clients) {
+                                result.add(convertToTokenClientVO(appName, client));
+                            }
+                        }
+                    } catch (Exception ex) {
+                        logger.warn("Failed to get client list for app: " + appName, ex);
+                    }
+                }
+                return Result.ofSuccess(result);
+            } else {
+                // 查询指定应用的 Token Client
+                List<AppClusterClientStateWrapVO> clients = 
+                    clusterConfigService.getClusterClientStateOfApp(app).get();
+                List<TokenClientVO> result = new java.util.ArrayList<>();
+                if (clients != null) {
+                    for (AppClusterClientStateWrapVO client : clients) {
+                        result.add(convertToTokenClientVO(app, client));
+                    }
+                }
+                return Result.ofSuccess(result);
+            }
+        } catch (ExecutionException ex) {
+            logger.error("Error when fetching token client list", ex.getCause());
+            return errorResponse(ex);
+        } catch (Throwable throwable) {
+            logger.erroAppClusterClientStateWrapVO>> apiGetTokenClientList(
+            @RequestParam(required = false) String app) {
+        try {
+            if (StringUtil.isBlank(app)) {
+                // 查询所有应用的 Token Client
+                List<String> appNames = appManagement.getAppNames();
+                List<AppClusterClientStateWrapVO> result = new java.util.ArrayList<>();
+                for (String appName : appNames) {
+                    try {
+                        List<AppClusterClientStateWrapVO> clients = 
+                            clusterConfigService.getClusterClientStateOfApp(appName).get();
+                        if (clients != null) {
+                            result.addAll(clients);
+                        }
+                    } catch (Exception ex) {
+                        logger.warn("Failed to get client list for app: " + appName, ex);
+                    }
+                }
+                return Result.ofSuccess(result);
+            } else {
+                // 查询指定应用的 Token Client
+                return clusterConfigService.getClusterClientStateOfApp(app)
+                    .thenApply(Result::ofSuccess)
+                    .get();
+            }
+        } catch (ExecutionException ex) {
+            logger.error("Error when fetching token client list", ex.getCause());
+            return errorResponse(ex);
+        } catch (Throwable throwable) {
+            logger.error("Error when fetching token client list", throwable);
+            return Result.ofFail(-1, throwable.getMessage());
         }
-        if (StringUtil.isEmpty(request.getIp())) {
-            return Result.ofFail(-1, "ip cannot be empty");
-        }
-        if (request.getPort() == null || request.getPort() < 0) {
-            return Result.ofFail(-1, "invalid port");
-        }
-        if (request.getMode() == null || request.getMode() < 0) {
-            return Result.ofFail(-1, "invalid mode");
-        }
-        if (!checkIfSupported(request.getApp(), request.getIp(), request.getPort())) {
-            return unsupportedVersion();
-        }
-        return null;
-    }
 
     private <R> Result<R> unsupportedVersion() {
         return Result.ofFail(4041, "Sentinel client not supported for cluster flow control (unsupported version or dependency absent)");

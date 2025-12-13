@@ -30,13 +30,6 @@ export function Page(): React.JSX.Element {
           >
             <Box>
               <Heading size="lg">Token Server 列表</Heading>
-              <Text
-                color="fg.muted"
-                fontSize="sm"
-                mt={1}
-              >
-                全局 Token Server 管理
-              </Text>
             </Box>
             <Button
               variant="outline"
@@ -70,13 +63,19 @@ export function Page(): React.JSX.Element {
                   p={8}
                   textAlign="center"
                 >
-                  <Text color="fg.muted">暂无 Token Server</Text>
+                  <Text color="fg.muted">暂无独立 Token Server</Text>
                   <Text
                     color="fg.muted"
                     fontSize="sm"
                     mt={2}
                   >
-                    请先在应用中配置集群模式
+                    独立 Token Server 是专门的令牌服务器，不属于任何业务应用
+                  </Text>
+                  <Text
+                    color="fg.muted"
+                    fontSize="sm"
+                  >
+                    通常命名为 sentinel-token-server 并独立部署
                   </Text>
                 </Box>
               ) : (
@@ -88,26 +87,45 @@ export function Page(): React.JSX.Element {
                       <Table.ColumnHeader>端口</Table.ColumnHeader>
                       <Table.ColumnHeader>Token Server 端口</Table.ColumnHeader>
                       <Table.ColumnHeader>模式</Table.ColumnHeader>
+                      <Table.ColumnHeader>服务命名空间</Table.ColumnHeader>
                       <Table.ColumnHeader>客户端数量</Table.ColumnHeader>
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
-                    {servers.map((server: TokenServer) => (
-                      <Table.Row key={`${server.ip}:${server.port}`}>
-                        <Table.Cell>
-                          <Text fontWeight="medium">{server.app}</Text>
-                        </Table.Cell>
-                        <Table.Cell>{server.ip}</Table.Cell>
-                        <Table.Cell>{server.port}</Table.Cell>
-                        <Table.Cell>{server.tokenServerPort ?? '-'}</Table.Cell>
-                        <Table.Cell>
-                          <Badge colorPalette={server.embedded ? 'blue' : 'green'}>
-                            {server.embedded ? '嵌入模式' : '独立模式'}
-                          </Badge>
-                        </Table.Cell>
-                        <Table.Cell>{server.currentClientCount ?? '-'}</Table.Cell>
-                      </Table.Row>
-                    ))}
+                    {servers.map((server: TokenServer) => {
+                      const appName = server.state?.appName || '-';
+                      const tokenServerPort = server.state?.port || '-';
+                      const embedded = server.state?.embedded;
+                      const namespaces = server.state?.namespaceSet?.join(', ') || '-';
+                      const clientCount =
+                        server.state?.connection?.reduce((sum, conn) => sum + (conn.connectedCount || 0), 0) || 0;
+
+                      return (
+                        <Table.Row key={server.id}>
+                          <Table.Cell>
+                            <Text fontWeight="medium">{appName}</Text>
+                          </Table.Cell>
+                          <Table.Cell>{server.ip}</Table.Cell>
+                          <Table.Cell>{server.port}</Table.Cell>
+                          <Table.Cell>{tokenServerPort}</Table.Cell>
+                          <Table.Cell>
+                            <Badge colorPalette={embedded ? 'blue' : 'green'}>
+                              {embedded ? '嵌入模式' : '独立模式'}
+                            </Badge>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <Text
+                              maxW="200px"
+                              truncate
+                              title={namespaces}
+                            >
+                              {namespaces}
+                            </Text>
+                          </Table.Cell>
+                          <Table.Cell>{clientCount}</Table.Cell>
+                        </Table.Row>
+                      );
+                    })}
                   </Table.Body>
                 </Table.Root>
               )}

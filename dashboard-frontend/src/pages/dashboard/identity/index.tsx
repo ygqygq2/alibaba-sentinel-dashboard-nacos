@@ -124,38 +124,20 @@ export function Page(): React.JSX.Element {
                 alignItems="center"
                 gap={3}
               >
-                <HStack gap={4}>
-                  <HStack gap={2}>
-                    <Text
-                      fontSize="sm"
-                      color="fg.muted"
-                      whiteSpace="nowrap"
-                    >
-                      实例:
-                    </Text>
-                    <InstanceSelector
-                      app={app}
-                      value={selectedInstance ? `${selectedInstance.ip}:${selectedInstance.port}` : undefined}
-                      onChange={handleInstanceChange}
-                      onAutoSelect={handleAutoSelectInstance}
-                    />
-                  </HStack>
-                  <HStack gap={2}>
-                    <Text
-                      fontSize="sm"
-                      color="fg.muted"
-                      whiteSpace="nowrap"
-                    >
-                      关键字:
-                    </Text>
-                    <Input
-                      size="sm"
-                      width="200px"
-                      placeholder="搜索资源名"
-                      value={searchKey}
-                      onChange={(e) => setSearchKey(e.target.value)}
-                    />
-                  </HStack>
+                <HStack gap={2}>
+                  <Text
+                    fontSize="sm"
+                    color="fg.muted"
+                    whiteSpace="nowrap"
+                  >
+                    实例:
+                  </Text>
+                  <InstanceSelector
+                    app={app}
+                    value={selectedInstance ? `${selectedInstance.ip}:${selectedInstance.port}` : undefined}
+                    onChange={handleInstanceChange}
+                    onAutoSelect={handleAutoSelectInstance}
+                  />
                 </HStack>
                 <Button
                   variant="outline"

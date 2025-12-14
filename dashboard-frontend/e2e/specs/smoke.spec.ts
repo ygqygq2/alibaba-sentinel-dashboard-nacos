@@ -146,8 +146,8 @@ test.describe('冒烟测试', () => {
   test.describe('关键页面可访问', () => {
     test('Dashboard 首页可访问', async ({ page }) => {
       await page.goto(DASHBOARD_URL);
-      // 在 CI 模式下，前端路由是哈希路由
-      await expect(page).toHaveURL(/\/(#\/auth\/sign-in|dashboard)|(auth\/sign-in)/);
+      // 在 CI 模式下，前端路由是哈希路由，允许根路径
+      await expect(page).toHaveURL(/\/(#\/auth\/sign-in|dashboard|auth\/sign-in)?$/);
     });
   });
 

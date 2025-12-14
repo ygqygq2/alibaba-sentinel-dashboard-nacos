@@ -11,6 +11,7 @@ import { useParams } from 'react-router-dom';
 
 import { InstanceSelector, ResourceTable } from '@/components/dashboard/identity';
 import { ViewSwitcher } from '@/components/ui/view-switcher';
+import { useGlobalSearch } from '@/contexts/search-context';
 import { useInstanceResources } from '@/hooks/api';
 import { useDebounce } from '@/hooks/use-debounce';
 
@@ -18,6 +19,7 @@ type ViewMode = 'tree' | 'list';
 
 export function Page(): React.JSX.Element {
   const { app } = useParams<{ app: string }>();
+  const { searchKey } = useGlobalSearch(); // 使用全局搜索
 
   // 状态
   const [selectedInstance, setSelectedInstance] = React.useState<{
@@ -25,7 +27,6 @@ export function Page(): React.JSX.Element {
     port: number;
   } | null>(null);
   const [viewMode, setViewMode] = React.useState<ViewMode>('list');
-  const [searchKey, _setSearchKey] = React.useState('');
   const [autoSelectedRef] = React.useState({ hasAutoSelected: false });
   const debouncedSearchKey = useDebounce(searchKey, 300);
 

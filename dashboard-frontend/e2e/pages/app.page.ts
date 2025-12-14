@@ -258,12 +258,12 @@ export class ClusterLinkPage {
   constructor(private page: Page) {}
 
   async goto(appName: string) {
-    await this.page.goto(`/dashboard/apps/${appName}/cluster-link`);
-    await this.page.waitForLoadState('networkidle');
+    await this.page.goto(`/dashboard/apps/${appName}/identity`);
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
   async expectLoaded() {
-    await expect(this.page.locator('main, [data-testid="cluster-link"], table').first()).toBeVisible({
+    await expect(this.page.locator('main, [data-testid="identity"], h2').first()).toBeVisible({
       timeout: 10000,
     });
   }

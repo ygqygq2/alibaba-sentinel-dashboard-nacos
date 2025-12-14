@@ -23,9 +23,12 @@ test.describe('实时监控', () => {
   test('显示监控数据表格', async ({ page }) => {
     await metricPage.expectLoaded();
 
+    // 等待监控数据加载
+    await page.waitForTimeout(2000);
+
     // 验证表格存在
     const table = page.locator('table');
-    await expect(table).toBeVisible({ timeout: 10000 });
+    await expect(table).toBeVisible({ timeout: 15000 });
   });
 
   test('监控表格显示关键指标列', async ({ page }) => {

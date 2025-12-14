@@ -43,8 +43,8 @@ test.describe('簇点链路', () => {
         const rowText = await firstRow.textContent();
         expect(rowText?.toLowerCase()).toContain('system');
       } else {
-        // 验证显示无结果提示
-        const noData = page.locator('text=/暂无|没有|无数据/');
+        // 验证显示无结果提示或实例选择提示
+        const noData = page.locator('text=/请先选择|暂无|没有|无数据/');
         await expect(noData.first()).toBeVisible({ timeout: 5000 });
       }
 

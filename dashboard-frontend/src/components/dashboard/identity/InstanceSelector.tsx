@@ -24,7 +24,7 @@ export function InstanceSelector({ app, value, onChange, onAutoSelect }: Instanc
   const { data: instances = [], isLoading } = useInstances(app);
 
   // 只显示健康的实例
-  const healthyInstances = React.useMemo(() => instances.filter((m: InstanceInfo) => m.healthy), [instances]);
+  const healthyInstances = React.useMemo(() => (instances || []).filter((m: InstanceInfo) => m.healthy), [instances]);
 
   // 自动选择第一个实例
   React.useEffect(() => {

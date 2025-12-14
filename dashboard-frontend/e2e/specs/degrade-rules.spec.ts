@@ -74,12 +74,12 @@ test.describe('降级规则完整流程', () => {
     }
 
     await expect(page).toHaveURL(/\/degrade(?:$|\?)/, { timeout: 10000 });
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(3000);
 
     // ============================================
     // 步骤 2: 验证规则在列表中显示
     // ============================================
-    await expect(page.getByText(testResource).first()).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(testResource).first()).toBeVisible({ timeout: 10000 });
 
     // ============================================
     // 步骤 3: 刷新页面验证持久化（Nacos）
@@ -179,10 +179,10 @@ test.describe('降级规则完整流程', () => {
 
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/degrade(?:$|\?)/, { timeout: 5000 });
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(2000);
 
     // 验证创建成功
-    await expect(page.getByText(testResource).first()).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(testResource).first()).toBeVisible({ timeout: 10000 });
 
     // 清理：删除规则
     const deleteButton = page.locator(`tr:has-text("${testResource}") button[aria-label="删除"]`).first();

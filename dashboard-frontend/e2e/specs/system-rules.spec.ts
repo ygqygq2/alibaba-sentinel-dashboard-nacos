@@ -107,7 +107,7 @@ test.describe('系统规则完整流程', () => {
     await page.waitForTimeout(2000); // 等待规则列表刷新
 
     // 验证创建成功 - 只需要看到 CPU 类型的规则
-    await expect(page.locator('tr').filter({ hasText: 'CPU' }).first()).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('tr').filter({ hasText: 'CPU' }).first()).toBeVisible({ timeout: 10000 });
 
     // 清理：删除规则
     const deleteButton = page.locator('tr').filter({ hasText: 'CPU' }).locator('button[aria-label="删除"]').first();

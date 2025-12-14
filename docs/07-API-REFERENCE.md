@@ -154,13 +154,13 @@ DELETE /v1/flow/rule/{id}
 ### 获取熔断规则
 
 ```http
-GET /degrade/rules.json?app={app}
+GET /v2/degrade/rules?app={app}
 ```
 
 ### 新增熔断规则
 
 ```http
-POST /degrade/rule
+POST /v2/degrade/rule
 ```
 
 **参数:**
@@ -180,13 +180,13 @@ POST /degrade/rule
 ### 获取热点规则
 
 ```http
-GET /paramFlow/rules?app={app}
+GET /v2/paramFlow/rules?app={app}
 ```
 
 ### 新增热点规则
 
 ```http
-POST /paramFlow/rule
+POST /v2/paramFlow/rule
 ```
 
 **参数:**
@@ -204,13 +204,13 @@ POST /paramFlow/rule
 ### 获取系统规则
 
 ```http
-GET /system/rules.json?app={app}
+GET /v2/system/rules?app={app}
 ```
 
 ### 新增系统规则
 
 ```http
-POST /system/rule
+POST /v2/system/rule
 ```
 
 **参数:**
@@ -228,13 +228,13 @@ POST /system/rule
 ### 获取授权规则
 
 ```http
-GET /authority/rules?app={app}
+GET /v2/authority/rules?app={app}
 ```
 
 ### 新增授权规则
 
 ```http
-POST /authority/rule
+POST /v2/authority/rule
 ```
 
 **参数:**

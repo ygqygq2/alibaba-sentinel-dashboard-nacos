@@ -62,22 +62,16 @@ test.describe('流控规则 API', () => {
   });
 });
 
-test.describe('其他规则 API (v1)', () => {
+test.describe('其他规则 API (v2)', () => {
   let cookies: string;
-  let instanceIp: string;
-  let instancePort: number;
 
   test.beforeAll(async ({ request }) => {
     cookies = await login(request);
-    // v1 API 需要机器 ip 和 port
-    const instance = await getInstanceInfo(request, cookies);
-    instanceIp = instance.ip;
-    instancePort = instance.port;
   });
 
   test('获取熔断规则', async ({ request }) => {
     const response = await request.get(`${DASHBOARD_URL}${API.dashboard.degradeRules}`, {
-      params: { app: APP_NAME, ip: instanceIp, port: instancePort },
+      params: { app: APP_NAME },
       headers: authHeaders(cookies),
     });
 
@@ -87,7 +81,7 @@ test.describe('其他规则 API (v1)', () => {
 
   test('获取系统规则', async ({ request }) => {
     const response = await request.get(`${DASHBOARD_URL}${API.dashboard.systemRules}`, {
-      params: { app: APP_NAME, ip: instanceIp, port: instancePort },
+      params: { app: APP_NAME },
       headers: authHeaders(cookies),
     });
 
@@ -97,7 +91,7 @@ test.describe('其他规则 API (v1)', () => {
 
   test('获取授权规则', async ({ request }) => {
     const response = await request.get(`${DASHBOARD_URL}${API.dashboard.authorityRules}`, {
-      params: { app: APP_NAME, ip: instanceIp, port: instancePort },
+      params: { app: APP_NAME },
       headers: authHeaders(cookies),
     });
 
@@ -107,7 +101,7 @@ test.describe('其他规则 API (v1)', () => {
 
   test('获取热点规则', async ({ request }) => {
     const response = await request.get(`${DASHBOARD_URL}${API.dashboard.paramFlowRules}`, {
-      params: { app: APP_NAME, ip: instanceIp, port: instancePort },
+      params: { app: APP_NAME },
       headers: authHeaders(cookies),
     });
 

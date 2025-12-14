@@ -49,15 +49,14 @@ export const API = {
     // v2 API (Nacos 持久化，只需 app 参数)
     flowRules: '/v2/flow/rules',
     flowRule: '/v2/flow/rule',
-    // v1 API (需要 app, ip, port 参数)
-    degradeRules: '/degrade/rules.json',
-    degradeRule: '/degrade/rule',
-    systemRules: '/system/rules.json',
-    systemRule: '/system/rule',
-    authorityRules: '/authority/rules',
-    authorityRule: '/authority/rule',
-    paramFlowRules: '/paramFlow/rules',
-    paramFlowRule: '/paramFlow/rule',
+    degradeRules: '/v2/degrade/rules',
+    degradeRule: '/v2/degrade/rule',
+    systemRules: '/v2/system/rules',
+    systemRule: '/v2/system/rule',
+    authorityRules: '/v2/authority/rules',
+    authorityRule: '/v2/authority/rule',
+    paramFlowRules: '/v2/paramFlow/rules',
+    paramFlowRule: '/v2/paramFlow/rule',
   },
   // Token Server API
   tokenServer: {

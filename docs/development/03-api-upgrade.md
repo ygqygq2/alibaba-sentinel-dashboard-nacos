@@ -31,15 +31,15 @@
 
 | 方法   | 路径                  | 参数                            | 说明                       |
 | ------ | --------------------- | ------------------------------- | -------------------------- |
-| GET    | `/degrade/rules.json` | `app`, `ip`, `port`             | 获取**指定机器**的降级规则 |
-| POST   | `/degrade/rule`       | Body: `DegradeRuleEntity`       | 创建降级规则               |
+| GET    | `/v2/degrade/rules` | `app`, `ip`, `port`             | 获取**应用所有实例**的降级规则 |
+| POST   | `/v2/degrade/rule`       | Body: `DegradeRuleEntity`       | 创建降级规则               |
 | PUT    | `/degrade/rule/{id}`  | `id`, Body: `DegradeRuleEntity` | 更新降级规则               |
 | DELETE | `/degrade/rule/{id}`  | `id`                            | 删除降级规则               |
 
 **限制**：
 
 - ❌ 需要 `app`、`ip`、`port` 三个参数（机器级别）
-- ❌ 从指定机器拉取规则，无法获取应用所有机器的规则
+- ❌ 从应用所有实例拉取规则，无法获取应用所有机器的规则
 - ❌ 不支持 Nacos 持久化
 
 ### 3. 热点参数规则（仅 V1 版本）
@@ -49,8 +49,8 @@
 
 | 方法   | 路径                   | 参数                              | 说明                       |
 | ------ | ---------------------- | --------------------------------- | -------------------------- |
-| GET    | `/paramFlow/rules`     | `app`, `ip`, `port`               | 获取**指定机器**的热点规则 |
-| POST   | `/paramFlow/rule`      | Body: `ParamFlowRuleEntity`       | 创建热点规则               |
+| GET    | `/v2/paramFlow/rules`     | `app`, `ip`, `port`               | 获取**应用所有实例**的热点规则 |
+| POST   | `/v2/paramFlow/rule`      | Body: `ParamFlowRuleEntity`       | 创建热点规则               |
 | PUT    | `/paramFlow/rule/{id}` | `id`, Body: `ParamFlowRuleEntity` | 更新热点规则               |
 | DELETE | `/paramFlow/rule/{id}` | `id`                              | 删除热点规则               |
 
@@ -63,7 +63,7 @@
 
 | 方法     | 路径                                      | 参数                     | 说明                       |
 | -------- | ----------------------------------------- | ------------------------ | -------------------------- |
-| GET      | `/system/rules.json`                      | `app`, `ip`, `port`      | 获取**指定机器**的系统规则 |
+| GET      | `/v2/system/rules`                      | `app`, `ip`, `port`      | 获取**应用所有实例**的系统规则 |
 | POST/PUT | `/system/new.json` 或 `/system/save.json` | Body: `SystemRuleEntity` | 创建/更新系统规则          |
 | DELETE   | `/system/delete.json`                     | `id`                     | 删除系统规则               |
 
@@ -80,8 +80,8 @@
 
 | 方法   | 路径                   | 参数                              | 说明                       |
 | ------ | ---------------------- | --------------------------------- | -------------------------- |
-| GET    | `/authority/rules`     | `app`, `ip`, `port`               | 获取**指定机器**的授权规则 |
-| POST   | `/authority/rule`      | Body: `AuthorityRuleEntity`       | 创建授权规则               |
+| GET    | `/v2/authority/rules`     | `app`, `ip`, `port`               | 获取**应用所有实例**的授权规则 |
+| POST   | `/v2/authority/rule`      | Body: `AuthorityRuleEntity`       | 创建授权规则               |
 | PUT    | `/authority/rule/{id}` | `id`, Body: `AuthorityRuleEntity` | 更新授权规则               |
 | DELETE | `/authority/rule/{id}` | `id`                              | 删除授权规则               |
 

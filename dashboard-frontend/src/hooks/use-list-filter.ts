@@ -13,6 +13,8 @@ export interface UseListFilterOptions<T> {
   defaultPageSize?: number;
   /** 外部搜索关键字（用于全局搜索） */
   externalSearchKey?: string;
+  /** 自定义过滤函数 */
+  customFilter?: (item: T, searchKey: string) => boolean;
 }
 
 export interface UseListFilterResult<T> {
@@ -52,7 +54,7 @@ function getNestedValue(obj: unknown, path: string): unknown {
  * 通用列表分页和搜索 Hook
  */
 export function useListFilter<T>(options: UseListFilterOptions<T>): UseListFilterResult<T> {
-  const { data = [], searchFields = [], defaultPageSize = 10, externalSearchKey } = options;
+  const { data = [], searchFields = [], defaultPageSize = 10, externalSearchKey, customFilter } = options;
 
   const [internalSearchKey, setInternalSearchKey] = React.useState('');
   const [page, setPage] = React.useState(1);
@@ -71,6 +73,11 @@ export function useListFilter<T>(options: UseListFilterOptions<T>): UseListFilte
     const keyword = searchKey.toLowerCase().trim();
 
     return data.filter((item) => {
+      // 使用自定义过滤函数
+      if (customFilter) {
+        return customFilter(item, keyword);
+      }
+
       if (searchFields.length === 0) {
         // 没有指定搜索字段，搜索所有字符串字段
         return Object.values(item as object).some((value) => {
@@ -96,7 +103,7 @@ export function useListFilter<T>(options: UseListFilterOptions<T>): UseListFilte
         return false;
       });
     });
-  }, [data, searchKey, searchFields]);
+  }, [data, searchKey, searchFields, customFilter]);
 
   // 总条数
   const total = allFilteredData.length;

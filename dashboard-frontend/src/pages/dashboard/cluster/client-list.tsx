@@ -7,11 +7,25 @@ import { Icon } from '@iconify/react';
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
 
+import { Pagination } from '@/components/ui/pagination';
 import { useAllTokenClients } from '@/hooks/api';
+import { useListFilter } from '@/hooks/use-list-filter';
 import type { TokenClient } from '@/types/cluster';
 
 export function Page(): React.JSX.Element {
   const { data: clients, isLoading, error, refetch } = useAllTokenClients();
+
+  // 分页
+  const {
+    filteredData: paginatedClients,
+    page,
+    setPage,
+    pageSize,
+    total,
+  } = useListFilter({
+    data: clients,
+    defaultPageSize: 10,
+  });
 
   const handleRefresh = () => {
     refetch();
@@ -74,38 +88,48 @@ export function Page(): React.JSX.Element {
                   </Text>
                 </Box>
               ) : (
-                <Table.Root>
-                  <Table.Header>
-                    <Table.Row>
-                      <Table.ColumnHeader>应用</Table.ColumnHeader>
-                      <Table.ColumnHeader>IP</Table.ColumnHeader>
-                      <Table.ColumnHeader>端口</Table.ColumnHeader>
-                      <Table.ColumnHeader>Token Server</Table.ColumnHeader>
-                      <Table.ColumnHeader>请求超时</Table.ColumnHeader>
-                    </Table.Row>
-                  </Table.Header>
-                  <Table.Body>
-                    {clients.map((client: TokenClient) => (
-                      <Table.Row key={`${client.ip}:${client.port}`}>
-                        <Table.Cell>
-                          <Text fontWeight="medium">{client.app}</Text>
-                        </Table.Cell>
-                        <Table.Cell>{client.ip}</Table.Cell>
-                        <Table.Cell>{client.port}</Table.Cell>
-                        <Table.Cell>
-                          {client.serverHost ? (
-                            <Badge colorPalette="green">
-                              {client.serverHost}:{client.serverPort}
-                            </Badge>
-                          ) : (
-                            <Text color="fg.muted">未分配</Text>
-                          )}
-                        </Table.Cell>
-                        <Table.Cell>{client.requestTimeout ?? '-'} ms</Table.Cell>
+                <>
+                  <Table.Root>
+                    <Table.Header>
+                      <Table.Row>
+                        <Table.ColumnHeader>应用</Table.ColumnHeader>
+                        <Table.ColumnHeader>IP</Table.ColumnHeader>
+                        <Table.ColumnHeader>端口</Table.ColumnHeader>
+                        <Table.ColumnHeader>Token Server</Table.ColumnHeader>
+                        <Table.ColumnHeader>请求超时</Table.ColumnHeader>
                       </Table.Row>
-                    ))}
-                  </Table.Body>
-                </Table.Root>
+                    </Table.Header>
+                    <Table.Body>
+                      {paginatedClients.map((client: TokenClient) => (
+                        <Table.Row key={`${client.ip}:${client.port}`}>
+                          <Table.Cell>
+                            <Text fontWeight="medium">{client.app}</Text>
+                          </Table.Cell>
+                          <Table.Cell>{client.ip}</Table.Cell>
+                          <Table.Cell>{client.port}</Table.Cell>
+                          <Table.Cell>
+                            {client.serverHost ? (
+                              <Badge colorPalette="green">
+                                {client.serverHost}:{client.serverPort}
+                              </Badge>
+                            ) : (
+                              <Text color="fg.muted">未分配</Text>
+                            )}
+                          </Table.Cell>
+                          <Table.Cell>{client.requestTimeout ?? '-'} ms</Table.Cell>
+                        </Table.Row>
+                      ))}
+                    </Table.Body>
+                  </Table.Root>
+                  {total > pageSize && (
+                    <Pagination
+                      page={page}
+                      pageSize={pageSize}
+                      total={total}
+                      onPageChange={setPage}
+                    />
+                  )}
+                </>
               )}
             </Card.Body>
           </Card.Root>

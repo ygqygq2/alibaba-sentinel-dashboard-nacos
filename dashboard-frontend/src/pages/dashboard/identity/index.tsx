@@ -159,36 +159,13 @@ export function Page(): React.JSX.Element {
                   isLoading={isLoading}
                   error={error as Error | null}
                   treeView={viewMode === 'tree'}
+                  searchKey={debouncedSearchKey}
                 />
               )}
             </Card.Body>
-            {/* 分页信息 */}
-            {resources.length > 0 && (
-              <Card.Footer py={3}>
-                <Text
-                  fontSize="sm"
-                  color="fg.muted"
-                >
-                  共 {countResources(resources)} 条记录
-                </Text>
-              </Card.Footer>
-            )}
           </Card.Root>
         </Stack>
       </Box>
     </>
   );
-}
-
-/**
- * 递归统计资源数量
- */
-function countResources(nodes: { children?: unknown[] }[]): number {
-  let count = nodes.length;
-  for (const node of nodes) {
-    if (node.children) {
-      count += countResources(node.children as { children?: unknown[] }[]);
-    }
-  }
-  return count;
 }

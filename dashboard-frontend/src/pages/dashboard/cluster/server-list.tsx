@@ -7,11 +7,25 @@ import { Icon } from '@iconify/react';
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
 
+import { Pagination } from '@/components/ui/pagination';
 import { useAllTokenServers } from '@/hooks/api';
+import { useListFilter } from '@/hooks/use-list-filter';
 import type { TokenServer } from '@/types/cluster';
 
 export function Page(): React.JSX.Element {
   const { data: servers, isLoading, error, refetch } = useAllTokenServers();
+
+  // 分页
+  const {
+    filteredData: paginatedServers,
+    page,
+    setPage,
+    pageSize,
+    total,
+  } = useListFilter({
+    data: servers,
+    defaultPageSize: 10,
+  });
 
   const handleRefresh = () => {
     refetch();
@@ -67,55 +81,65 @@ export function Page(): React.JSX.Element {
                   <Text color="fg.muted">暂无 Token Server</Text>
                 </Box>
               ) : (
-                <Table.Root>
-                  <Table.Header>
-                    <Table.Row>
-                      <Table.ColumnHeader>应用</Table.ColumnHeader>
-                      <Table.ColumnHeader>IP</Table.ColumnHeader>
-                      <Table.ColumnHeader>端口</Table.ColumnHeader>
-                      <Table.ColumnHeader>Token Server 端口</Table.ColumnHeader>
-                      <Table.ColumnHeader>模式</Table.ColumnHeader>
-                      <Table.ColumnHeader>服务命名空间</Table.ColumnHeader>
-                      <Table.ColumnHeader>客户端数量</Table.ColumnHeader>
-                    </Table.Row>
-                  </Table.Header>
-                  <Table.Body>
-                    {servers.map((server: TokenServer) => {
-                      const appName = server.state?.appName || '-';
-                      const tokenServerPort = server.state?.port || '-';
-                      const embedded = server.state?.embedded;
-                      const namespaces = server.state?.namespaceSet?.join(', ') || '-';
-                      const clientCount =
-                        server.state?.connection?.reduce((sum, conn) => sum + (conn.connectedCount || 0), 0) || 0;
+                <>
+                  <Table.Root>
+                    <Table.Header>
+                      <Table.Row>
+                        <Table.ColumnHeader>应用</Table.ColumnHeader>
+                        <Table.ColumnHeader>IP</Table.ColumnHeader>
+                        <Table.ColumnHeader>端口</Table.ColumnHeader>
+                        <Table.ColumnHeader>Token Server 端口</Table.ColumnHeader>
+                        <Table.ColumnHeader>模式</Table.ColumnHeader>
+                        <Table.ColumnHeader>服务命名空间</Table.ColumnHeader>
+                        <Table.ColumnHeader>客户端数量</Table.ColumnHeader>
+                      </Table.Row>
+                    </Table.Header>
+                    <Table.Body>
+                      {paginatedServers.map((server: TokenServer) => {
+                        const appName = server.state?.appName || '-';
+                        const tokenServerPort = server.state?.port || '-';
+                        const embedded = server.state?.embedded;
+                        const namespaces = server.state?.namespaceSet?.join(', ') || '-';
+                        const clientCount =
+                          server.state?.connection?.reduce((sum, conn) => sum + (conn.connectedCount || 0), 0) || 0;
 
-                      return (
-                        <Table.Row key={server.id}>
-                          <Table.Cell>
-                            <Text fontWeight="medium">{appName}</Text>
-                          </Table.Cell>
-                          <Table.Cell>{server.ip}</Table.Cell>
-                          <Table.Cell>{server.port}</Table.Cell>
-                          <Table.Cell>{tokenServerPort}</Table.Cell>
-                          <Table.Cell>
-                            <Badge colorPalette={embedded ? 'blue' : 'green'}>
-                              {embedded ? '嵌入模式' : '独立模式'}
-                            </Badge>
-                          </Table.Cell>
-                          <Table.Cell>
-                            <Text
-                              maxW="200px"
-                              truncate
-                              title={namespaces}
-                            >
-                              {namespaces}
-                            </Text>
-                          </Table.Cell>
-                          <Table.Cell>{clientCount}</Table.Cell>
-                        </Table.Row>
-                      );
-                    })}
-                  </Table.Body>
-                </Table.Root>
+                        return (
+                          <Table.Row key={server.id}>
+                            <Table.Cell>
+                              <Text fontWeight="medium">{appName}</Text>
+                            </Table.Cell>
+                            <Table.Cell>{server.ip}</Table.Cell>
+                            <Table.Cell>{server.port}</Table.Cell>
+                            <Table.Cell>{tokenServerPort}</Table.Cell>
+                            <Table.Cell>
+                              <Badge colorPalette={embedded ? 'blue' : 'green'}>
+                                {embedded ? '嵌入模式' : '独立模式'}
+                              </Badge>
+                            </Table.Cell>
+                            <Table.Cell>
+                              <Text
+                                maxW="200px"
+                                truncate
+                                title={namespaces}
+                              >
+                                {namespaces}
+                              </Text>
+                            </Table.Cell>
+                            <Table.Cell>{clientCount}</Table.Cell>
+                          </Table.Row>
+                        );
+                      })}
+                    </Table.Body>
+                  </Table.Root>
+                  {total > pageSize && (
+                    <Pagination
+                      page={page}
+                      pageSize={pageSize}
+                      total={total}
+                      onPageChange={setPage}
+                    />
+                  )}
+                </>
               )}
             </Card.Body>
           </Card.Root>

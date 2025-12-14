@@ -5,6 +5,8 @@
 import { Box, Skeleton, Stack, Table, Text } from '@chakra-ui/react';
 import * as React from 'react';
 
+import { Pagination } from '@/components/ui/pagination';
+import { useListFilter } from '@/hooks/use-list-filter';
 import type { ClusterNode } from '@/types/sentinel';
 
 import { QuickRuleButtons } from './QuickRuleButtons';
@@ -20,6 +22,8 @@ export interface ResourceTableProps {
   error?: Error | null;
   /** 是否树状视图 */
   treeView?: boolean;
+  /** 搜索关键词 */
+  searchKey?: string;
 }
 
 /**
@@ -32,6 +36,7 @@ export function ResourceTable({
   isLoading,
   error,
   treeView = false,
+  searchKey = '',
 }: ResourceTableProps): React.JSX.Element {
   // 展平树形数据用于列表视图
   const flattenData = React.useMemo(() => {
@@ -40,6 +45,20 @@ export function ResourceTable({
     }
     return data;
   }, [data, treeView]);
+
+  // 分页（仅在列表视图时启用）
+  const {
+    filteredData: paginatedData,
+    page,
+    setPage,
+    pageSize,
+    total,
+  } = useListFilter({
+    data: !treeView ? flattenData : undefined,
+    searchFields: ['resource'],
+    defaultPageSize: 10,
+    externalSearchKey: searchKey,
+  });
 
   if (isLoading) {
     return (
@@ -84,62 +103,72 @@ export function ResourceTable({
   }
 
   return (
-    <Table.Root size="sm">
-      <Table.Header>
-        <Table.Row>
-          <Table.ColumnHeader width="30%">资源名</Table.ColumnHeader>
-          <Table.ColumnHeader
-            width="8%"
-            textAlign="right"
-          >
-            通过QPS
-          </Table.ColumnHeader>
-          <Table.ColumnHeader
-            width="8%"
-            textAlign="right"
-          >
-            拒绝QPS
-          </Table.ColumnHeader>
-          <Table.ColumnHeader
-            width="8%"
-            textAlign="right"
-          >
-            线程数
-          </Table.ColumnHeader>
-          <Table.ColumnHeader
-            width="8%"
-            textAlign="right"
-          >
-            平均RT
-          </Table.ColumnHeader>
-          <Table.ColumnHeader
-            width="10%"
-            textAlign="right"
-          >
-            分钟通过
-          </Table.ColumnHeader>
-          <Table.ColumnHeader
-            width="10%"
-            textAlign="right"
-          >
-            分钟拒绝
-          </Table.ColumnHeader>
-          <Table.ColumnHeader width="18%">操作</Table.ColumnHeader>
-        </Table.Row>
-      </Table.Header>
-      <Table.Body>
-        {treeView
-          ? renderTreeRows(app, data, 0)
-          : flattenData.map((node) => (
-              <ResourceRow
-                key={node.id ?? node.resource}
-                app={app}
-                node={node}
-                depth={0}
-              />
-            ))}
-      </Table.Body>
-    </Table.Root>
+    <>
+      <Table.Root size="sm">
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeader width="30%">资源名</Table.ColumnHeader>
+            <Table.ColumnHeader
+              width="8%"
+              textAlign="right"
+            >
+              通过QPS
+            </Table.ColumnHeader>
+            <Table.ColumnHeader
+              width="8%"
+              textAlign="right"
+            >
+              拒绝QPS
+            </Table.ColumnHeader>
+            <Table.ColumnHeader
+              width="8%"
+              textAlign="right"
+            >
+              线程数
+            </Table.ColumnHeader>
+            <Table.ColumnHeader
+              width="8%"
+              textAlign="right"
+            >
+              平均RT
+            </Table.ColumnHeader>
+            <Table.ColumnHeader
+              width="10%"
+              textAlign="right"
+            >
+              分钟通过
+            </Table.ColumnHeader>
+            <Table.ColumnHeader
+              width="10%"
+              textAlign="right"
+            >
+              分钟拒绝
+            </Table.ColumnHeader>
+            <Table.ColumnHeader width="18%">操作</Table.ColumnHeader>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {treeView
+            ? renderTreeRows(app, data, 0)
+            : paginatedData.map((node) => (
+                <ResourceRow
+                  key={node.id ?? node.resource}
+                  app={app}
+                  node={node}
+                  depth={0}
+                />
+              ))}
+        </Table.Body>
+      </Table.Root>
+      {!treeView && total > pageSize && (
+        <Pagination
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={setPage}
+        />
+      )}
+    </>
   );
 }
 

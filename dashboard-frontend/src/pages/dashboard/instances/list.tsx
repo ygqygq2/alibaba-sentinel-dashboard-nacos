@@ -8,8 +8,10 @@ import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router-dom';
 
+import { Pagination } from '@/components/ui/pagination';
 import { useGlobalSearch } from '@/contexts/search-context';
 import { useInstances, useRemoveInstance } from '@/hooks/api';
+import { useListFilter } from '@/hooks/use-list-filter';
 import { getInstanceAddress } from '@/lib/utils/instance';
 import type { InstanceInfo } from '@/types/sentinel';
 
@@ -43,17 +45,29 @@ export function Page(): React.JSX.Element {
   const removeInstance = useRemoveInstance();
   const { searchKey } = useGlobalSearch();
 
-  // 过滤实例
-  const filteredInstances = React.useMemo(() => {
-    if (!instances || !searchKey) return instances;
-    const lowerSearchKey = searchKey.toLowerCase();
-    return instances.filter(
-      (instance) =>
-        instance.ip.toLowerCase().includes(lowerSearchKey) ||
-        instance.hostname?.toLowerCase().includes(lowerSearchKey) ||
-        getInstanceAddress(instance).toLowerCase().includes(lowerSearchKey)
+  // 自定义搜索过滤函数（支持地址搜索）
+  const customFilterFn = React.useCallback((instance: InstanceInfo, key: string) => {
+    const lowerKey = key.toLowerCase();
+    return (
+      instance.ip.toLowerCase().includes(lowerKey) ||
+      instance.hostname?.toLowerCase().includes(lowerKey) ||
+      getInstanceAddress(instance).toLowerCase().includes(lowerKey)
     );
-  }, [instances, searchKey]);
+  }, []);
+
+  // 分页和搜索
+  const {
+    filteredData: filteredInstances,
+    page,
+    setPage,
+    pageSize,
+    total,
+  } = useListFilter({
+    data: instances,
+    defaultPageSize: 10,
+    externalSearchKey: searchKey,
+    customFilter: customFilterFn,
+  });
 
   const handleRemove = async (instance: InstanceInfo) => {
     if (window.confirm(`确定要移除实例 ${instance.ip}:${instance.port} 吗？`)) {
@@ -140,84 +154,94 @@ export function Page(): React.JSX.Element {
                   </Text>
                 </Box>
               ) : (
-                <Table.Root>
-                  <Table.Header>
-                    <Table.Row>
-                      <Table.ColumnHeader>地址/IP</Table.ColumnHeader>
-                      <Table.ColumnHeader>端口</Table.ColumnHeader>
-                      <Table.ColumnHeader>主机名</Table.ColumnHeader>
-                      <Table.ColumnHeader>版本</Table.ColumnHeader>
-                      <Table.ColumnHeader>健康状态</Table.ColumnHeader>
-                      <Table.ColumnHeader>最后心跳</Table.ColumnHeader>
-                      <Table.ColumnHeader>操作</Table.ColumnHeader>
-                    </Table.Row>
-                  </Table.Header>
-                  <Table.Body>
-                    {filteredInstances.map((instance) => {
-                      const address = getInstanceAddress(instance);
-                      const showAddress = address !== instance.ip; // 只在不同时显示
-                      return (
-                        <Table.Row key={instance.id}>
-                          <Table.Cell>
-                            {showAddress ? (
-                              <Stack gap={0.5}>
-                                <Text fontWeight="medium">{address}</Text>
-                                <Text
-                                  fontSize="xs"
-                                  color="fg.muted"
-                                >
-                                  {instance.ip}
-                                </Text>
-                              </Stack>
-                            ) : (
-                              <Text fontWeight="medium">{instance.ip}</Text>
-                            )}
-                          </Table.Cell>
-                          <Table.Cell>
-                            <Text>{instance.port}</Text>
-                          </Table.Cell>
-                          <Table.Cell>
-                            <Text
-                              maxW="150px"
-                              truncate
-                            >
-                              {instance.hostname || '-'}
-                            </Text>
-                          </Table.Cell>
-                          <Table.Cell>
-                            <Text fontSize="sm">{instance.version || '-'}</Text>
-                          </Table.Cell>
-                          <Table.Cell>
-                            <Badge colorPalette={instance.healthy ? 'green' : 'red'}>
-                              {instance.healthy ? '健康' : '不健康'}
-                            </Badge>
-                          </Table.Cell>
-                          <Table.Cell>
-                            <Text
-                              fontSize="sm"
-                              color={instance.healthy ? 'fg.muted' : 'red.500'}
-                              title={formatTimestamp(instance.lastHeartbeat)}
-                            >
-                              {formatRelativeTime(instance.lastHeartbeat)}
-                            </Text>
-                          </Table.Cell>
-                          <Table.Cell>
-                            <IconButton
-                              aria-label="移除"
-                              size="sm"
-                              variant="ghost"
-                              colorPalette="red"
-                              onClick={() => handleRemove(instance)}
-                              loading={removeInstance.isPending}
-                            >
-                              <Icon icon="mdi:delete" />
-                            </IconButton>
-                          </Table.Cell>
-                        </Table.Row>
-                      );
-                    })}
-                  </Table.Body>
-                </Table.Root>
+                <>
+                  <Table.Root>
+                    <Table.Header>
+                      <Table.Row>
+                        <Table.ColumnHeader>地址/IP</Table.ColumnHeader>
+                        <Table.ColumnHeader>端口</Table.ColumnHeader>
+                        <Table.ColumnHeader>主机名</Table.ColumnHeader>
+                        <Table.ColumnHeader>版本</Table.ColumnHeader>
+                        <Table.ColumnHeader>健康状态</Table.ColumnHeader>
+                        <Table.ColumnHeader>最后心跳</Table.ColumnHeader>
+                        <Table.ColumnHeader>操作</Table.ColumnHeader>
+                      </Table.Row>
+                    </Table.Header>
+                    <Table.Body>
+                      {filteredInstances.map((instance) => {
+                        const address = getInstanceAddress(instance);
+                        const showAddress = address !== instance.ip; // 只在不同时显示
+                        return (
+                          <Table.Row key={instance.id}>
+                            <Table.Cell>
+                              {showAddress ? (
+                                <Stack gap={0.5}>
+                                  <Text fontWeight="medium">{address}</Text>
+                                  <Text
+                                    fontSize="xs"
+                                    color="fg.muted"
+                                  >
+                                    {instance.ip}
+                                  </Text>
+                                </Stack>
+                              ) : (
+                                <Text fontWeight="medium">{instance.ip}</Text>
+                              )}
+                            </Table.Cell>
+                            <Table.Cell>
+                              <Text>{instance.port}</Text>
+                            </Table.Cell>
+                            <Table.Cell>
+                              <Text
+                                maxW="150px"
+                                truncate
+                              >
+                                {instance.hostname || '-'}
+                              </Text>
+                            </Table.Cell>
+                            <Table.Cell>
+                              <Text fontSize="sm">{instance.version || '-'}</Text>
+                            </Table.Cell>
+                            <Table.Cell>
+                              <Badge colorPalette={instance.healthy ? 'green' : 'red'}>
+                                {instance.healthy ? '健康' : '不健康'}
+                              </Badge>
+                            </Table.Cell>
+                            <Table.Cell>
+                              <Text
+                                fontSize="sm"
+                                color={instance.healthy ? 'fg.muted' : 'red.500'}
+                                title={formatTimestamp(instance.lastHeartbeat)}
+                              >
+                                {formatRelativeTime(instance.lastHeartbeat)}
+                              </Text>
+                            </Table.Cell>
+                            <Table.Cell>
+                              <IconButton
+                                aria-label="移除"
+                                size="sm"
+                                variant="ghost"
+                                colorPalette="red"
+                                onClick={() => handleRemove(instance)}
+                                loading={removeInstance.isPending}
+                              >
+                                <Icon icon="mdi:delete" />
+                              </IconButton>
+                            </Table.Cell>
+                          </Table.Row>
+                        );
+                      })}
+                    </Table.Body>
+                  </Table.Root>
+                  {total > pageSize && (
+                    <Pagination
+                      page={page}
+                      pageSize={pageSize}
+                      total={total}
+                      onPageChange={setPage}
+                    />
+                  )}
+                </>
               )}
             </Card.Body>
           </Card.Root>

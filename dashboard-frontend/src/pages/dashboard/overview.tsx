@@ -7,8 +7,10 @@ import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 
+import { Pagination } from '@/components/ui/pagination';
 import { useGlobalSearch } from '@/contexts/search-context';
 import { useApps } from '@/hooks/api';
+import { useListFilter } from '@/hooks/use-list-filter';
 import { paths } from '@/paths';
 
 export function Page(): React.JSX.Element {
@@ -16,13 +18,19 @@ export function Page(): React.JSX.Element {
   const { data: apps, isLoading, error } = useApps();
   const { searchKey } = useGlobalSearch();
 
-  // 根据搜索关键词过滤应用
-  const filteredApps = React.useMemo(() => {
-    if (!apps) return [];
-    if (!searchKey.trim()) return apps;
-    const lowerKey = searchKey.toLowerCase();
-    return apps.filter((app) => app.app.toLowerCase().includes(lowerKey));
-  }, [apps, searchKey]);
+  // 分页和搜索
+  const {
+    filteredData: filteredApps,
+    page,
+    setPage,
+    pageSize,
+    total,
+  } = useListFilter({
+    data: apps,
+    searchFields: ['app'],
+    defaultPageSize: 10,
+    externalSearchKey: searchKey,
+  });
 
   const handleAppClick = (appName: string) => {
     navigate(paths.dashboard.flow.list(appName));
@@ -82,45 +90,55 @@ export function Page(): React.JSX.Element {
                   </Text>
                 </Box>
               ) : (
-                <Table.Root>
-                  <Table.Header>
-                    <Table.Row>
-                      <Table.ColumnHeader>应用名称</Table.ColumnHeader>
-                      <Table.ColumnHeader>应用类型</Table.ColumnHeader>
-                      <Table.ColumnHeader>健康实例数</Table.ColumnHeader>
-                      <Table.ColumnHeader>不健康实例数</Table.ColumnHeader>
-                      <Table.ColumnHeader>最近心跳</Table.ColumnHeader>
-                    </Table.Row>
-                  </Table.Header>
-                  <Table.Body>
-                    {filteredApps.map((app) => (
-                      <Table.Row
-                        key={app.app}
-                        cursor="pointer"
-                        _hover={{ bg: 'bg.subtle' }}
-                        onClick={() => handleAppClick(app.app)}
-                      >
-                        <Table.Cell>
-                          <Text fontWeight="medium">{app.app}</Text>
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Badge colorPalette={app.appType === 1 ? 'purple' : 'blue'}>
-                            {app.appType === 1 ? '网关' : '普通'}
-                          </Badge>
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Text color="green.500">{app.healthCount}</Text>
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Text color={app.unhealthyCount > 0 ? 'red.500' : 'fg.muted'}>{app.unhealthyCount}</Text>
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Text>{app.activeCount}</Text>
-                        </Table.Cell>
+                <>
+                  <Table.Root>
+                    <Table.Header>
+                      <Table.Row>
+                        <Table.ColumnHeader>应用名称</Table.ColumnHeader>
+                        <Table.ColumnHeader>应用类型</Table.ColumnHeader>
+                        <Table.ColumnHeader>健康实例数</Table.ColumnHeader>
+                        <Table.ColumnHeader>不健康实例数</Table.ColumnHeader>
+                        <Table.ColumnHeader>最近心跳</Table.ColumnHeader>
                       </Table.Row>
-                    ))}
-                  </Table.Body>
-                </Table.Root>
+                    </Table.Header>
+                    <Table.Body>
+                      {filteredApps.map((app) => (
+                        <Table.Row
+                          key={app.app}
+                          cursor="pointer"
+                          _hover={{ bg: 'bg.subtle' }}
+                          onClick={() => handleAppClick(app.app)}
+                        >
+                          <Table.Cell>
+                            <Text fontWeight="medium">{app.app}</Text>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <Badge colorPalette={app.appType === 1 ? 'purple' : 'blue'}>
+                              {app.appType === 1 ? '网关' : '普通'}
+                            </Badge>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <Text color="green.500">{app.healthCount}</Text>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <Text color={app.unhealthyCount > 0 ? 'red.500' : 'fg.muted'}>{app.unhealthyCount}</Text>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <Text>{app.activeCount}</Text>
+                          </Table.Cell>
+                        </Table.Row>
+                      ))}
+                    </Table.Body>
+                  </Table.Root>
+                  {total > pageSize && (
+                    <Pagination
+                      page={page}
+                      pageSize={pageSize}
+                      total={total}
+                      onPageChange={setPage}
+                    />
+                  )}
+                </>
               )}
             </Card.Body>
           </Card.Root>

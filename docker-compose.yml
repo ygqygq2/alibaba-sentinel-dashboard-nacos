@@ -57,7 +57,7 @@ services:
       # Nacos 命名空间 ID（注意：public 命名空间的 ID 是空字符串，不是 "public"）
       # 使用 public 命名空间时保持为空，或使用自定义命名空间的 UUID
       - NACOS_NAMESPACE=
-      - NACOS_GROUP=DEFAULT_GROUP
+      - NACOS_GROUP=SENTINEL_GROUP
       - NACOS_USERNAME=${NACOS_USERNAME:-nacos}
       - NACOS_PASSWORD=${NACOS_PASSWORD:-nacos}
       - SENTINEL_DASHBOARD_AUTH_USERNAME=${DASHBOARD_USERNAME:-sentinel}

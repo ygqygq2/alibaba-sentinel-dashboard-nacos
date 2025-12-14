@@ -59,7 +59,7 @@ docker exec sentinel-dashboard ping nacos
 
 ```bash
 # 1. 检查 Nacos 中是否有配置
-curl "http://localhost:8848/nacos/v1/cs/configs?dataId=my-app-flow-rules&group=DEFAULT_GROUP"
+curl "http://localhost:8848/nacos/v1/cs/configs?dataId=my-app-flow-rules&group=SENTINEL_GROUP"
 
 # 2. 查看 Dashboard 日志
 docker-compose logs sentinel-dashboard | grep -i "nacos\|publish\|error"
@@ -111,6 +111,12 @@ curl http://client-ip:8719/clusterNode
 
 # 3. 查看限流日志
 tail -f ~/logs/csp/sentinel-block.log
+
+# 4. 检查 Nacos 中的规则配置
+curl "http://localhost:8848/nacos/v1/cs/configs?dataId=my-app-flow-rules&group=SENTINEL_GROUP&username=nacos&password=nacos"
+
+# 5. 检查 NACOS_GROUP 配置是否一致
+# Dashboard、应用端、Nacos 中的 group 必须都是 SENTINEL_GROUP
 ```
 
 **常见原因**:
@@ -118,6 +124,37 @@ tail -f ~/logs/csp/sentinel-block.log
 - 资源名不匹配
 - 规则未推送到客户端
 - 客户端未使用 Nacos 数据源
+- **NACOS_GROUP 配置不一致**（Dashboard 使用 SENTINEL_GROUP，客户端使用 DEFAULT_GROUP）
+- **Token Server 自身缺少 Nacos 数据源配置**（需要 NacosDataSourceConfig.java）
+
+**Token Server 规则不生效（重要）**:
+
+Token Server 有两种角色：
+
+1. **集群流控服务器** - 为其他应用提供 Token（已配置）
+2. **普通应用** - 自身也需要加载流控规则
+
+如果 Token Server 自身的流控规则不生效，需要：
+
+```java
+// token-server/src/main/java/com/alibaba/csp/tokenserver/config/NacosDataSourceConfig.java
+@Configuration
+public class NacosDataSourceConfig {
+    @PostConstruct
+    public void init() {
+        // 配置 Nacos 数据源，加载自身规则
+        Properties properties = new Properties();
+        properties.put("serverAddr", nacosServerAddr);
+        properties.put("username", "nacos");
+        properties.put("password", "nacos");
+
+        ReadableDataSource<String, List<FlowRule>> flowRuleDataSource =
+            new NacosDataSource<>(properties, groupId, dataId,
+                source -> JSON.parseArray(source, FlowRule.class));
+        FlowRuleManager.register2Property(flowRuleDataSource.getProperty());
+    }
+}
+```
 
 ## Token Server 问题
 

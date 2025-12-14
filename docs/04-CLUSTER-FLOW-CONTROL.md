@@ -287,6 +287,8 @@ Token Server 暴露以下指标：
 1. 检查规则是否勾选了「是否集群」
 2. 检查客户端是否连接到 Token Server
 3. 检查 Token Server 是否加载了对应应用的规则
+4. **检查 NACOS_GROUP 配置**：必须统一使用 `SENTINEL_GROUP`
+5. **Token Server 自身规则**：确保 Token Server 配置了 NacosDataSourceConfig 来加载自身的流控规则
 
 ## 下一步
 

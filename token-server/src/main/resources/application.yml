@@ -22,6 +22,8 @@ sentinel:
 # Nacos 配置（用于加载规则）
 nacos:
   server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
+  username: ${NACOS_USERNAME:nacos}
+  password: ${NACOS_PASSWORD:nacos}
   group-id: ${NACOS_GROUP_ID:SENTINEL_GROUP}
 
 management:

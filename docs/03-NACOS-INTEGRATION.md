@@ -53,8 +53,8 @@ NACOS_SERVER_ADDR=nacos.middle:8848
 # Nacos 命名空间 (可选，默认为 public)
 NACOS_NAMESPACE=test
 
-# Nacos 分组 (可选，默认为 DEFAULT_GROUP)
-NACOS_GROUP=DEFAULT_GROUP
+# Nacos 分组 (可选，默认为 SENTINEL_GROUP)
+NACOS_GROUP=SENTINEL_GROUP
 
 # Dashboard 用户名/密码
 SENTINEL_DASHBOARD_AUTH_USERNAME=sentinel
@@ -73,7 +73,7 @@ AUTH_APP_SECRET=sentinel_app_secret
 # Nacos 数据源配置
 -Dspring.cloud.sentinel.datasource.ds1.nacos.server-addr=nacos.middle:8848
 -Dspring.cloud.sentinel.datasource.ds1.nacos.namespace=test
--Dspring.cloud.sentinel.datasource.ds1.nacos.group-id=DEFAULT_GROUP
+-Dspring.cloud.sentinel.datasource.ds1.nacos.group-id=SENTINEL_GROUP
 -Dspring.cloud.sentinel.datasource.ds1.nacos.data-id=${project.name}-flow-rules
 -Dspring.cloud.sentinel.datasource.ds1.nacos.rule-type=flow
 -Dspring.cloud.sentinel.datasource.ds2.nacos.data-id=${project.name}-param-flow-rules
@@ -85,7 +85,7 @@ AUTH_APP_SECRET=sentinel_app_secret
 ### 流量规则 (Flow Rules)
 
 **Data ID**: `my-app-flow-rules`  
-**Group**: `DEFAULT_GROUP`  
+**Group**: `SENTINEL_GROUP`  
 **Content**:
 
 ```json
@@ -114,7 +114,7 @@ AUTH_APP_SECRET=sentinel_app_secret
 ### 热点参数规则 (Param Flow Rules)
 
 **Data ID**: `my-app-param-flow-rules`  
-**Group**: `DEFAULT_GROUP`  
+**Group**: `SENTINEL_GROUP`  
 **Content**:
 
 ```json
@@ -145,7 +145,7 @@ java -Dserver.port=8080 \
   -Dsentinel.dashboard.auth.password=sentinel \
   -Dnacos.server-addr=localhost:8848 \
   -Dnacos.namespace= \
-  -Dnacos.group-id=DEFAULT_GROUP \
+  -Dnacos.group-id=SENTINEL_GROUP \
   -jar target/sentinel-dashboard.jar
 ```
 

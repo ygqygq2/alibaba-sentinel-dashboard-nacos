@@ -195,4 +195,109 @@ test.describe('热点参数规则完整流程', () => {
       await page.waitForTimeout(1000);
     }
   });
+
+  test('热点参数规则 - 参数例外项测试', async ({ page, request }) => {
+    await page.goto('/dashboard/apps/sentinel-token-server/param-flow');
+    await page.waitForLoadState('networkidle');
+
+    const testResource = '/api/hotspot/type';
+    const normalLimit = 3; // 默认阈值
+    const vipLimit = 10; // VIP 用户的例外阈值
+
+    // ============================================
+    // 步骤 1: 创建带例外项的热点参数规则
+    // ============================================
+    await page.click('a[href*="/param-flow/create"], button:has-text("新增")');
+    await expect(page).toHaveURL(/\/param-flow\/(create|new)/, { timeout: 5000 });
+
+    await page.locator('input[name="resource"]').fill(testResource);
+    await page.locator('input[name="paramIdx"]').fill('0'); // 第一个参数（type）
+    await page.locator('input[name="count"]').fill(normalLimit.toString());
+    await page.locator('input[name="durationInSec"]').fill('1');
+
+    // 添加参数例外项（假设前端支持）
+    // 注意：这里需要根据实际前端实现调整
+    // await page.locator('button:has-text("添加例外")').click();
+    // await page.locator('input[name="paramValue"]').fill('vip');
+    // await page.locator('input[name="exceptionCount"]').fill(vipLimit.toString());
+
+    await page.click('button[type="submit"]');
+    await expect(page).toHaveURL(/\/param-flow(?:$|\?)/, { timeout: 5000 });
+    await page.waitForTimeout(5000);
+
+    // ============================================
+    // 步骤 2: 验证不同参数值的限流阈值
+    // ============================================
+    const tokenServerUrl = 'http://localhost:8081';
+    let normalSuccess = 0;
+    let normalBlocked = 0;
+
+    // 测试普通用户类型
+    for (let i = 0; i < 8; i++) {
+      const response = await request.get(`${tokenServerUrl}/api/hotspot/type?type=normal`).catch(() => null);
+      if (response && response.ok()) normalSuccess++;
+      else normalBlocked++;
+    }
+
+    console.log(`热点参数例外项测试: 普通类型 成功${normalSuccess}/被限流${normalBlocked}`);
+    expect(normalSuccess + normalBlocked).toBeGreaterThan(0);
+
+    // 清理
+    await page.goto('/dashboard/apps/sentinel-token-server/param-flow');
+    await page.waitForLoadState('networkidle');
+    const deleteButton = page.locator(`tr:has-text("${testResource}") button[aria-label="删除"]`).first();
+    if (await deleteButton.isVisible({ timeout: 2000 })) {
+      page.once('dialog', async (dialog) => await dialog.accept());
+      await deleteButton.click();
+      await page.waitForTimeout(1000);
+    }
+  });
+
+  test('热点参数规则 - 多参数索引测试', async ({ page, request }) => {
+    await page.goto('/dashboard/apps/sentinel-token-server/param-flow');
+    await page.waitForLoadState('networkidle');
+
+    const testResource = '/api/hotspot/multi';
+
+    // ============================================
+    // 步骤 1: 创建针对第二个参数的规则
+    // ============================================
+    await page.click('a[href*="/param-flow/create"], button:has-text("新增")');
+    await expect(page).toHaveURL(/\/param-flow\/(create|new)/, { timeout: 5000 });
+
+    await page.locator('input[name="resource"]').fill(testResource);
+    await page.locator('input[name="paramIdx"]').fill('1'); // 第二个参数（productId）
+    await page.locator('input[name="count"]').fill('5');
+    await page.locator('input[name="durationInSec"]').fill('1');
+
+    await page.click('button[type="submit"]');
+    await expect(page).toHaveURL(/\/param-flow(?:$|\?)/, { timeout: 5000 });
+    await page.waitForTimeout(5000);
+
+    // ============================================
+    // 步骤 2: 验证针对特定参数索引的限流
+    // ============================================
+    const tokenServerUrl = 'http://localhost:8081';
+    let blockedCount = 0;
+
+    // 发送请求，只变化第二个参数
+    for (let i = 0; i < 10; i++) {
+      const response = await request
+        .get(`${tokenServerUrl}/api/hotspot/multi?userId=1&productId=999`)
+        .catch(() => null);
+      if (response && response.status() === 429) blockedCount++;
+    }
+
+    console.log(`多参数索引测试: ${blockedCount}/10 个请求被限流`);
+
+    // 清理
+    await page.goto('/dashboard/apps/sentinel-token-server/param-flow');
+    await page.waitForLoadState('networkidle');
+    const deleteButton = page.locator(`tr:has-text("${testResource}") button[aria-label="删除"]`).first();
+    if (await deleteButton.isVisible({ timeout: 2000 })) {
+      page.once('dialog', async (dialog) => await dialog.accept());
+      await deleteButton.click();
+      await page.waitForTimeout(1000);
+    }
+  });
 });

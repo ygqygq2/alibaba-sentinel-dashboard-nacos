@@ -32,7 +32,7 @@ services:
       # Nacos 配置
       - NACOS_SERVER_ADDR=nacos:8848 # Nacos 服务器地址
       - NACOS_NAMESPACE=public # 命名空间（可选）
-      - NACOS_GROUP=DEFAULT_GROUP # 分组名称
+      - NACOS_GROUP=SENTINEL_GROUP # 分组名称
       - NACOS_USERNAME= # 用户名（如果 Nacos 开启认证）
       - NACOS_PASSWORD= # 密码（如果 Nacos 开启认证）
 
@@ -104,7 +104,7 @@ docker-compose logs -f sentinel-dashboard | grep -i nacos
 # Nacos 配置
 nacos.server-addr=localhost:8848
 nacos.namespace=
-nacos.group-id=DEFAULT_GROUP
+nacos.group-id=SENTINEL_GROUP
 nacos.username=
 nacos.password=
 
@@ -119,7 +119,7 @@ logging.level.com.alibaba.csp.sentinel.dashboard=DEBUG
 java -jar sentinel-dashboard.jar \\
   -Dnacos.server-addr=nacos:8848 \\
   -Dnacos.namespace=public \\
-  -Dnacos.group-id=DEFAULT_GROUP \\
+  -Dnacos.group-id=SENTINEL_GROUP \\
   -Dnacos.username=nacos_user \\
   -Dnacos.password=nacos_pass \\
   -Dlogging.level.root=DEBUG
@@ -130,7 +130,7 @@ java -jar sentinel-dashboard.jar \\
 ```bash
 export NACOS_SERVER_ADDR=nacos:8848
 export NACOS_NAMESPACE=public
-export NACOS_GROUP=DEFAULT_GROUP
+export NACOS_GROUP=SENTINEL_GROUP
 export NACOS_USERNAME=nacos_user
 export NACOS_PASSWORD=nacos_pass
 export LOG_LEVEL=DEBUG
@@ -144,7 +144,7 @@ java -jar sentinel-dashboard.jar
 | -------------------- | ---------------------------------- | ----------------- | ---------------- | --------- |
 | `nacos.server-addr`  | `NACOS_SERVER_ADDR`                | Nacos 服务器地址  | `localhost:8848` | ✅ 是     |
 | `nacos.namespace`    | `NACOS_NAMESPACE`                  | Nacos 命名空间 ID | 空（public）     | ❌ 否     |
-| `nacos.group-id`     | `NACOS_GROUP`                      | Nacos 配置分组    | `DEFAULT_GROUP`  | ❌ 否     |
+| `nacos.group-id`     | `NACOS_GROUP`                      | Nacos 配置分组    | `SENTINEL_GROUP`  | ❌ 否     |
 | `nacos.username`     | `NACOS_USERNAME`                   | Nacos 用户名      | 空               | ⚠️ 视情况 |
 | `nacos.password`     | `NACOS_PASSWORD`                   | Nacos 密码        | 空               | ⚠️ 视情况 |
 | `auth.enabled`       | `AUTH_ENABLED`                     | 启用 Web UI 登录  | `true`           | ❌ 否     |
@@ -233,7 +233,7 @@ ${应用名}-${规则类型}-rules
 ### 存储位置
 
 - **Namespace**：配置的 `nacos.namespace`
-- **Group**：配置的 `nacos.group-id`（默认 `DEFAULT_GROUP`）
+- **Group**：配置的 `nacos.group-id`（默认 `SENTINEL_GROUP`）
 - **DataId**：`${app}-${rule-type}-rules`
 
 ## 配置验证
@@ -246,8 +246,8 @@ docker-compose logs sentinel-dashboard | grep -i nacos
 # 应该看到：
 # Nacos Server: nacos:8848
 # Nacos Namespace: public
-# Nacos Group: DEFAULT_GROUP
-# [Nacos] Initialized with GROUP_ID: DEFAULT_GROUP
+# Nacos Group: SENTINEL_GROUP
+# [Nacos] Initialized with GROUP_ID: SENTINEL_GROUP
 ```
 
 ### 2. 创建测试规则
@@ -262,7 +262,7 @@ docker-compose logs sentinel-dashboard | grep -i nacos
 docker-compose logs sentinel-dashboard | grep "Publishing flow rules"
 
 # 应该看到类似：
-# [Nacos] Publishing flow rules: dataId=my-app-flow-rules, group=DEFAULT_GROUP, rules count=1
+# [Nacos] Publishing flow rules: dataId=my-app-flow-rules, group=SENTINEL_GROUP, rules count=1
 # [Nacos] Publish result: true
 ```
 
@@ -277,7 +277,7 @@ docker-compose logs sentinel-dashboard | grep "Publishing flow rules"
 或使用 API 验证：
 
 ```bash
-curl -X GET 'http://localhost:8848/nacos/v1/cs/configs?dataId=my-app-flow-rules&group=DEFAULT_GROUP'
+curl -X GET 'http://localhost:8848/nacos/v1/cs/configs?dataId=my-app-flow-rules&group=SENTINEL_GROUP'
 ```
 
 ## 常见问题

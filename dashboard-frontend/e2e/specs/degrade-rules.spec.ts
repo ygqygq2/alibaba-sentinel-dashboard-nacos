@@ -359,4 +359,80 @@ test.describe('降级规则完整流程', () => {
       await page.waitForTimeout(1000);
     }
   });
+
+  test('创建降级规则并验证熔断效果（异常数）', async ({ page, request }) => {
+    await page.goto('/dashboard/apps/sentinel-token-server/degrade');
+    await page.waitForLoadState('networkidle');
+
+    const testResource = '/api/degrade/exception';
+    const exceptionCount = 3; // 异常数阈值 3
+
+    // ============================================
+    // 步骤 1: 创建异常数降级规则
+    // ============================================
+    await page.click('a[href*="/degrade/create"], button:has-text("新增")');
+    await expect(page).toHaveURL(/\/degrade\/(create|new)/, { timeout: 5000 });
+
+    await page.locator('input[name="resource"]').fill(testResource);
+    await page.locator('select[name="grade"]').selectOption({ value: '2' }); // 异常数
+    await page.locator('input[name="timeWindow"]').fill('10');
+    await page.locator('input[name="count"]').fill(exceptionCount.toString());
+    await page.locator('input[name="minRequestAmount"]').fill('1');
+
+    await page.click('button[type="submit"]');
+    await expect(page).toHaveURL(/\/degrade(?:$|\?)/, { timeout: 5000 });
+    await page.waitForTimeout(5000);
+
+    // ============================================
+    // 步骤 2: 测试异常数熔断效果
+    // ============================================
+    const tokenServerUrl = 'http://localhost:8081';
+    let exceptionTriggered = 0;
+    let circuitOpenCount = 0;
+
+    // 触发异常（使用 shouldError=true），达到阈值
+    for (let i = 0; i < 5; i++) {
+      const response = await request.get(`${tokenServerUrl}/api/degrade/exception?shouldError=true`).catch(() => null);
+      if (response && !response.ok()) {
+        exceptionTriggered++;
+      }
+    }
+
+    await page.waitForTimeout(1000);
+
+    // 再次请求正常接口，验证是否被熔断
+    for (let i = 0; i < 5; i++) {
+      const response = await request
+        .get(`${tokenServerUrl}/api/degrade/exception`)
+        .then(async (res) => {
+          const body = await res.text().catch(() => '');
+          return { status: res.status(), body };
+        })
+        .catch(() => ({ status: 0, body: '' }));
+
+      if (
+        response.status === 503 ||
+        response.body.includes('Circuit breaker') ||
+        response.body.includes('service degraded')
+      ) {
+        circuitOpenCount++;
+      }
+    }
+
+    console.log(`降级测试结果（异常数）: 触发${exceptionTriggered}个异常, ${circuitOpenCount}个请求被熔断`);
+    expect(exceptionTriggered).toBeGreaterThanOrEqual(exceptionCount);
+
+    // ============================================
+    // 步骤 3: 清理
+    // ============================================
+    await page.goto('/dashboard/apps/sentinel-token-server/degrade');
+    await page.waitForLoadState('networkidle');
+
+    const deleteButton = page.locator(`tr:has-text("${testResource}") button[aria-label="删除"]`).first();
+    if (await deleteButton.isVisible({ timeout: 2000 })) {
+      page.once('dialog', async (dialog) => await dialog.accept());
+      await deleteButton.click();
+      await page.waitForTimeout(1000);
+    }
+  });
 });

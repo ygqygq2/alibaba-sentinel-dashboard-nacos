@@ -96,7 +96,7 @@ spring:
           nacos:
             server-addr: localhost:8848 # ⚠️ 必须与 Dashboard 一致
             namespace: public # ⚠️ 必须与 Dashboard 一致
-            groupId: DEFAULT_GROUP # ⚠️ 必须与 Dashboard 一致
+            groupId: SENTINEL_GROUP # ⚠️ 必须与 Dashboard 一致
             dataId: ${spring.application.name}-flow-rules
             rule-type: flow
             # 如果 Nacos 开启认证
@@ -108,7 +108,7 @@ spring:
           nacos:
             server-addr: localhost:8848
             namespace: public
-            groupId: DEFAULT_GROUP
+            groupId: SENTINEL_GROUP
             dataId: ${spring.application.name}-degrade-rules
             rule-type: degrade
 
@@ -117,7 +117,7 @@ spring:
           nacos:
             server-addr: localhost:8848
             namespace: public
-            groupId: DEFAULT_GROUP
+            groupId: SENTINEL_GROUP
             dataId: ${spring.application.name}-param-flow-rules
             rule-type: param-flow
 
@@ -126,7 +126,7 @@ spring:
           nacos:
             server-addr: localhost:8848
             namespace: public
-            groupId: DEFAULT_GROUP
+            groupId: SENTINEL_GROUP
             dataId: ${spring.application.name}-system-rules
             rule-type: system
 
@@ -135,7 +135,7 @@ spring:
           nacos:
             server-addr: localhost:8848
             namespace: public
-            groupId: DEFAULT_GROUP
+            groupId: SENTINEL_GROUP
             dataId: ${spring.application.name}-authority-rules
             rule-type: authority
 ```
@@ -152,7 +152,7 @@ spring.cloud.sentinel.transport.port=8719
 # Nacos 数据源 - 流控规则
 spring.cloud.sentinel.datasource.flow.nacos.server-addr=localhost:8848
 spring.cloud.sentinel.datasource.flow.nacos.namespace=public
-spring.cloud.sentinel.datasource.flow.nacos.groupId=DEFAULT_GROUP
+spring.cloud.sentinel.datasource.flow.nacos.groupId=SENTINEL_GROUP
 spring.cloud.sentinel.datasource.flow.nacos.dataId=${spring.application.name}-flow-rules
 spring.cloud.sentinel.datasource.flow.nacos.rule-type=flow
 spring.cloud.sentinel.datasource.flow.nacos.username=nacos_user
@@ -294,11 +294,11 @@ grep "load.*Rule" application.log
    ```bash
    # Dashboard 配置
    NACOS_NAMESPACE=public
-   NACOS_GROUP=DEFAULT_GROUP
+   NACOS_GROUP=SENTINEL_GROUP
 
    # 应用配置
    spring.cloud.sentinel.datasource.flow.nacos.namespace=public  # ✅ 一致
-   spring.cloud.sentinel.datasource.flow.nacos.groupId=DEFAULT_GROUP  # ✅ 一致
+   spring.cloud.sentinel.datasource.flow.nacos.groupId=SENTINEL_GROUP  # ✅ 一致
    ```
 
 2. **检查 DataId 是否匹配**
@@ -319,7 +319,7 @@ grep "load.*Rule" application.log
 
 4. **检查 Nacos 中是否有配置**
    ```bash
-   curl -X GET 'http://localhost:8848/nacos/v1/cs/configs?dataId=my-service-flow-rules&group=DEFAULT_GROUP'
+   curl -X GET 'http://localhost:8848/nacos/v1/cs/configs?dataId=my-service-flow-rules&group=SENTINEL_GROUP'
    ```
 
 ### Q2: 客户端连接 Dashboard 失败，提示 "invalid app_secret"
@@ -496,7 +496,7 @@ spring:
           nacos:
             server-addr: localhost:8848
             namespace: public
-            groupId: DEFAULT_GROUP
+            groupId: SENTINEL_GROUP
             dataId: ${spring.application.name}-flow-rules
             rule-type: flow
 

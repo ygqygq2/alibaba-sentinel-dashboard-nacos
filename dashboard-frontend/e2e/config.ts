@@ -57,6 +57,7 @@ export const API = {
     authorityRules: '/authority/rules',
     authorityRule: '/authority/rule',
     paramFlowRules: '/paramFlow/rules',
+    paramFlowRule: '/paramFlow/rule',
   },
   // Token Server API
   tokenServer: {

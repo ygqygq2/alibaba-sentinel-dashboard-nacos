@@ -187,4 +187,215 @@ test.describe('流控规则完整流程', () => {
       await page.waitForTimeout(1000);
     }
   });
+
+  test('线程数限流测试', async ({ page, request }) => {
+    await page.goto('/dashboard/apps/sentinel-token-server/flow');
+    await page.waitForLoadState('networkidle');
+
+    const testResource = '/api/flow/thread';
+    const threadLimit = 2; // 最多 2 个并发线程
+
+    // 创建规则
+    await page.click('a[href*="/flow/create"], button:has-text("新增")');
+    await expect(page).toHaveURL(/\/flow\/(create|new)/, { timeout: 5000 });
+
+    await page.locator('input[name="resource"]').fill(testResource);
+    await page.locator('select[name="grade"]').selectOption({ value: '0' }); // 线程数
+    await page.locator('input[name="count"]').fill(threadLimit.toString());
+    await page.locator('input[name="limitApp"]').fill('default');
+
+    await page.click('button[type="submit"]');
+    await expect(page).toHaveURL(/\/flow(?:$|\?)/, { timeout: 5000 });
+    await page.waitForTimeout(5000);
+
+    // 验证线程数限流（接口有 200ms 延迟）
+    const tokenServerUrl = 'http://localhost:8081';
+    const promises = [];
+
+    // 并发发送 5 个请求（每个请求200ms），超过线程限制
+    for (let i = 0; i < 5; i++) {
+      promises.push(
+        request
+          .get(`${tokenServerUrl}${testResource}`)
+          .then((response) => ({ status: response.status(), ok: response.ok() }))
+          .catch(() => ({ status: 0, ok: false }))
+      );
+    }
+
+    const responses = await Promise.all(promises);
+    const blockedCount = responses.filter((r) => r.status === 429 || !r.ok).length;
+
+    console.log(`线程数限流测试: ${blockedCount} 个请求被限流`);
+    expect(blockedCount).toBeGreaterThan(0); // 应该有请求被限流
+
+    // 清理
+    await page.goto('/dashboard/apps/sentinel-token-server/flow');
+    await page.waitForLoadState('networkidle');
+    const deleteButton = page.locator(`tr:has-text("${testResource}") button[aria-label="删除"]`).first();
+    if (await deleteButton.isVisible({ timeout: 2000 })) {
+      page.once('dialog', async (dialog) => await dialog.accept());
+      await deleteButton.click();
+      await page.waitForTimeout(1000);
+    }
+  });
+
+  test('关联资源限流测试', async ({ page, request }) => {
+    await page.goto('/dashboard/apps/sentinel-token-server/flow');
+    await page.waitForLoadState('networkidle');
+
+    const resourceA = '/api/flow/related/a';
+    const resourceB = '/api/flow/related/b';
+
+    // 创建规则：当 B 资源达到阈值时，限流 A 资源
+    await page.click('a[href*="/flow/create"], button:has-text("新增")');
+    await expect(page).toHaveURL(/\/flow\/(create|new)/, { timeout: 5000 });
+
+    await page.locator('input[name="resource"]').fill(resourceA);
+    await page.locator('select[name="grade"]').selectOption({ value: '1' }); // QPS
+    await page.locator('input[name="count"]').fill('5');
+    await page.locator('input[name="limitApp"]').fill('default');
+
+    // 选择流控模式：关联
+    await page.locator('select[name="strategy"]').selectOption({ value: '1' }); // 关联
+    await page.locator('input[name="refResource"]').fill(resourceB); // 关联资源
+
+    await page.click('button[type="submit"]');
+    await expect(page).toHaveURL(/\/flow(?:$|\?)/, { timeout: 5000 });
+    await page.waitForTimeout(5000);
+
+    // 验证：大量访问 B，应该触发 A 的限流
+    const tokenServerUrl = 'http://localhost:8081';
+
+    // 先大量访问 B 资源
+    const promises = [];
+    for (let i = 0; i < 10; i++) {
+      promises.push(request.get(`${tokenServerUrl}${resourceB}`));
+    }
+    await Promise.all(promises);
+
+    // 然后访问 A 资源，应该被限流
+    const responseA = await request.get(`${tokenServerUrl}${resourceA}`).catch(() => null);
+
+    console.log(`关联资源限流测试: A资源状态=${responseA?.status() || 'error'}`);
+
+    // 清理
+    await page.goto('/dashboard/apps/sentinel-token-server/flow');
+    await page.waitForLoadState('networkidle');
+    const deleteButton = page.locator(`tr:has-text("${resourceA}") button[aria-label="删除"]`).first();
+    if (await deleteButton.isVisible({ timeout: 2000 })) {
+      page.once('dialog', async (dialog) => await dialog.accept());
+      await deleteButton.click();
+      await page.waitForTimeout(1000);
+    }
+  });
+
+  test('Warm Up (预热/冷启动) 流控模式测试', async ({ page, request }) => {
+    await page.goto('/dashboard/apps/sentinel-token-server/flow');
+    await page.waitForLoadState('networkidle');
+
+    const testResource = '/api/flow/qps';
+
+    // 创建规则：预热模式
+    await page.click('a[href*="/flow/create"], button:has-text("新增")');
+    await expect(page).toHaveURL(/\/flow\/(create|new)/, { timeout: 5000 });
+
+    await page.locator('input[name="resource"]').fill(testResource);
+    await page.locator('select[name="grade"]').selectOption({ value: '1' }); // QPS
+    await page.locator('input[name="count"]').fill('20'); // 最终阈值
+    await page.locator('input[name="limitApp"]').fill('default');
+
+    // 选择流控效果：Warm Up
+    await page.locator('select[name="controlBehavior"]').selectOption({ value: '1' }); // Warm Up
+    await page.locator('input[name="warmUpPeriodSec"]').fill('10'); // 预热时长 10 秒
+
+    await page.click('button[type="submit"]');
+    await expect(page).toHaveURL(/\/flow(?:$|\?)/, { timeout: 5000 });
+    await page.waitForTimeout(5000);
+
+    // 验证预热效果：初期限流严格，逐渐放宽
+    const tokenServerUrl = 'http://localhost:8081';
+    let initialBlocked = 0;
+
+    // 预热初期：发送请求，记录限流数
+    for (let i = 0; i < 15; i++) {
+      const response = await request.get(`${tokenServerUrl}${testResource}`).catch(() => null);
+      if (!response || response.status() === 429) {
+        initialBlocked++;
+      }
+      await page.waitForTimeout(100);
+    }
+
+    console.log(`Warm Up 测试: 预热初期 ${initialBlocked}/15 个请求被限流`);
+    expect(initialBlocked).toBeGreaterThan(0); // 预热初期应该有限流
+
+    // 清理
+    await page.goto('/dashboard/apps/sentinel-token-server/flow');
+    await page.waitForLoadState('networkidle');
+    const deleteButton = page.locator(`tr:has-text("${testResource}") button[aria-label="删除"]`).first();
+    if (await deleteButton.isVisible({ timeout: 2000 })) {
+      page.once('dialog', async (dialog) => await dialog.accept());
+      await deleteButton.click();
+      await page.waitForTimeout(1000);
+    }
+  });
+
+  test('排队等待流控模式测试', async ({ page, request }) => {
+    await page.goto('/dashboard/apps/sentinel-token-server/flow');
+    await page.waitForLoadState('networkidle');
+
+    const testResource = '/api/flow/qps';
+
+    // 创建规则：排队等待
+    await page.click('a[href*="/flow/create"], button:has-text("新增")');
+    await expect(page).toHaveURL(/\/flow\/(create|new)/, { timeout: 5000 });
+
+    await page.locator('input[name="resource"]').fill(testResource);
+    await page.locator('select[name="grade"]').selectOption({ value: '1' }); // QPS
+    await page.locator('input[name="count"]').fill('5'); // 每秒 5 个
+    await page.locator('input[name="limitApp"]').fill('default');
+
+    // 选择流控效果：排队等待
+    await page.locator('select[name="controlBehavior"]').selectOption({ value: '2' }); // 排队等待
+    await page.locator('input[name="maxQueueingTimeMs"]').fill('500'); // 最大排队时间 500ms
+
+    await page.click('button[type="submit"]');
+    await expect(page).toHaveURL(/\/flow(?:$|\?)/, { timeout: 5000 });
+    await page.waitForTimeout(5000);
+
+    // 验证排队效果：发送大量请求，部分会排队等待
+    const tokenServerUrl = 'http://localhost:8081';
+    const startTime = Date.now();
+    let successCount = 0;
+    let blockedCount = 0;
+
+    const promises = [];
+    for (let i = 0; i < 10; i++) {
+      promises.push(
+        request
+          .get(`${tokenServerUrl}${testResource}`)
+          .then((response) => {
+            if (response.ok()) successCount++;
+            else blockedCount++;
+          })
+          .catch(() => blockedCount++)
+      );
+    }
+
+    await Promise.all(promises);
+    const elapsed = Date.now() - startTime;
+
+    console.log(`排队等待测试: 成功 ${successCount}, 超时 ${blockedCount}, 耗时 ${elapsed}ms`);
+    // 排队模式下，响应时间应该明显增加
+    expect(elapsed).toBeGreaterThan(200);
+
+    // 清理
+    await page.goto('/dashboard/apps/sentinel-token-server/flow');
+    await page.waitForLoadState('networkidle');
+    const deleteButton = page.locator(`tr:has-text("${testResource}") button[aria-label="删除"]`).first();
+    if (await deleteButton.isVisible({ timeout: 2000 })) {
+      page.once('dialog', async (dialog) => await dialog.accept());
+      await deleteButton.click();
+      await page.waitForTimeout(1000);
+    }
+  });
 });

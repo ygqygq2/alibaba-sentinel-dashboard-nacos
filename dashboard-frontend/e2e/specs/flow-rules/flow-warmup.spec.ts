@@ -40,7 +40,7 @@ test.describe('流控规则 - Warm Up预热', () => {
       await warmUpInput.fill('10'); // 10秒预热
     }
 
-    await page.click('button:has-text("确定"), button:has-text("保存")');
+    await page.locator('button[type="submit"]').first().click();
     await page.waitForTimeout(3000);
 
     // ============================================

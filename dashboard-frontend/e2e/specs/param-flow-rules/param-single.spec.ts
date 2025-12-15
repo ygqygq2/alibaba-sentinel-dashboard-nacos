@@ -27,7 +27,7 @@ test.describe('热点参数规则 - 单参数限流', () => {
       await paramIdxInput.fill('0');
     }
 
-    await page.click('button:has-text("确定"), button:has-text("保存")');
+    await page.locator('button[type="submit"]').first().click();
     await page.waitForTimeout(3000);
 
     // ============================================

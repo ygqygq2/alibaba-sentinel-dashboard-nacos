@@ -253,6 +253,7 @@ export function FlowRuleForm({
         {formData.controlBehavior === 2 && (
           <FormInput
             label="超时时间(ms)"
+            name="maxQueueingTimeMs"
             required
             type="number"
             value={formData.maxQueueingTimeMs || ''}

@@ -22,25 +22,39 @@ test.describe('流控规则 - 排队等待', () => {
     await page.locator('input[name="count"]').fill('5');
     await page.locator('input[name="limitApp"]').fill('default');
 
-    // 选择QPS模式
-    const gradeSelect = page.locator('select[name="grade"]');
-    if (await gradeSelect.isVisible({ timeout: 2000 })) {
-      await gradeSelect.selectOption({ value: '1' }); // 1=QPS
-    }
-
     // 选择排队等待流控效果（controlBehavior=2）
-    const behaviorSelect = page.locator('select[name="controlBehavior"], [name="流控效果"]');
-    if (await behaviorSelect.isVisible({ timeout: 2000 })) {
-      await behaviorSelect.selectOption({ value: '2' }); // 2=排队等待
+    const behaviorSelect = page.locator('select[name="controlBehavior"]');
+    await behaviorSelect.waitFor({ state: 'visible' });
+    await behaviorSelect.selectOption('2'); // 2=排队等待
+    console.log('已选择排队等待模式');
+    
+    // 等待 React 重新渲染表单
+    await page.waitForTimeout(1000);
+
+    // 等待超时时间字段动态显示（controlBehavior=2 时才显示）
+    const timeoutInput = page.locator('input[name="maxQueueingTimeMs"]');
+    console.log('等待超时时间字段出现...');
+    await timeoutInput.waitFor({ state: 'visible', timeout: 10000 });
+
+    // 清空并填写超时时间 - 使用 click + fill + press Enter 确保值生效
+    await timeoutInput.click();
+    await timeoutInput.clear();
+    await timeoutInput.fill('2000');
+    await timeoutInput.press('Enter'); // 触发表单事件
+
+    // 等待 React 状态更新
+    await page.waitForTimeout(500);
+    const submitButton = page.locator('button[type="submit"]').first();
+
+    // 检查是否有验证错误
+    const errorMessages = await page.locator('[role="alert"], .error-message, [class*="error"]').allTextContents();
+    if (errorMessages.length > 0) {
+      console.log('表单验证错误:', errorMessages);
     }
 
-    // 设置超时时间（毫秒）
-    const timeoutInput = page.locator('input[name="maxQueueingTimeMs"], [name="超时时间"]');
-    if (await timeoutInput.isVisible({ timeout: 2000 })) {
-      await timeoutInput.fill('2000'); // 2秒超时
-    }
-
-    await page.click('button:has-text("确定"), button:has-text("保存")');
+    // 尝试点击提交按钮
+    console.log('点击提交按钮...');
+    await submitButton.click({ timeout: 5000 });
     await page.waitForTimeout(3000);
 
     // ============================================

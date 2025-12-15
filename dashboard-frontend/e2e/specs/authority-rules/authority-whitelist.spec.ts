@@ -32,7 +32,7 @@ test.describe('授权规则 - 白名单', () => {
       await strategySelect.selectOption({ value: '0' }); // 0=白名单
     }
 
-    await page.click('button:has-text("确定"), button:has-text("保存")');
+    await page.locator('button[type="submit"]').first().click();
     await page.waitForTimeout(3000);
 
     // ============================================

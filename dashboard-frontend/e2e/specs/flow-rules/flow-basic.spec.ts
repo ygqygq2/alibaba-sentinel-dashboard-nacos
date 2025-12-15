@@ -41,7 +41,7 @@ test.describe('流控规则 - 基础功能', () => {
     await page.locator('input[name="count"]').fill('10');
     await page.locator('input[name="limitApp"]').fill('default');
 
-    await page.click('button:has-text("确定"), button:has-text("保存"), button[type="submit"]');
+    await page.locator('button[type="submit"]').first().click();
     await page.waitForTimeout(2000);
 
     // ============================================
@@ -75,7 +75,7 @@ test.describe('流控规则 - 基础功能', () => {
     await expect(page).toHaveURL(/\/flow\/edit/, { timeout: 5000 });
 
     await page.locator('input[name="count"]').fill('20');
-    await page.click('button:has-text("确定"), button:has-text("保存"), button[type="submit"]');
+    await page.locator('button[type="submit"]').first().click();
     await page.waitForTimeout(2000);
 
     // 返回列表页验证修改后的阈值

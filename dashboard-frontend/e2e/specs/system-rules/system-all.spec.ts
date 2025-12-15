@@ -30,7 +30,7 @@ test.describe('系统规则 - 基础功能', () => {
       await loadInput.fill('8.0');
     }
 
-    await page.click('button:has-text("确定"), button:has-text("保存")');
+    await page.locator('button[type="submit"]').first().click();
     await page.waitForTimeout(2000);
 
     await expect(page).toHaveURL(/\/system($|\?)/, { timeout: 10000 });
@@ -47,7 +47,7 @@ test.describe('系统规则 - 基础功能', () => {
       await cpuInput.fill('0.8'); // 80%
     }
 
-    await page.click('button:has-text("确定"), button:has-text("保存")');
+    await page.locator('button[type="submit"]').first().click();
     await page.waitForTimeout(2000);
 
     await expect(page).toHaveURL(/\/system($|\?)/, { timeout: 10000 });
@@ -64,7 +64,7 @@ test.describe('系统规则 - 基础功能', () => {
       await rtInput.fill('1000'); // 1秒
     }
 
-    await page.click('button:has-text("确定"), button:has-text("保存")');
+    await page.locator('button[type="submit"]').first().click();
     await page.waitForTimeout(2000);
 
     await expect(page).toHaveURL(/\/system($|\?)/, { timeout: 10000 });
@@ -81,7 +81,7 @@ test.describe('系统规则 - 基础功能', () => {
       await threadInput.fill('100');
     }
 
-    await page.click('button:has-text("确定"), button:has-text("保存")');
+    await page.locator('button[type="submit"]').first().click();
     await page.waitForTimeout(2000);
 
     await expect(page).toHaveURL(/\/system($|\?)/, { timeout: 10000 });
@@ -98,7 +98,7 @@ test.describe('系统规则 - 基础功能', () => {
       await qpsInput.fill('1000');
     }
 
-    await page.click('button:has-text("确定"), button:has-text("保存")');
+    await page.locator('button[type="submit"]').first().click();
     await page.waitForTimeout(2000);
 
     await expect(page).toHaveURL(/\/system($|\?)/, { timeout: 10000 });

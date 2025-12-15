@@ -28,7 +28,7 @@ test.describe('流控规则 - 线程数限流', () => {
       await gradeSelect.selectOption({ value: '0' }); // 0=线程数
     }
 
-    await page.click('button:has-text("确定"), button:has-text("保存")');
+    await page.locator('button[type="submit"]').first().click();
     await page.waitForTimeout(3000);
 
     // ============================================

@@ -48,7 +48,7 @@ test.describe('降级规则 - 慢调用比例熔断', () => {
       await timeWindowInput.fill('10');
     }
 
-    await page.click('button:has-text("确定"), button:has-text("保存")');
+    await page.locator('button[type="submit"]').first().click();
     await page.waitForTimeout(3000);
 
     // ============================================

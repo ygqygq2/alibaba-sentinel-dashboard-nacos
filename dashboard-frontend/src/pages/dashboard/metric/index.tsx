@@ -363,6 +363,14 @@ export function Page(): React.JSX.Element {
   const metrics = data?.current || [];
   const historyFromApi = data?.history || new Map();
 
+  // 应用切换时清空历史数据
+  React.useEffect(() => {
+    setHistoryData([]);
+    setResourceHistory(new Map());
+    setCurrentPage(1);
+    setExpandedResources(new Set());
+  }, [app]);
+
   // 更新资源历史数据
   React.useEffect(() => {
     if (historyFromApi.size > 0) {

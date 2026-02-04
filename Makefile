@@ -4,7 +4,8 @@
 
 .PHONY: help build up up-build down restart restart-build logs ps clean \
         test test-api test-ui test-smoke test-all test-dev test-dev-ui \
-        fe-check fe-type fe-lint fe-test dev-fe gen-metric test-backend-api
+        fe-check fe-type fe-lint fe-test dev-fe gen-metric test-backend-api \
+        clean-test-data
 
 # 目录定义
 SCRIPTS := ./scripts
@@ -49,6 +50,9 @@ help:
 	@echo "💻 本地开发:"
 	@echo "  make dev-fe     - 启动前端开发服务器（需要本地 pnpm）"
 	@echo "  make gen-metric - 生成监控数据（访问 token-server 接口）"
+	@echo ""
+	@echo "🧹 清理工具:"
+	@echo "  make clean-test-data - 清理所有测试数据（规则）"
 	@echo ""
 	@echo "环境变量:"
 	@echo "  USE_CHINA_MIRROR=true  使用中国镜像加速（默认开启）"
@@ -144,3 +148,11 @@ gen-metric:
 test-backend-api:
 	@echo "🔌 测试后端 REST API..."
 	@$(SCRIPTS)/test-backend-api.sh
+
+# ========================================
+# 清理工具
+# ========================================
+clean-test-data:
+	@echo "🧹 清理所有测试数据..."
+	@chmod +x $(SCRIPTS)/cleanup-test-rules.sh
+	@$(SCRIPTS)/cleanup-test-rules.sh

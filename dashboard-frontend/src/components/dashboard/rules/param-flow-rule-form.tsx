@@ -69,6 +69,16 @@ export function ParamFlowRuleForm({
   }));
   const [errors, setErrors] = React.useState<Record<string, string>>({});
 
+  // 监听 initialData 变化（用于新标签页异步加载资源名称）
+  React.useEffect(() => {
+    if (initialData) {
+      setFormData((prev) => ({
+        ...prev,
+        ...initialData,
+      }));
+    }
+  }, [initialData]);
+
   // 参数例外项状态
   const [newItem, setNewItem] = React.useState<ParamFlowItem>({
     classType: 'java.lang.String',

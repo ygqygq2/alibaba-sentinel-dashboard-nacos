@@ -24,7 +24,7 @@ import java.util.Map;
  * 3. 通过 SPI 机制替换官方的 SimpleHttpHeartbeatSender
  * 
  * SPI 配置：
- * - 优先级：Spi.ORDER_LOWEST - 200（高于官方实现的 -100）
+ * - 优先级：-100（高于官方 SimpleHttpHeartbeatSender 的 0）
  * - 配置文件：META-INF/services/com.alibaba.csp.sentinel.transport.HeartbeatSender
  * 
  * 使用方式：
@@ -33,7 +33,7 @@ import java.util.Map;
  * 
  * @author Token Server Team
  */
-@Spi(order = Spi.ORDER_LOWEST - 200)
+@Spi(order = -100)
 public class AuthenticatedHeartbeatSender implements HeartbeatSender {
 
     private static final int OK_STATUS = 200;

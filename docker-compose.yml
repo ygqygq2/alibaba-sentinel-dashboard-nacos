@@ -134,3 +134,41 @@ services:
       timeout: 10s
       retries: 10
       start_period: 60s
+
+  token-client:
+    image: ${TOKEN_CLIENT_IMAGE:-sentinel/token-client:local}
+    restart: always
+    build:
+      context: ./token-client
+      args:
+        - USE_CHINA_MIRROR=${USE_CHINA_MIRROR:-false}
+    container_name: token-client
+    depends_on:
+      sentinel-dashboard:
+        condition: service_healthy
+      token-server:
+        condition: service_healthy
+    environment:
+      - SPRING_APPLICATION_NAME=sentinel-token-client
+      - SERVER_PORT=8082
+      # Sentinel Dashboard 配置
+      - CSP_SENTINEL_DASHBOARD_SERVER=sentinel-dashboard:8080
+      - CSP_SENTINEL_API_PORT=8720
+      - PROJECT_NAME=sentinel-token-client
+      # 客户端鉴权密钥
+      - CSP_SENTINEL_APP_SECRET=${AUTH_APP_SECRET:-sentinel_app_secret}
+      # Token Server 地址（集群模式）
+      - TOKEN_SERVER_HOST=token-server
+      - TOKEN_SERVER_PORT=18730
+      # Nacos 配置
+      - NACOS_SERVER_ADDR=nacos:8848
+      - JAVA_OPTS=-Xms128m -Xmx256m
+    ports:
+      - "8082:8082" # HTTP 服务端口
+      - "8720:8720" # Sentinel API 端口
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8082/api/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s

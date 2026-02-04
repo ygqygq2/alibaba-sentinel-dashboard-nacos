@@ -4,12 +4,19 @@
  */
 
 // 服务地址
-// - 本地开发（CI 未设置）：前端开发服务器 3000 + 后端 8080
-// - CI 环境（CI=true）：打包后的前端在 8080
+// - API 测试：直接调用后端 8080
+// - UI 测试：
+//   - 本地开发（CI 未设置）：前端开发服务器 3000
+//   - CI 环境（CI=true）：打包后的前端在 8080
 const isCI = process.env.CI === 'true';
-export const DASHBOARD_URL = isCI
-  ? process.env.DASHBOARD_URL || 'http://localhost:8080'
-  : process.env.DASHBOARD_URL || 'http://localhost:3000';
+const isAPITest = process.env.TEST_TYPE === 'api';
+
+export const DASHBOARD_URL = isAPITest
+  ? 'http://localhost:8080' // API 测试直接访问后端
+  : isCI
+    ? process.env.DASHBOARD_URL || 'http://localhost:8080' // CI 使用打包后的前端
+    : process.env.DASHBOARD_URL || 'http://localhost:3000'; // 本地使用开发服务器
+
 export const TOKEN_SERVER_URL = process.env.TOKEN_SERVER_URL || 'http://localhost:8081';
 
 // 客户端 API 端口（Sentinel 客户端暴露的 8719 端口）

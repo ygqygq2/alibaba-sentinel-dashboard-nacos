@@ -47,7 +47,7 @@ export function RuleCreatePage<TRule extends { resource: string }>({
   const navigate = useNavigate();
   const location = useLocation();
   const createRule = useCreateMutation(app ?? '');
-  const { isOpenedInNewTab, data, closeTab } = useOpenedInNewTab();
+  const { isOpenedInNewTab, closeTab } = useOpenedInNewTab();
   const { user, isLoading } = useUser();
 
   // 页面加载时立即检查登录状态
@@ -59,10 +59,11 @@ export function RuleCreatePage<TRule extends { resource: string }>({
     }
   }, [user, isLoading, navigate]);
 
-  // 从 sessionStorage 或 location.state 获取预填充的资源名称
+  // 从 URL 参数或 location.state 获取预填充的资源名称
   const initialResource = React.useMemo(() => {
-    return (data?.resource as string) || location.state?.resource || '';
-  }, [data, location.state]);
+    const searchParams = new URLSearchParams(location.search);
+    return searchParams.get('resource') || location.state?.resource || '';
+  }, [location.search, location.state]);
 
   const handleSubmit = async (ruleData: Omit<TRule, 'id'>) => {
     await createRule.mutateAsync(ruleData);

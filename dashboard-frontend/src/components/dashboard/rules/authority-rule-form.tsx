@@ -53,6 +53,16 @@ export function AuthorityRuleForm({
   }));
   const [errors, setErrors] = React.useState<Record<string, string>>({});
 
+  // 监听 initialData 变化（用于新标签页异步加载资源名称）
+  React.useEffect(() => {
+    if (initialData) {
+      setFormData((prev) => ({
+        ...prev,
+        ...initialData,
+      }));
+    }
+  }, [initialData]);
+
   const handleChange = (field: keyof AuthorityRule, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {

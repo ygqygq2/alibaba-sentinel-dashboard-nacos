@@ -38,13 +38,22 @@ export function ResourceTable({
   treeView = false,
   searchKey = '',
 }: ResourceTableProps): React.JSX.Element {
+  // 树状视图的展开/折叠状态（存储节点的 resource 名称）
+  const [expandedNodes, setExpandedNodes] = React.useState<Set<string>>(new Set());
+
+  // 根据 parentId 构建树形结构
+  const treeData = React.useMemo(() => {
+    if (!treeView || !data.length) return data;
+    return buildTree(data);
+  }, [data, treeView]);
+
   // 展平树形数据用于列表视图
   const flattenData = React.useMemo(() => {
     if (!treeView) {
       return flattenResources(data);
     }
-    return data;
-  }, [data, treeView]);
+    return treeData;
+  }, [data, treeData, treeView]);
 
   // 分页（仅在列表视图时启用）
   const {
@@ -59,6 +68,19 @@ export function ResourceTable({
     defaultPageSize: 10,
     externalSearchKey: searchKey,
   });
+
+  // 切换节点展开/折叠状态
+  const toggleNode = (resource: string) => {
+    setExpandedNodes((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(resource)) {
+        newSet.delete(resource);
+      } else {
+        newSet.add(resource);
+      }
+      return newSet;
+    });
+  };
 
   if (isLoading) {
     return (
@@ -107,7 +129,12 @@ export function ResourceTable({
       <Table.Root size="sm">
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeader width="30%">资源名</Table.ColumnHeader>
+            <Table.ColumnHeader
+              width="40%"
+              minWidth="200px"
+            >
+              资源名
+            </Table.ColumnHeader>
             <Table.ColumnHeader
               width="8%"
               textAlign="right"
@@ -149,13 +176,16 @@ export function ResourceTable({
         </Table.Header>
         <Table.Body>
           {treeView
-            ? renderTreeRows(app, data, 0)
+            ? renderTreeRows(app, treeData, 0, expandedNodes, toggleNode)
             : paginatedData.map((node) => (
                 <ResourceRow
                   key={node.id ?? node.resource}
                   app={app}
                   node={node}
                   depth={0}
+                  hasChildren={false}
+                  isExpanded={false}
+                  onToggle={() => {}}
                 />
               ))}
         </Table.Body>
@@ -176,18 +206,47 @@ interface ResourceRowProps {
   app: string;
   node: ClusterNode;
   depth: number;
+  hasChildren: boolean;
+  isExpanded: boolean;
+  onToggle: () => void;
 }
 
-function ResourceRow({ app, node, depth }: ResourceRowProps): React.JSX.Element {
+function ResourceRow({ app, node, depth, hasChildren, isExpanded, onToggle }: ResourceRowProps): React.JSX.Element {
   return (
     <Table.Row>
       <Table.Cell>
-        <Text
+        <Box
           pl={depth * 4}
           fontSize="sm"
-          wordBreak="break-all"
+          maxWidth="100%"
+          overflow="hidden"
+          textOverflow="ellipsis"
+          whiteSpace="nowrap"
           title={node.resource}
+          cursor="default"
+          display="flex"
+          alignItems="center"
+          gap={1}
         >
+          {hasChildren ? (
+            <Box
+              as="button"
+              onClick={onToggle}
+              cursor="pointer"
+              display="inline-flex"
+              alignItems="center"
+              color="gray.500"
+              _hover={{ color: 'blue.500' }}
+              bg="transparent"
+              border="none"
+              p={0}
+              minW="16px"
+            >
+              <Text fontSize="12px">{isExpanded ? '▼' : '▶'}</Text>
+            </Box>
+          ) : (
+            <Box minW="16px" />
+          )}
           {depth > 0 && (
             <Text
               as="span"
@@ -197,8 +256,8 @@ function ResourceRow({ app, node, depth }: ResourceRowProps): React.JSX.Element 
               └─
             </Text>
           )}
-          {node.resource}
-        </Text>
+          <Text as="span">{node.resource}</Text>
+        </Box>
       </Table.Cell>
       <Table.Cell textAlign="right">
         <Text color="green.500">{node.passQps}</Text>
@@ -224,23 +283,77 @@ function ResourceRow({ app, node, depth }: ResourceRowProps): React.JSX.Element 
 }
 
 /**
- * 递归渲染树形行
+ * 根据 parentId 和 id 构建树形结构
  */
-function renderTreeRows(app: string, nodes: ClusterNode[], depth: number): React.ReactNode[] {
+function buildTree(nodes: ClusterNode[]): ClusterNode[] {
+  if (!nodes || nodes.length === 0) return [];
+
+  // 创建 id 到节点的映射
+  const nodeMap = new Map<string, ClusterNode>();
+  const result: ClusterNode[] = [];
+
+  // 第一遍：创建所有节点的副本并建立映射
+  nodes.forEach((node) => {
+    const nodeCopy = { ...node, children: [] };
+    if (node.id) {
+      nodeMap.set(node.id, nodeCopy);
+    }
+  });
+
+  // 第二遍：建立父子关系
+  nodes.forEach((node) => {
+    const currentNode = node.id ? nodeMap.get(node.id) : undefined;
+    if (!currentNode) return;
+
+    if (node.parentId) {
+      const parent = nodeMap.get(node.parentId);
+      if (parent) {
+        if (!parent.children) parent.children = [];
+        parent.children.push(currentNode);
+      } else {
+        // 找不到父节点，作为根节点
+        result.push(currentNode);
+      }
+    } else {
+      // 没有 parentId，作为根节点
+      result.push(currentNode);
+    }
+  });
+
+  return result;
+}
+
+/**
+ * 递归渲染树形行（支持折叠展开）
+ */
+function renderTreeRows(
+  app: string,
+  nodes: ClusterNode[],
+  depth: number,
+  expandedNodes: Set<string>,
+  toggleNode: (resource: string) => void
+): React.ReactNode[] {
   const rows: React.ReactNode[] = [];
 
   for (const node of nodes) {
+    const hasChildren = (node.children?.length ?? 0) > 0;
+    const isExpanded = expandedNodes.has(node.resource);
+
     rows.push(
       <ResourceRow
         key={node.id ?? node.resource}
         app={app}
         node={node}
         depth={depth}
+        hasChildren={hasChildren}
+        isExpanded={isExpanded}
+        onToggle={() => toggleNode(node.resource)}
       />
     );
 
-    if (node.children?.length) {
-      rows.push(...renderTreeRows(app, node.children, depth + 1));
+    // 只有展开状态才渲染子节点
+    if (hasChildren && isExpanded) {
+      rows.push(...renderTreeRows(app, node.children!, depth + 1, expandedNodes, toggleNode));
     }
   }
 

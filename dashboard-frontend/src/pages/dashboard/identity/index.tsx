@@ -30,7 +30,7 @@ export function Page(): React.JSX.Element {
   const [autoSelectedRef] = React.useState({ hasAutoSelected: false });
   const debouncedSearchKey = useDebounce(searchKey, 300);
 
-  // 获取资源数据
+  // 获取资源数据（统一使用 root 类型获取树形数据）
   const {
     data: resources = [],
     isLoading,
@@ -39,7 +39,7 @@ export function Page(): React.JSX.Element {
   } = useInstanceResources({
     ip: selectedInstance?.ip ?? '',
     port: selectedInstance?.port ?? 0,
-    type: viewMode === 'tree' ? 'root' : 'cluster',
+    type: 'root', // 统一使用 root 获取树形数据
     searchKey: debouncedSearchKey || undefined,
     enabled: !!selectedInstance,
     refetchInterval: 10000, // 10秒自动刷新
@@ -99,8 +99,8 @@ export function Page(): React.JSX.Element {
             <ViewSwitcher
               value={viewMode}
               options={[
-                { value: 'tree', label: '树状视图' },
                 { value: 'list', label: '列表视图' },
+                { value: 'tree', label: '树状视图' },
               ]}
               onChange={(value) => setViewMode(value as ViewMode)}
             />

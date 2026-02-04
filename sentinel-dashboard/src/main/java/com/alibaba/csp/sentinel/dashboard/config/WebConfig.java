@@ -15,15 +15,9 @@
  */
 package com.alibaba.csp.sentinel.dashboard.config;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
-import com.alibaba.csp.sentinel.adapter.servlet.CommonFilter;
-import com.alibaba.csp.sentinel.adapter.servlet.callback.WebCallbackManager;
+// Note: Removed unused imports (Arrays, HashSet, Set, StringUtil) after removing WebCallbackManager usage
 import com.alibaba.csp.sentinel.dashboard.auth.AuthorizationInterceptor;
 import com.alibaba.csp.sentinel.dashboard.auth.LoginAuthenticationFilter;
-import com.alibaba.csp.sentinel.util.StringUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,8 +30,9 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.Filter;
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.Filter;
+// Note: Removed Sentinel CommonFilter and WebCallbackManager (incompatible with Spring Boot 3.x)
 
 /**
  * @author leyou
@@ -74,44 +69,14 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addViewController("/dashboard/**").setViewName("forward:/index.html");
     }
 
-    /**
-     * Add {@link CommonFilter} to the server, this is the simplest way to use Sentinel
-     * for Web application.
-     */
+    // Note: Sentinel CommonFilter removed - Dashboard doesn't need to be protected by Sentinel
+    // The filter is incompatible with Spring Boot 3.x (jakarta.servlet vs javax.servlet)
+
+    // Note: Removed doInit() method - WebCallbackManager is part of Sentinel servlet adapter
+    // which is incompatible with Spring Boot 3.x (jakarta.servlet)
+    
     @Bean
-    public FilterRegistrationBean sentinelFilterRegistration() {
-        FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>();
-        registration.setFilter(new CommonFilter());
-        registration.addUrlPatterns("/*");
-        registration.setName("sentinelFilter");
-        registration.setOrder(1);
-        // If this is enabled, the entrance of all Web URL resources will be unified as a single context name.
-        // In most scenarios that's enough, and it could reduce the memory footprint.
-        registration.addInitParameter(CommonFilter.WEB_CONTEXT_UNIFY, "true");
-
-        logger.info("Sentinel servlet CommonFilter registered");
-
-        return registration;
-    }
-
-    @PostConstruct
-    public void doInit() {
-        Set<String> suffixSet = new HashSet<>(Arrays.asList(".js", ".css", ".html", ".ico", ".txt",
-            ".woff", ".woff2"));
-        // Example: register a UrlCleaner to exclude URLs of common static resources.
-        WebCallbackManager.setUrlCleaner(url -> {
-            if (StringUtil.isEmpty(url)) {
-                return url;
-            }
-            if (suffixSet.stream().anyMatch(url::endsWith)) {
-                return null;
-            }
-            return url;
-        });
-    }
-
-    @Bean
-    public FilterRegistrationBean authenticationFilterRegistration() {
+    public FilterRegistrationBean<Filter> authenticationFilterRegistration() {
         FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>();
         registration.setFilter(loginAuthenticationFilter);
         registration.addUrlPatterns("/*");

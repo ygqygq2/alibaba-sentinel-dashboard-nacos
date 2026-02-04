@@ -1,7 +1,7 @@
 # Token Server Docker Image
 # https://github.com/alibaba/Sentinel
 
-ARG JAVA_VERSION=17
+ARG JAVA_VERSION=21
 ARG USE_CHINA_MIRROR=false
 
 # Build stage

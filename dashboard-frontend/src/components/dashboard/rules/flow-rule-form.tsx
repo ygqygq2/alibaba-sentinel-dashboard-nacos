@@ -77,6 +77,16 @@ export function FlowRuleForm({
   }));
   const [errors, setErrors] = React.useState<Record<string, string>>({});
 
+  // 监听 initialData 变化（用于新标签页异步加载资源名称）
+  React.useEffect(() => {
+    if (initialData) {
+      setFormData((prev) => ({
+        ...prev,
+        ...initialData,
+      }));
+    }
+  }, [initialData]);
+
   const handleChange = (field: keyof FlowRuleBase, value: string | number | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {

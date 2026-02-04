@@ -3,7 +3,7 @@
 #
 # 多阶段构建：从 frontend 镜像复制前端资源
 
-ARG JAVA_VERSION=17
+ARG JAVA_VERSION=21
 ARG FRONTEND_IMAGE=sentinel/frontend:local
 ARG USE_CHINA_MIRROR=false
 

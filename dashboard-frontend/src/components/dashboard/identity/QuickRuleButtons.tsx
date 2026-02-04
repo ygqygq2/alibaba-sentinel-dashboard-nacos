@@ -25,17 +25,11 @@ export interface QuickRuleButtonsProps {
 export function QuickRuleButtons({ app, resource, size = 'xs' }: QuickRuleButtonsProps): React.JSX.Element {
   /**
    * 在新标签页打开规则创建页面
-   * 使用 sessionStorage 传递参数，避免 URL 过长
+   * 直接通过 URL 参数传递资源名称
    */
   const openInNewTab = (path: string) => {
-    // 生成唯一 ID 用于传递数据
-    const dataId = `rule-create-data-${Date.now()}`;
-
-    // 通过 sessionStorage 传递资源名称
-    sessionStorage.setItem(dataId, JSON.stringify({ resource }));
-
-    // 在 URL 中添加标记，表示这是在新标签页打开的
-    const url = `${path}?opened_in_new_tab=true&data_id=${dataId}`;
+    // 在 URL 中添加资源名称参数和新标签页标记
+    const url = `${path}?opened_in_new_tab=true&resource=${encodeURIComponent(resource)}`;
 
     // 打开新标签页
     window.open(url, '_blank', 'noopener,noreferrer');

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { DASHBOARD_URL, APP_NAME, API, TOKEN_SERVER_URL } from '../config';
-import { login, authHeaders } from '../helpers';
+import { login, authHeaders, cleanupTestRules } from '../helpers';
 
 /**
  * 规则功能端到端测试
@@ -11,11 +11,29 @@ const APP_SECRET = 'sentinel_app_secret';
 const TEST_RESOURCE = '/api/flow/qps'; // 使用已存在的测试接口
 
 test.describe('流控规则端到端测试', () => {
+  test.describe.configure({ mode: 'serial' }); // 强制串行执行（测试间共享 ruleId）
+  
   let cookies: string;
   let ruleId: number;
 
   test.beforeAll(async ({ request }) => {
     cookies = await login(request);
+    // 清理历史测试数据
+    await cleanupTestRules(request, cookies);
+  });
+
+  test.afterAll(async ({ request }) => {
+    // 清理测试创建的规则（如果存在）
+    if (ruleId) {
+      try {
+        await request.delete(`${DASHBOARD_URL}${API.dashboard.flowRule}/${ruleId}`, {
+          headers: authHeaders(cookies),
+        });
+        console.log(`✅ 清理流控规则: ID=${ruleId}`);
+      } catch (error) {
+        console.log(`⚠️ 清理规则失败（可能已被删除）: ${error}`);
+      }
+    }
   });
 
   test('1. 创建流控规则（QPS=2）', async ({ request }) => {
@@ -116,6 +134,10 @@ test.describe('流控规则端到端测试', () => {
       headers: { ...authHeaders(cookies), 'Content-Type': 'application/json' },
     });
 
+    if (!response.ok()) {
+      const text = await response.text();
+      console.log(`❌ 更新请求失败: status=${response.status()}, body=${text}`);
+    }
     expect(response.ok()).toBeTruthy();
     const data = await response.json();
     expect(data.success).toBe(true);
@@ -156,6 +178,10 @@ test.describe('流控规则端到端测试', () => {
       headers: authHeaders(cookies),
     });
 
+    if (!response.ok()) {
+      const text = await response.text();
+      console.log(`❌ 删除请求失败: status=${response.status()}, body=${text}`);
+    }
     expect(response.ok()).toBeTruthy();
     const data = await response.json();
     expect(data.success).toBe(true);
@@ -196,12 +222,30 @@ test.describe('流控规则端到端测试', () => {
 });
 
 test.describe('降级规则端到端测试', () => {
+  test.describe.configure({ mode: 'serial' }); // 强制串行执行
+  
   let cookies: string;
   let ruleId: number;
   const SLOW_RESOURCE = '/api/slow';
 
   test.beforeAll(async ({ request }) => {
     cookies = await login(request);
+    // 清理历史测试数据
+    await cleanupTestRules(request, cookies);
+  });
+
+  test.afterAll(async ({ request }) => {
+    // 清理测试创建的降级规则（测试中已包含清理步骤，这里作为兜底）
+    if (ruleId) {
+      try {
+        await request.delete(`${DASHBOARD_URL}${API.dashboard.degradeRule}/${ruleId}`, {
+          headers: authHeaders(cookies),
+        });
+        console.log(`✅ 清理降级规则: ID=${ruleId}`);
+      } catch (error) {
+        // 规则可能在测试中已删除，忽略错误
+      }
+    }
   });
 
   test('1. 创建慢调用降级规则', async ({ request }) => {
@@ -275,12 +319,44 @@ test.describe('降级规则端到端测试', () => {
 });
 
 test.describe('热点参数规则端到端测试', () => {
+  test.describe.configure({ mode: 'serial' }); // 强制串行执行
+  
   let cookies: string;
   let ruleId: number;
   const PARAM_RESOURCE = '/api/param';
 
   test.beforeAll(async ({ request }) => {
     cookies = await login(request);
+    // 清理历史测试数据
+    await cleanupTestRules(request, cookies);
+  });
+
+  test.afterAll(async ({ request }) => {
+    // 清理测试创建的热点参数规则（测试中已包含清理步骤，这里作为兜底）
+    if (ruleId) {
+      try {
+        await request.delete(`${DASHBOARD_URL}${API.dashboard.paramFlowRule}/${ruleId}`, {
+          headers: authHeaders(cookies),
+        });
+        console.log(`✅ 清理热点参数规则: ID=${ruleId}`);
+      } catch (error) {
+        // 规则可能在测试中已删除，忽略错误
+      }
+    }
+  });
+
+  test.afterAll(async ({ request }) => {
+    // 清理测试创建的热点参数规则（测试中已包含清理步骤，这里作为兜底）
+    if (ruleId) {
+      try {
+        await request.delete(`${DASHBOARD_URL}${API.dashboard.paramFlowRule}/${ruleId}`, {
+          headers: authHeaders(cookies),
+        });
+        console.log(`✅ 清理热点参数规则: ID=${ruleId}`);
+      } catch (error) {
+        // 规则可能在测试中已删除，忽略错误
+      }
+    }
   });
 
   test('1. 创建热点参数规则', async ({ request }) => {
@@ -338,16 +414,24 @@ test.describe('热点参数规则端到端测试', () => {
       headers: authHeaders(cookies),
     });
 
+    if (!response.ok()) {
+      const text = await response.text();
+      console.log(`❌ 删除热点参数规则请求失败: status=${response.status()}, body=${text}`);
+    }
     expect(response.ok()).toBeTruthy();
     console.log(`✅ 删除热点参数规则成功`);
   });
 });
 
 test.describe('系统规则端到端测试', () => {
+  test.describe.configure({ mode: 'serial' }); // 强制串行执行
+  
   let cookies: string;
 
   test.beforeAll(async ({ request }) => {
     cookies = await login(request);
+    // 清理历史测试数据
+    await cleanupTestRules(request, cookies);
   });
 
   test('创建和验证系统规则', async ({ request }) => {
@@ -373,10 +457,14 @@ test.describe('系统规则端到端测试', () => {
 });
 
 test.describe('授权规则端到端测试', () => {
+  test.describe.configure({ mode: 'serial' }); // 强制串行执行
+  
   let cookies: string;
 
   test.beforeAll(async ({ request }) => {
     cookies = await login(request);
+    // 清理历史测试数据
+    await cleanupTestRules(request, cookies);
   });
 
   test('创建和验证授权规则', async ({ request }) => {

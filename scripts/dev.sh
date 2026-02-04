@@ -69,7 +69,7 @@ do_build() {
     export DOCKER_BUILDKIT=0
     export COMPOSE_DOCKER_CLI_BUILD=0
     
-    info "Step 1/4: 构建前端镜像..."
+    info "Step 1/5: 构建前端镜像..."
     if ! $DOCKER_COMPOSE build frontend >> "$log_file" 2>&1; then
         error "前端构建失败，查看日志: $log_file"
         tail -50 "$log_file"
@@ -83,7 +83,7 @@ do_build() {
     fi
     info "✓ 前端镜像已准备: sentinel/frontend:local"
     
-    info "Step 2/4: 构建 Dashboard 镜像..."
+    info "Step 2/5: 构建 Dashboard 镜像..."
     if ! $DOCKER_COMPOSE build sentinel-dashboard >> "$log_file" 2>&1; then
         error "Dashboard 构建失败，查看日志: $log_file"
         tail -50 "$log_file"
@@ -91,7 +91,7 @@ do_build() {
     fi
     info "✓ Dashboard 镜像已准备: sentinel/dashboard:local"
     
-    info "Step 3/4: 构建 Token Server 镜像..."
+    info "Step 3/5: 构建 Token Server 镜像..."
     if ! $DOCKER_COMPOSE build token-server >> "$log_file" 2>&1; then
         error "Token Server 构建失败，查看日志: $log_file"
         tail -50 "$log_file"
@@ -99,13 +99,21 @@ do_build() {
     fi
     info "✓ Token Server 镜像已准备: sentinel/token-server:local"
     
-    info "Step 4/4: 构建 Token Client 镜像..."
-    if ! $DOCKER_COMPOSE build token-client >> "$log_file" 2>&1; then
-        error "Token Client 构建失败，查看日志: $log_file"
+    info "Step 4/5: 构建 Demo Server 1 镜像..."
+    if ! $DOCKER_COMPOSE build demo-server1 >> "$log_file" 2>&1; then
+        error "Demo Server 1 构建失败，查看日志: $log_file"
         tail -50 "$log_file"
         exit 1
     fi
-    info "✓ Token Client 镜像已准备: sentinel/token-client:local"
+    info "✓ Demo Server 1 镜像已准备: sentinel/demo-server1:local"
+    
+    info "Step 5/5: 构建 Demo Server 2 镜像..."
+    if ! $DOCKER_COMPOSE build demo-server2 >> "$log_file" 2>&1; then
+        error "Demo Server 2 构建失败，查看日志: $log_file"
+        tail -50 "$log_file"
+        exit 1
+    fi
+    info "✓ Demo Server 2 镜像已准备: sentinel/demo-server2:local"
     
     info "所有镜像构建完成"
     rm -f "$log_file"

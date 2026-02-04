@@ -171,7 +171,7 @@ public class ClusterConfigController {
         }
         try {
             return clusterConfigService.getClusterUniversalState(app)
-                .thenApply(ClusterEntityUtils::wrapToAppClusterClientState)
+                .thenApply(list -> ClusterEntityUtils.wrapToAppClusterClientState(app, list))
                 .thenApply(Result::ofSuccess)
                 .get();
         } catch (ExecutionException ex) {
@@ -304,7 +304,7 @@ public class ClusterConfigController {
                     try {
                         List<AppClusterClientStateWrapVO> clients = 
                             clusterConfigService.getClusterUniversalState(appName)
-                                .thenApply(ClusterEntityUtils::wrapToAppClusterClientState)
+                                .thenApply(list -> ClusterEntityUtils.wrapToAppClusterClientState(appName, list))
                                 .get();
                         if (clients != null) {
                             result.addAll(clients);
@@ -317,7 +317,7 @@ public class ClusterConfigController {
             } else {
                 // 查询指定应用的 Token Client
                 return clusterConfigService.getClusterUniversalState(app)
-                    .thenApply(ClusterEntityUtils::wrapToAppClusterClientState)
+                    .thenApply(list -> ClusterEntityUtils.wrapToAppClusterClientState(app, list))
                     .thenApply(Result::ofSuccess)
                     .get();
             }

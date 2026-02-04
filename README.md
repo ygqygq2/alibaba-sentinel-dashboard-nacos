@@ -33,12 +33,22 @@
 |------|------|------|
 | **Sentinel Dashboard** | 控制台 | 前后端分离，规则管理、监控、集群管理 |
 | **Token Server** | 集群流控服务 | 独立部署，负责全局令牌分发（仅支持独立模式） |
-| **Token Client** | 接入示例 | 演示业务应用如何接入集群流控 |
+| **Demo Server 1** | 示例应用 1 | 演示业务应用接入集群流控，包含测试接口 |
+| **Demo Server 2** | 示例应用 2 | 演示业务应用接入集群流控，被 Server 1 调用 |
 
 **架构特点**：
 - ✅ 采用**独立模式（Standalone）**，Token Server 专用部署，不与业务应用耦合
-- ✅ Token Client 仅为示例，实际业务应用集成 Sentinel SDK 后即可作为 Client
+- ✅ Demo Server 1/2 演示真实业务场景，包括服务调用链路
 - ✅ 通过 Nacos 实现规则持久化和动态推送
+
+**服务调用链**：
+```
+Demo Server 1 (8082)  →  Demo Server 2 (8083)
+       ↓                        ↓
+    Token Server (18730) - 集群流控
+       ↓                        ↓
+         Dashboard - 规则配置和监控
+```
 
 ## 快速开始
 
@@ -121,9 +131,13 @@ make restart-build
 │   ├── src/                       # Java 源码
 │   ├── Dockerfile                 # Token Server 镜像
 │   └── pom.xml
-├── token-client/                  # Token Client（接入示例）
-│   ├── src/                       # Java 源码（演示业务应用接入）
-│   ├── Dockerfile                 # Token Client 镜像
+├── demo-server1/                  # Demo Server 1（示例应用）
+│   ├── src/                       # Java 源码（集群客户端模式 + 测试接口）
+│   ├── Dockerfile                 # Demo Server 1 镜像
+│   └── pom.xml
+├── demo-server2/                  # Demo Server 2（示例应用）
+│   ├── src/                       # Java 源码（集群客户端模式）
+│   ├── Dockerfile                 # Demo Server 2 镜像
 │   └── pom.xml
 ├── scripts/                       # 构建和测试脚本
 │   ├── dev.sh                     # 开发环境脚本

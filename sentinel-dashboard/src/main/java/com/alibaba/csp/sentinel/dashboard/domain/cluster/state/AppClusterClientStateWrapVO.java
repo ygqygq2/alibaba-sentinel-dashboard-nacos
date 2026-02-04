@@ -28,6 +28,13 @@ public class AppClusterClientStateWrapVO {
 
     private Integer commandPort;
     private String ip;
+    
+    // 新增扁平化字段，方便前端使用
+    private String app;  // 应用名称
+    private Integer port;  // 应用端口
+    private String serverHost;  // Token Server 地址
+    private Integer serverPort;  // Token Server 端口
+    private Integer requestTimeout;  // 请求超时（毫秒）
 
     private ClusterClientStateVO state;
 
@@ -67,12 +74,62 @@ public class AppClusterClientStateWrapVO {
         return this;
     }
 
+    public String getApp() {
+        return app;
+    }
+
+    public AppClusterClientStateWrapVO setApp(String app) {
+        this.app = app;
+        return this;
+    }
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public AppClusterClientStateWrapVO setPort(Integer port) {
+        this.port = port;
+        return this;
+    }
+
+    public String getServerHost() {
+        return serverHost;
+    }
+
+    public AppClusterClientStateWrapVO setServerHost(String serverHost) {
+        this.serverHost = serverHost;
+        return this;
+    }
+
+    public Integer getServerPort() {
+        return serverPort;
+    }
+
+    public AppClusterClientStateWrapVO setServerPort(Integer serverPort) {
+        this.serverPort = serverPort;
+        return this;
+    }
+
+    public Integer getRequestTimeout() {
+        return requestTimeout;
+    }
+
+    public AppClusterClientStateWrapVO setRequestTimeout(Integer requestTimeout) {
+        this.requestTimeout = requestTimeout;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "AppClusterClientStateWrapVO{" +
             "id='" + id + '\'' +
             ", commandPort=" + commandPort +
             ", ip='" + ip + '\'' +
+            ", app='" + app + '\'' +
+            ", port=" + port +
+            ", serverHost='" + serverHost + '\'' +
+            ", serverPort=" + serverPort +
+            ", requestTimeout=" + requestTimeout +
             ", state=" + state +
             '}';
     }

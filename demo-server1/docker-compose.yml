@@ -1,0 +1,24 @@
+# Token Server standalone
+# Requires Sentinel Dashboard to be running
+# Usage: docker-compose up -d
+services:
+  token-server:
+    image: sentinel/token-server:local
+    build:
+      context: .
+    container_name: token-server-standalone
+    environment:
+      - SERVER_PORT=8081
+      - SENTINEL_DASHBOARD_HOST=${SENTINEL_DASHBOARD_HOST:-host.docker.internal}
+      - SENTINEL_DASHBOARD_PORT=${SENTINEL_DASHBOARD_PORT:-8080}
+      - JAVA_OPTS=-Xms128m -Xmx256m
+    ports:
+      - "8081:8081"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8081/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s

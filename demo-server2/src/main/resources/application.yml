@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: demo-server2
+
+server:
+  port: 8083
+  servlet:
+    context-path: /
+
+# Sentinel Cluster Client 配置
+sentinel:
+  cluster:
+    client:
+      # Token Server 地址
+      server-host: ${TOKEN_SERVER_HOST:token-server}
+      # Token Server 端口
+      server-port: ${TOKEN_SERVER_PORT:18730}
+      # 请求超时时间（毫秒）
+      request-timeout: ${REQUEST_TIMEOUT:2000}
+
+# Nacos 配置（用于加载规则）
+nacos:
+  server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
+  username: ${NACOS_USERNAME:nacos}
+  password: ${NACOS_PASSWORD:nacos}
+  group-id: ${NACOS_GROUP_ID:SENTINEL_GROUP}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.alibaba.csp: DEBUG

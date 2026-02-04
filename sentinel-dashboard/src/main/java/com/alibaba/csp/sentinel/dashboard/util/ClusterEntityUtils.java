@@ -96,7 +96,7 @@ public final class ClusterEntityUtils {
     }
 
     public static List<AppClusterClientStateWrapVO> wrapToAppClusterClientState(
-        List<ClusterUniversalStatePairVO> list) {
+        String app, List<ClusterUniversalStatePairVO> list) {
         if (list == null || list.isEmpty()) {
             return new ArrayList<>();
         }
@@ -106,14 +106,32 @@ public final class ClusterEntityUtils {
 
             if (mode == ClusterStateManager.CLUSTER_CLIENT) {
                 String ip = stateVO.getIp();
-                String clientId = ip + '@' + stateVO.getCommandPort();
+                Integer commandPort = stateVO.getCommandPort();
+                String clientId = ip + '@' + commandPort;
                 ClusterClientStateVO clientStateVO = stateVO.getState().getClient();
-                map.computeIfAbsent(clientId, v -> new AppClusterClientStateWrapVO()
+                
+                // 获取客户端配置
+                com.alibaba.csp.sentinel.dashboard.domain.cluster.ClusterClientInfoVO clientConfig = 
+                    clientStateVO != null ? clientStateVO.getClientConfig() : null;
+                
+                AppClusterClientStateWrapVO wrapVO = new AppClusterClientStateWrapVO()
                     .setId(clientId)
                     .setIp(ip)
+                    .setCommandPort(commandPort)
                     .setState(clientStateVO)
-                    .setCommandPort(stateVO.getCommandPort())
-                );
+                    .setApp(app);
+                
+                // 填充客户端端口：使用 commandPort 作为应用端口
+                wrapVO.setPort(commandPort);
+                
+                // 填充 Token Server 信息
+                if (clientConfig != null) {
+                    wrapVO.setServerHost(clientConfig.getServerHost());
+                    wrapVO.setServerPort(clientConfig.getServerPort());
+                    wrapVO.setRequestTimeout(clientConfig.getRequestTimeout());
+                }
+                
+                map.putIfAbsent(clientId, wrapVO);
             }
         }
         return new ArrayList<>(map.values());

@@ -21,7 +21,7 @@ help:
 	@echo "=================================================="
 	@echo ""
 	@echo "🐳 服务管理:"
-	@echo "  make build         - 构建所有镜像（前端 + Dashboard + Token Server）"
+	@echo "  make build         - 构建所有镜像（前端 + Dashboard + Token Server + Demo Servers）"
 	@echo "  make up            - 启动所有服务（不构建）"
 	@echo "  make up-build      - 构建并启动所有服务"
 	@echo "  make down          - 停止并删除服务"

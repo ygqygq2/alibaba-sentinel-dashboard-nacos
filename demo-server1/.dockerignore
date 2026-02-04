@@ -1,0 +1,41 @@
+# Docker
+
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# IDE
+
+.idea/
+_.iml
+.vscode/
+_.swp
+\*.swo
+
+# Build output (will be generated in container)
+
+target/
+
+# Git
+
+.git/
+.gitignore
+
+# Documentation
+
+\*.md
+LICENSE
+
+# Logs
+
+\*.log
+logs/
+
+# Test files
+
+src/test/
+
+# OS files
+
+.DS_Store
+Thumbs.db

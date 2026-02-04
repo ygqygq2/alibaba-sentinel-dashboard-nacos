@@ -135,39 +135,91 @@ services:
       retries: 10
       start_period: 60s
 
-  token-client:
-    image: ${TOKEN_CLIENT_IMAGE:-sentinel/token-client:local}
+  demo-server1:
+    image: ${DEMO_SERVER1_IMAGE:-sentinel/demo-server1:local}
     restart: always
     build:
-      context: ./token-client
+      context: ./demo-server1
       args:
         - USE_CHINA_MIRROR=${USE_CHINA_MIRROR:-false}
-    container_name: token-client
+    container_name: demo-server1
+    hostname: demo-server1
     depends_on:
       sentinel-dashboard:
         condition: service_healthy
       token-server:
         condition: service_healthy
     environment:
-      - SPRING_APPLICATION_NAME=sentinel-token-client
+      - APP_NAME=demo-server1
       - SERVER_PORT=8082
       # Sentinel Dashboard 配置
-      - CSP_SENTINEL_DASHBOARD_SERVER=sentinel-dashboard:8080
+      - SENTINEL_DASHBOARD_HOST=sentinel-dashboard
+      - SENTINEL_DASHBOARD_PORT=8080
       - CSP_SENTINEL_API_PORT=8720
-      - PROJECT_NAME=sentinel-token-client
+      - SERVICE_NAME=demo-server1
+      # Dashboard 注册
+      - REGISTER_TO_DASHBOARD=true
       # 客户端鉴权密钥
       - CSP_SENTINEL_APP_SECRET=${AUTH_APP_SECRET:-sentinel_app_secret}
-      # Token Server 地址（集群模式）
+      # Token Server 地址（集群客户端模式）
       - TOKEN_SERVER_HOST=token-server
       - TOKEN_SERVER_PORT=18730
       # Nacos 配置
       - NACOS_SERVER_ADDR=nacos:8848
+      - NACOS_GROUP_ID=SENTINEL_GROUP
+      # 启用测试接口
+      - DEMO_API_ENABLED=true
+      # Demo Server 2 地址（用于调用链）
+      - DEMO_SERVER2_URL=http://demo-server2:8083
       - JAVA_OPTS=-Xms128m -Xmx256m
     ports:
       - "8082:8082" # HTTP 服务端口
       - "8720:8720" # Sentinel API 端口
     healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:8082/api/health"]
+      test: ["CMD", "curl", "-sf", "http://localhost:8082/actuator/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  demo-server2:
+    image: ${DEMO_SERVER2_IMAGE:-sentinel/demo-server2:local}
+    restart: always
+    build:
+      context: ./demo-server2
+      args:
+        - USE_CHINA_MIRROR=${USE_CHINA_MIRROR:-false}
+    container_name: demo-server2
+    hostname: demo-server2
+    depends_on:
+      sentinel-dashboard:
+        condition: service_healthy
+      token-server:
+        condition: service_healthy
+    environment:
+      - APP_NAME=demo-server2
+      - SERVER_PORT=8083
+      # Sentinel Dashboard 配置
+      - SENTINEL_DASHBOARD_HOST=sentinel-dashboard
+      - SENTINEL_DASHBOARD_PORT=8080
+      - CSP_SENTINEL_API_PORT=8721
+      - SERVICE_NAME=demo-server2
+      # Dashboard 注册
+      - REGISTER_TO_DASHBOARD=true
+      # 客户端鉴权密钥
+      - CSP_SENTINEL_APP_SECRET=${AUTH_APP_SECRET:-sentinel_app_secret}
+      # Token Server 地址（集群客户端模式）
+      - TOKEN_SERVER_HOST=token-server
+      - TOKEN_SERVER_PORT=18730
+      # Nacos 配置
+      - NACOS_SERVER_ADDR=nacos:8848
+      - NACOS_GROUP_ID=SENTINEL_GROUP
+      - JAVA_OPTS=-Xms128m -Xmx256m
+    ports:
+      - "8083:8083" # HTTP 服务端口
+      - "8721:8721" # Sentinel API 端口
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8083/api/health"]
       interval: 15s
       timeout: 10s
       retries: 10

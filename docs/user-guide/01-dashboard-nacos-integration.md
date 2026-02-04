@@ -402,4 +402,4 @@ curl -X GET 'http://localhost:8848/nacos/v1/cs/configs?dataId=my-app-flow-rules&
 
 - [应用客户端集成 Nacos](02-client-integration.md)
 - [配置验证和调试](03-configuration-validation.md)
-- [故障排查](../../08-TROUBLESHOOTING.md)
+- [故障排查](../../08-troubleshooting.md)

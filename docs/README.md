@@ -27,14 +27,14 @@
 
 | 文档                                                     | 说明       |
 | -------------------------------------------------------- | ---------- |
-| [01-QUICK-START.md](01-QUICK-START.md)                   | 快速开始   |
-| [02-ARCHITECTURE.md](02-ARCHITECTURE.md)                 | 系统架构   |
-| [03-NACOS-INTEGRATION.md](03-NACOS-INTEGRATION.md)       | Nacos 集成 |
-| [04-CLUSTER-FLOW-CONTROL.md](04-CLUSTER-FLOW-CONTROL.md) | 集群流控   |
-| [05-DEPLOYMENT.md](05-DEPLOYMENT.md)                     | 部署指南   |
-| [06-DEVELOPMENT.md](06-DEVELOPMENT.md)                   | 开发指南   |
-| [07-API-REFERENCE.md](07-API-REFERENCE.md)               | API 参考   |
-| [08-TROUBLESHOOTING.md](08-TROUBLESHOOTING.md)           | 故障排查   |
+| [01-quick-start.md](01-quick-start.md)                   | 快速开始   |
+| [02-architecture.md](02-architecture.md)                 | 系统架构   |
+| [03-nacos-integration.md](03-nacos-integration.md)       | Nacos 集成 |
+| [04-cluster-flow-control.md](04-cluster-flow-control.md) | 集群流控   |
+| [05-deployment.md](05-deployment.md)                     | 部署指南   |
+| [06-development.md](06-development.md)                   | 开发指南   |
+| [07-api-reference.md](07-api-reference.md)               | API 参考   |
+| [08-troubleshooting.md](08-troubleshooting.md)           | 故障排查   |
 
 ---
 

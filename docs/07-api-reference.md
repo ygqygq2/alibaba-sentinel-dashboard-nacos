@@ -437,4 +437,4 @@ public class SentinelApiClient {
 
 ## 下一步
 
-- [故障排查](08-TROUBLESHOOTING.md) - 常见问题解决
+- [故障排查](08-troubleshooting.md) - 常见问题解决

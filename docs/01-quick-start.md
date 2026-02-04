@@ -127,6 +127,6 @@ docker-compose down
 
 ## 下一步
 
-- [架构设计](02-ARCHITECTURE.md) - 了解系统架构
-- [Nacos 集成](03-NACOS-INTEGRATION.md) - 深入了解规则持久化
-- [集群限流](04-CLUSTER-FLOW-CONTROL.md) - 配置集群限流
+- [架构设计](02-architecture.md) - 了解系统架构
+- [Nacos 集成](03-nacos-integration.md) - 深入了解规则持久化
+- [集群限流](04-cluster-flow-control.md) - 配置集群限流

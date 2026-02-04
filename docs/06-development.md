@@ -403,5 +403,5 @@ docker-compose build --build-arg USE_CHINA_MIRROR=true
 
 ## 下一步
 
-- [API 参考](07-API-REFERENCE.md) - REST API 文档
-- [故障排查](08-TROUBLESHOOTING.md) - 问题解决
+- [API 参考](07-api-reference.md) - REST API 文档
+- [故障排查](08-troubleshooting.md) - 问题解决

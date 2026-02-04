@@ -413,4 +413,4 @@ open http://localhost:8080
 
 - [Dashboard 与 Nacos 集成](01-dashboard-nacos-integration.md)
 - [应用客户端集成 Nacos](02-client-integration.md)
-- [故障排查](../../08-TROUBLESHOOTING.md)
+- [故障排查](../../08-troubleshooting.md)

@@ -526,4 +526,4 @@ public class TestController {
 
 - [Dashboard 与 Nacos 集成](01-dashboard-nacos-integration.md)
 - [配置验证和调试](03-configuration-validation.md)
-- [故障排查](../../08-TROUBLESHOOTING.md)
+- [故障排查](../../08-troubleshooting.md)

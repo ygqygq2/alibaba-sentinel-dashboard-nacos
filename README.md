@@ -11,21 +11,34 @@
 
 - 🎨 **现代化 UI**：React 19 + TypeScript + Chakra UI，支持暗色主题
 - 💾 **Nacos 持久化**：规则自动持久化到 Nacos，支持动态推送
-- 🔗 **完整集群流控**：Token Server/Client 管理，支持自动降级
+- 🔗 **独立集群流控**：专用 Token Server，独立部署模式，生产级可靠性
 - 🔒 **安全增强**：客户端 API 鉴权，生产环境安全建议
 - 📊 **实时监控**：QPS、RT、并发数等指标的实时图表
 - 🧪 **测试完善**：130+ E2E 测试用例，保证质量
 
 ## 📚 文档
 
-- [快速开始](docs/01-QUICK-START.md) - 5 分钟快速部署
-- [架构设计](docs/02-ARCHITECTURE.md) - 技术选型和设计决策
-- [Nacos 集成](docs/03-NACOS-INTEGRATION.md) - 规则持久化方案
-- [集群流控](docs/04-CLUSTER-FLOW-CONTROL.md) - Token Server 配置
+- [快速开始](docs/01-quick-start.md) - 5 分钟快速部署
+- [架构设计](docs/02-architecture.md) - 技术选型和设计决策
+- [Nacos 集成](docs/03-nacos-integration.md) - 规则持久化方案
+- [集群流控](docs/04-cluster-flow-control.md) - Token Server 配置
 - [FAQ](docs/FAQ.md) - 常见问题解答
 - [CHANGELOG](CHANGELOG.md) - 版本更新日志
 
 ## 🎯 项目概述
+
+本项目包含以下核心组件：
+
+| 组件 | 角色 | 说明 |
+|------|------|------|
+| **Sentinel Dashboard** | 控制台 | 前后端分离，规则管理、监控、集群管理 |
+| **Token Server** | 集群流控服务 | 独立部署，负责全局令牌分发（仅支持独立模式） |
+| **Token Client** | 接入示例 | 演示业务应用如何接入集群流控 |
+
+**架构特点**：
+- ✅ 采用**独立模式（Standalone）**，Token Server 专用部署，不与业务应用耦合
+- ✅ Token Client 仅为示例，实际业务应用集成 Sentinel SDK 后即可作为 Client
+- ✅ 通过 Nacos 实现规则持久化和动态推送
 
 ## 快速开始
 
@@ -104,18 +117,22 @@ make restart-build
 │   ├── src/main/webapp/           # 前端构建产物目录
 │   ├── Dockerfile                 # Dashboard 镜像
 │   └── pom.xml
-├── token-server/                  # Token Server（集群流控）
+├── token-server/                  # Token Server（独立集群流控）
 │   ├── src/                       # Java 源码
 │   ├── Dockerfile                 # Token Server 镜像
+│   └── pom.xml
+├── token-client/                  # Token Client（接入示例）
+│   ├── src/                       # Java 源码（演示业务应用接入）
+│   ├── Dockerfile                 # Token Client 镜像
 │   └── pom.xml
 ├── scripts/                       # 构建和测试脚本
 │   ├── dev.sh                     # 开发环境脚本
 │   ├── e2e-test.sh                # E2E 测试脚本
 │   └── generate-metric-data.sh    # 监控数据生成脚本
 ├── docs/                          # 项目文档
-│   ├── 00-INDEX.md                # 文档索引
-│   ├── 01-QUICK-START.md          # 快速开始
-│   ├── 02-ARCHITECTURE.md         # 架构设计
+│   ├── 00-index.md                # 文档索引
+│   ├── 01-quick-start.md          # 快速开始
+│   ├── 02-architecture.md         # 架构设计
 │   └── ...                        # 其他文档
 ├── Makefile                       # 构建入口（make help）
 ├── docker-compose.yml             # Docker Compose 配置
@@ -224,14 +241,14 @@ make restart-build
 
 ### 技术文档
 
-- [快速开始](docs/01-QUICK-START.md) - 5 分钟快速体验
-- [架构设计](docs/02-ARCHITECTURE.md) - 系统架构说明
-- [Nacos 集成](docs/03-NACOS-INTEGRATION.md) - 技术实现细节
-- [集群流控](docs/04-CLUSTER-FLOW-CONTROL.md) - 集群流控配置
-- [部署指南](docs/05-DEPLOYMENT.md) - 生产环境部署
-- [开发指南](docs/06-DEVELOPMENT.md) - 二次开发指引
-- [API 参考](docs/07-API-REFERENCE.md) - REST API 文档
-- [故障排查](docs/08-TROUBLESHOOTING.md) - 常见问题解决
+- [快速开始](docs/01-quick-start.md) - 5 分钟快速体验
+- [架构设计](docs/02-architecture.md) - 系统架构说明
+- [Nacos 集成](docs/03-nacos-integration.md) - 技术实现细节
+- [集群流控](docs/04-cluster-flow-control.md) - 集群流控配置
+- [部署指南](docs/05-deployment.md) - 生产环境部署
+- [开发指南](docs/06-development.md) - 二次开发指引
+- [API 参考](docs/07-api-reference.md) - REST API 文档
+- [故障排查](docs/08-troubleshooting.md) - 常见问题解决
 
 ## 开发指南
 
@@ -351,5 +368,5 @@ Apache License 2.0
 
 - 提交 Issue
 - 发起 Pull Request
-- 查看 [故障排查指南](docs/08-TROUBLESHOOTING.md)
-- 查看 [完整文档索引](docs/00-INDEX.md)
+- 查看 [故障排查指南](docs/08-troubleshooting.md)
+- 查看 [完整文档索引](docs/00-index.md)

@@ -39,4 +39,4 @@
 
 - [返回主文档](../README.md)
 - [技术文档索引](../00-INDEX.md)
-- [快速开始](../01-QUICK-START.md)
+- [快速开始](../01-quick-start.md)

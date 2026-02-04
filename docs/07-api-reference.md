@@ -247,11 +247,119 @@ POST /v2/authority/rule
 
 ## 集群流控
 
-### 获取集群状态
+### 获取 Token Server 列表
+
+```http
+GET /cluster/server_list?app={app}
+```
+
+**参数:**
+
+- `app`: 应用名称（可选）
+  - 不传：返回所有独立部署的 Token Server
+  - 传值：返回该应用的所有 Token Server（含嵌入模式）
+
+**响应示例（全局查询）:**
+
+```json
+{
+  "success": true,
+  "code": 0,
+  "data": [
+    {
+      "app": "sentinel-token-server",
+      "ip": "172.19.0.4",
+      "commandPort": 8719,
+      "state": {
+        "stateInfo": {
+          "mode": 1,
+          "clientAvailable": false,
+          "serverAvailable": true
+        },
+        "server": {
+          "port": 18730,
+          "transport": {
+            "port": 18730,
+            "idleSeconds": 600
+          },
+          "flow": {
+            "maxAllowedQps": 30000.0,
+            "sampleCount": 10,
+            "intervalMs": 1000
+          },
+          "namespaceSet": ["default"],
+          "embedded": false
+        }
+      }
+    }
+  ]
+}
+```
+
+### 获取 Token Client 列表
+
+```http
+GET /cluster/client_list?app={app}
+```
+
+**参数:**
+
+- `app`: 应用名称（可选）
+  - 不传：返回所有应用的 Token Client
+  - 传值：返回该应用的 Token Client
+
+**响应示例:**
+
+```json
+{
+  "success": true,
+  "code": 0,
+  "data": [
+    {
+      "app": "sentinel-token-client",
+      "ip": "172.19.0.5",
+      "commandPort": 8720,
+      "state": {
+        "stateInfo": {
+          "mode": 2,
+          "clientAvailable": true,
+          "serverAvailable": false
+        },
+        "client": {
+          "clientConfig": {
+            "serverHost": "token-server",
+            "serverPort": 18730,
+            "requestTimeout": 20000
+          },
+          "clientSet": []
+        }
+      }
+    }
+  ]
+}
+```
+
+**状态字段说明:**
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| mode | int | 集群模式：0-单机，1-Token Server，2-Token Client |
+| clientAvailable | boolean | 客户端是否可用 |
+| serverAvailable | boolean | 服务端是否可用 |
+| embedded | boolean | 是否嵌入模式（仅 Server） |
+| serverHost | string | Token Server 地址（仅 Client） |
+| serverPort | int | Token Server 端口（仅 Client） |
+| requestTimeout | int | 请求超时时间 ms（仅 Client） |
+
+### 获取应用集群状态
 
 ```http
 GET /cluster/state/{app}
 ```
+
+**参数:**
+
+- `app`: 应用名称
 
 **响应:**
 
@@ -261,12 +369,12 @@ GET /cluster/state/{app}
   "code": 0,
   "data": [
     {
-      "ip": "token-server",
+      "ip": "172.19.0.4",
       "commandPort": 8719,
       "state": {
         "stateInfo": {
           "mode": 1,
-          "clientAvailable": true,
+          "clientAvailable": false,
           "serverAvailable": true
         },
         "server": {
@@ -280,19 +388,64 @@ GET /cluster/state/{app}
 }
 ```
 
-### 修改集群模式
+### 获取单个实例集群状态
 
 ```http
-POST /cluster/modifyClusterMode
+GET /cluster/state_single?app={app}&ip={ip}&port={port}
 ```
 
 **参数:**
+
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | app | string | 是 | 应用名称 |
 | ip | string | 是 | 机器 IP |
-| port | int | 是 | 机器端口 |
-| mode | int | 是 | 模式：0-客户端，1-服务端 |
+| port | int | 是 | 命令端口（如 8719） |
+
+### 修改集群配置
+
+```http
+POST /cluster/config/modify_single
+```
+
+**请求体（Token Server 配置）:**
+
+```json
+{
+  "app": "my-app",
+  "ip": "192.168.1.100",
+  "port": 8719,
+  "mode": 1,
+  "maxAllowedQps": 50000
+}
+```
+
+**请求体（Token Client 配置）:**
+
+```json
+{
+  "app": "my-app",
+  "ip": "192.168.1.101",
+  "port": 8719,
+  "mode": 2,
+  "serverHost": "token-server",
+  "serverPort": 18730,
+  "requestTimeout": 20000
+}
+```
+
+**参数说明:**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| app | string | 是 | 应用名称 |
+| ip | string | 是 | 机器 IP |
+| port | int | 是 | 命令端口 |
+| mode | int | 是 | 模式：0-单机，1-Token Server，2-Token Client |
+| maxAllowedQps | double | 否 | Server 最大 QPS（mode=1） |
+| serverHost | string | 否 | Token Server 地址（mode=2） |
+| serverPort | int | 否 | Token Server 端口（mode=2） |
+| requestTimeout | int | 否 | 请求超时 ms（mode=2） |
 
 ## 实时监控
 

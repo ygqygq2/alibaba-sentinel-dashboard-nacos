@@ -25,6 +25,27 @@ test.describe('授权规则完整流程', () => {
     await page.waitForTimeout(500);
   }
 
+  async function waitForAuthorityRuleRow(
+    page: import('@playwright/test').Page,
+    resource: string,
+    timeout = 15000
+  ) {
+    const row = page.locator(`tr:has-text("${resource}")`).first();
+    const deadline = Date.now() + timeout;
+
+    while (Date.now() < deadline) {
+      await page.reload({ waitUntil: 'networkidle' });
+      await filterByResource(page, resource);
+      if (await row.isVisible().catch(() => false)) {
+        return row;
+      }
+      await page.waitForTimeout(500);
+    }
+
+    await expect(row).toBeVisible({ timeout: 1000 });
+    return row;
+  }
+
   test('创建 → 验证显示 → 持久化 → 修改 → 删除（白名单）', async ({ page }) => {
     await page.goto('/dashboard/apps/sentinel-token-server/authority');
     await page.waitForLoadState('networkidle');
@@ -47,22 +68,17 @@ test.describe('授权规则完整流程', () => {
 
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/authority(?:$|\?)/, { timeout: 5000 });
-    await page.waitForLoadState('networkidle');
-    await page.reload({ waitUntil: 'networkidle' });
-    await filterByResource(page, testResource);
 
     // ============================================
     // 步骤 2: 验证规则在列表中显示
     // ============================================
-    await expect(page.locator(`tr:has-text("${testResource}")`).first()).toBeVisible({ timeout: 10000 });
+    const createdRow = await waitForAuthorityRuleRow(page, testResource);
+    await expect(createdRow).toBeVisible({ timeout: 10000 });
 
     // ============================================
     // 步骤 3: 刷新页面验证持久化（Nacos）
     // ============================================
-    await page.reload();
-    await page.waitForTimeout(1000);
-    await filterByResource(page, testResource);
-    await expect(page.locator(`tr:has-text("${testResource}")`).first()).toBeVisible({ timeout: 5000 });
+    await expect(await waitForAuthorityRuleRow(page, testResource, 10000)).toBeVisible({ timeout: 5000 });
 
     // ============================================
     // 步骤 4: 修改规则
@@ -123,12 +139,9 @@ test.describe('授权规则完整流程', () => {
 
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/authority(?:$|\?)/, { timeout: 5000 });
-    await page.waitForLoadState('networkidle');
-    await page.reload({ waitUntil: 'networkidle' });
-    await filterByResource(page, testResource);
 
     // 验证创建成功
-    await expect(page.locator(`tr:has-text("${testResource}")`).first()).toBeVisible({ timeout: 10000 });
+    await expect(await waitForAuthorityRuleRow(page, testResource)).toBeVisible({ timeout: 10000 });
 
     // 清理：删除规则
     await filterByResource(page, testResource);

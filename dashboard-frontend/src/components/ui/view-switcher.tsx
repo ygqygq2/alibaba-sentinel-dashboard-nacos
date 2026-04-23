@@ -38,6 +38,8 @@ export function ViewSwitcher({ value, options, onChange, size = 'sm' }: ViewSwit
         <Button
           key={option.value}
           variant={value === option.value ? 'solid' : 'outline'}
+          aria-pressed={value === option.value}
+          data-view-option={option.value}
           onClick={() => onChange(option.value)}
         >
           {option.label}

@@ -61,6 +61,8 @@ export function InstanceSelector({ app, value, onChange, onAutoSelect }: Instanc
       disabled={isLoading || healthyInstances.length === 0}
     >
       <NativeSelect.Field
+        name="instanceSelector"
+        aria-label="实例选择"
         value={value ?? ''}
         onChange={handleChange}
         placeholder={isLoading ? '加载中...' : healthyInstances.length === 0 ? '无可用实例' : '选择实例'}

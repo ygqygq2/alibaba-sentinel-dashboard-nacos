@@ -1,102 +1,110 @@
 import { test, expect } from '@playwright/test';
-import { ClusterLinkPage } from '../pages';
 
 test.describe('簇点链路', () => {
-  const APP_NAME = 'token-server';
-  let clusterLinkPage: ClusterLinkPage;
+  const APP_NAME = 'sentinel-token-server';
+
+  const getInstanceSelect = (page: import('@playwright/test').Page) => page.getByRole('combobox').first();
+  const getSearchInput = (page: import('@playwright/test').Page) => page.getByPlaceholder(/搜索资源名/);
+  const getResourceTable = (page: import('@playwright/test').Page) => page.locator('table').first();
+
+  async function gotoIdentityPage(page: import('@playwright/test').Page) {
+    await page.goto(`/dashboard/apps/${APP_NAME}/identity`);
+    await page.waitForLoadState('networkidle');
+  }
+
+  async function expectIdentityLoaded(page: import('@playwright/test').Page) {
+    await expect(page.getByRole('heading', { name: APP_NAME })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('簇点链路').first()).toBeVisible({ timeout: 10000 });
+    await expect(getInstanceSelect(page)).toBeVisible({ timeout: 10000 });
+  }
 
   test.beforeEach(async ({ page }) => {
-    clusterLinkPage = new ClusterLinkPage(page);
-    await clusterLinkPage.goto(APP_NAME);
-    await clusterLinkPage.expectLoaded();
+    await gotoIdentityPage(page);
+    await expectIdentityLoaded(page);
   });
 
-  test('加载簇点链路页面', async () => {
-    await clusterLinkPage.expectLoaded();
-  });
+  test('加载簇点链路页面并自动选择实例', async ({ page }) => {
+    const instanceSelect = getInstanceSelect(page);
+    const optionCount = await instanceSelect.locator('option').count();
 
-  test('搜索功能 - 搜索资源名称', async ({ page }) => {
-    // 等待资源加载
-    await page.waitForTimeout(1000);
-
-    // 查找搜索输入框
-    const searchInput = page
-      .locator('input[type="text"], input[placeholder*="搜索"], input[placeholder*="查找"]')
-      .first();
-
-    // 如果找到搜索框，进行搜索测试
-    const searchBoxCount = await searchInput.count();
-    if (searchBoxCount > 0) {
-      // 输入搜索关键词
-      await searchInput.fill('/system/version');
-
-      // 等待搜索结果更新
-      await page.waitForTimeout(500);
-
-      // 验证搜索结果：至少有一个包含搜索关键词的结果或无结果提示
-      const tableRows = page.locator('table tbody tr');
-      const rowCount = await tableRows.count();
-
-      if (rowCount > 0) {
-        // 验证搜索结果包含关键词
-        const firstRow = tableRows.first();
-        const rowText = await firstRow.textContent();
-        expect(rowText?.toLowerCase()).toContain('system');
-      } else {
-        // 验证显示无结果提示或实例选择提示
-        const noData = page.locator('text=/请先选择|暂无|没有|无数据/');
-        await expect(noData.first()).toBeVisible({ timeout: 5000 });
-      }
-
-      // 清空搜索
-      await searchInput.clear();
-      await page.waitForTimeout(500);
+    if (optionCount > 0) {
+      await expect.poll(async () => instanceSelect.inputValue(), { timeout: 10000 }).not.toBe('');
+      await expect(page.getByText('请先选择一台实例')).toHaveCount(0);
+      await expect(getResourceTable(page)).toBeVisible({ timeout: 10000 });
+    } else {
+      await expect(instanceSelect).toBeDisabled();
+      await expect(page.getByText('请先选择一台实例')).toBeVisible({ timeout: 10000 });
     }
   });
 
-  test('搜索功能 - 清空搜索恢复列表', async ({ page }) => {
-    // 等待资源加载
-    await page.waitForTimeout(1000);
+  test('支持列表视图与树状视图切换', async ({ page }) => {
+    const listButton = page.getByRole('button', { name: '列表视图' });
+    const treeButton = page.getByRole('button', { name: '树状视图' });
+    const table = getResourceTable(page);
 
-    const searchInput = page.locator('input[type="text"]').first();
-    const searchBoxCount = await searchInput.count();
+    await expect(listButton).toBeVisible();
+    await expect(treeButton).toBeVisible();
+    await expect(table).toBeVisible({ timeout: 10000 });
 
-    if (searchBoxCount > 0) {
-      // 记录原始行数
-      const originalCount = await page.locator('table tbody tr').count();
+    await treeButton.click();
+    await page.waitForTimeout(300);
+    await expect(getResourceTable(page)).toBeVisible({ timeout: 10000 });
 
-      // 输入搜索
-      await searchInput.fill('nonexistent_resource_12345');
-      await page.waitForTimeout(500);
-
-      // 清空搜索
-      await searchInput.clear();
-      await page.waitForTimeout(500);
-
-      // 验证行数恢复
-      const currentCount = await page.locator('table tbody tr').count();
-      expect(currentCount).toBeGreaterThanOrEqual(originalCount - 5); // 允许少量差异（可能有新数据）
-    }
+    await listButton.click();
+    await page.waitForTimeout(300);
+    await expect(getResourceTable(page)).toBeVisible({ timeout: 10000 });
   });
 
-  test('搜索功能 - 支持防抖', async ({ page }) => {
-    // 等待资源加载
-    await page.waitForTimeout(1000);
+  test('搜索资源后可过滤并在清空后恢复', async ({ page }) => {
+    const instanceSelect = getInstanceSelect(page);
+    const optionCount = await instanceSelect.locator('option').count();
+    test.skip(optionCount === 0, '当前环境没有可用实例，无法验证资源搜索');
 
-    const searchInput = page.locator('input[type="text"]').first();
-    const searchBoxCount = await searchInput.count();
+    await expect.poll(async () => instanceSelect.inputValue(), { timeout: 10000 }).not.toBe('');
 
-    if (searchBoxCount > 0) {
-      // 快速输入多个字符，测试防抖
-      await searchInput.type('test', { delay: 50 });
+    const rows = page.locator('table tbody tr');
+    const rowCount = await rows.count();
+    test.skip(rowCount === 0, '当前实例没有资源数据，无法验证搜索过滤');
 
-      // 等待防抖延迟（300ms）
-      await page.waitForTimeout(400);
+    const firstResourceCell = rows.first().locator('td').first();
+    const rawText = (await firstResourceCell.textContent()) ?? '';
+    const searchKeyword = rawText
+      .split(/\s+/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .pop();
 
-      // 验证只触发了一次搜索（通过网络请求或 UI 更新）
-      // 这里简单验证页面没有崩溃且有响应
-      const tableOrEmptyState = page.locator('table, text=/暂无|没有/');
-      await expect(tableOrEmptyState.first()).toBeVisible({ timeout: 5000 });
+    expect(searchKeyword).toBeTruthy();
+
+    const searchInput = getSearchInput(page);
+    await searchInput.fill(searchKeyword!);
+    await page.waitForTimeout(400);
+
+    await expect(rows.first().locator('td').first()).toContainText(searchKeyword!);
+
+    await searchInput.clear();
+    await page.waitForTimeout(400);
+    await expect(rows.first()).toBeVisible({ timeout: 10000 });
+  });
+
+  test('多实例时允许切换实例，单实例时保持当前选择', async ({ page }) => {
+    const instanceSelect = getInstanceSelect(page);
+    const options = instanceSelect.locator('option');
+    const optionCount = await options.count();
+    test.skip(optionCount === 0, '当前环境没有可用实例');
+
+    await expect.poll(async () => instanceSelect.inputValue(), { timeout: 10000 }).not.toBe('');
+
+    if (optionCount === 1) {
+      await expect(instanceSelect).toHaveValue(await options.first().getAttribute('value'));
+      return;
     }
+
+    const secondValue = await options.nth(1).getAttribute('value');
+    expect(secondValue).toBeTruthy();
+
+    await instanceSelect.selectOption(secondValue!);
+    await expect(instanceSelect).toHaveValue(secondValue!);
+    await expect(getResourceTable(page)).toBeVisible({ timeout: 10000 });
   });
 });

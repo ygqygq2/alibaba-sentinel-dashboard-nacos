@@ -11,7 +11,7 @@ test.describe('降级规则 - 基础功能', () => {
   });
 
   test('显示降级规则页面', async ({ page }) => {
-    await expect(page.getByText(/降级规则|熔断降级/).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(/降级规则|熔断规则|熔断降级/).first()).toBeVisible({ timeout: 10000 });
   });
 
   test('有新增规则按钮', async ({ page }) => {

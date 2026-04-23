@@ -20,6 +20,7 @@ test.describe('热点参数规则 - 单参数限流', () => {
 
     await page.locator('input[name="resource"]').fill(testResource);
     await page.locator('input[name="count"]').fill('5'); // 单机阈值
+    await page.locator('input[name="durationInSec"]').fill('1');
 
     // 设置参数索引（第一个参数）
     const paramIdxInput = page.locator('input[name="paramIdx"]');
@@ -53,13 +54,11 @@ test.describe('热点参数规则 - 单参数限流', () => {
     await page.goto('/dashboard/apps/sentinel-token-server/param-flow');
     await page.waitForLoadState('networkidle');
 
-    const deleteButton = page.locator(`tr:has-text("${testResource}") button:has-text("删除")`).first();
+    const deleteButton = page.locator(`tr:has-text("${testResource}") button[aria-label="删除"]`).first();
     if (await deleteButton.isVisible({ timeout: 2000 })) {
+      page.once('dialog', async (dialog) => await dialog.accept());
       await deleteButton.click();
-      const confirmButton = page.locator('button:has-text("确定")').first();
-      if (await confirmButton.isVisible({ timeout: 2000 })) {
-        await confirmButton.click();
-      }
+      await page.waitForTimeout(1000);
     }
   });
 });

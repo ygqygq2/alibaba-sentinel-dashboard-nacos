@@ -35,19 +35,19 @@ test.describe('流控规则 - Warm Up预热', () => {
     }
 
     // 设置预热时长（秒）
-    const warmUpInput = page.locator('input[name="warmUpPeriodSec"], [name="预热时长"]');
-    if (await warmUpInput.isVisible({ timeout: 2000 })) {
-      await warmUpInput.fill('10'); // 10秒预热
-    }
+    await page.getByLabel(/预热时长\(秒\)/).fill('10');
 
-    await page.locator('button[type="submit"]').first().click();
+    await page.getByRole('button', { name: '创建' }).click();
     await page.waitForTimeout(3000);
 
     // ============================================
     // 步骤 2: 验证规则创建成功
     // ============================================
     await expect(page).toHaveURL(/\/flow($|\?)/, { timeout: 10000 });
-    await expect(page.locator(`text="${testResource}"`).first()).toBeVisible({ timeout: 10000 });
+    const searchInput = page.getByPlaceholder(/搜索资源名\/来源/);
+    await searchInput.fill(testResource);
+    await page.waitForTimeout(500);
+    await expect(page.locator(`tr:has-text("${testResource}")`).first()).toBeVisible({ timeout: 10000 });
 
     // 验证Nacos中的规则配置
     const nacosResponse = await request.get(
@@ -67,14 +67,14 @@ test.describe('流控规则 - Warm Up预热', () => {
     // ============================================
     await page.goto('/dashboard/apps/sentinel-token-server/flow');
     await page.waitForLoadState('networkidle');
+    await searchInput.fill(testResource);
+    await page.waitForTimeout(500);
 
-    const deleteButton = page.locator(`tr:has-text("${testResource}") button:has-text("删除")`).first();
+    const deleteButton = page.locator(`tr:has-text("${testResource}") button[aria-label="删除"]`).first();
     if (await deleteButton.isVisible({ timeout: 2000 })) {
+      page.once('dialog', async (dialog) => await dialog.accept());
       await deleteButton.click();
-      const confirmButton = page.locator('button:has-text("确定")').first();
-      if (await confirmButton.isVisible({ timeout: 2000 })) {
-        await confirmButton.click();
-      }
+      await page.waitForTimeout(1000);
     }
   });
 });

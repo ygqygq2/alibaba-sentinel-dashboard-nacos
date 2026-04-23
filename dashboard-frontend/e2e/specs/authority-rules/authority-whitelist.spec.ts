@@ -5,6 +5,12 @@ import { test, expect } from '@playwright/test';
  * 测试基于来源的白名单授权控制
  */
 test.describe('授权规则 - 白名单', () => {
+  async function filterByResource(page: import('@playwright/test').Page, resource: string) {
+    const searchInput = page.getByPlaceholder(/搜索资源名/);
+    await searchInput.fill(resource);
+    await page.waitForTimeout(500);
+  }
+
   test('创建白名单授权规则', async ({ page, request }) => {
     await page.goto('/dashboard/apps/sentinel-token-server/authority');
     await page.waitForLoadState('networkidle');
@@ -39,7 +45,8 @@ test.describe('授权规则 - 白名单', () => {
     // 步骤 2: 验证规则创建成功
     // ============================================
     await expect(page).toHaveURL(/\/authority($|\?)/, { timeout: 10000 });
-    await expect(page.locator(`text="${testResource}"`).first()).toBeVisible({ timeout: 10000 });
+    await filterByResource(page, testResource);
+    await expect(page.locator(`tr:has-text("${testResource}")`).first()).toBeVisible({ timeout: 10000 });
 
     // 验证Nacos中的规则
     const nacosResponse = await request.get(
@@ -58,14 +65,13 @@ test.describe('授权规则 - 白名单', () => {
     // ============================================
     await page.goto('/dashboard/apps/sentinel-token-server/authority');
     await page.waitForLoadState('networkidle');
+    await filterByResource(page, testResource);
 
-    const deleteButton = page.locator(`tr:has-text("${testResource}") button:has-text("删除")`).first();
+    const deleteButton = page.locator(`tr:has-text("${testResource}") button[aria-label="删除"]`).first();
     if (await deleteButton.isVisible({ timeout: 2000 })) {
+      page.once('dialog', async (dialog) => await dialog.accept());
       await deleteButton.click();
-      const confirmButton = page.locator('button:has-text("确定")').first();
-      if (await confirmButton.isVisible({ timeout: 2000 })) {
-        await confirmButton.click();
-      }
+      await page.waitForTimeout(1000);
     }
   });
 });

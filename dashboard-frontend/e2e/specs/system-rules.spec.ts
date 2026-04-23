@@ -19,6 +19,17 @@ test.describe('系统规则管理', () => {
 });
 
 test.describe('系统规则完整流程', () => {
+  async function waitForSystemRuleRow(page: import('@playwright/test').Page, text: string) {
+    const row = page.locator('tr').filter({ hasText: text }).first();
+    try {
+      await expect(row).toBeVisible({ timeout: 10000 });
+    } catch {
+      await page.reload({ waitUntil: 'networkidle' });
+      await expect(row).toBeVisible({ timeout: 10000 });
+    }
+    return row;
+  }
+
   test('创建 → 验证显示 → 持久化 → 修改 → 删除（LOAD类型）', async ({ page }) => {
     await page.goto('/dashboard/apps/sentinel-token-server/system');
     await page.waitForLoadState('networkidle');
@@ -43,14 +54,13 @@ test.describe('系统规则完整流程', () => {
     // ============================================
     // 步骤 2: 验证规则在列表中显示
     // ============================================
-    await expect(page.locator('tr').filter({ hasText: 'LOAD' }).first()).toBeVisible({ timeout: 5000 });
+    await waitForSystemRuleRow(page, 'LOAD');
 
     // ============================================
     // 步骤 3: 刷新页面验证持久化（Nacos）
     // ============================================
-    await page.reload();
-    await page.waitForTimeout(1000);
-    await expect(page.locator('tr').filter({ hasText: 'LOAD' }).first()).toBeVisible({ timeout: 5000 });
+    await page.reload({ waitUntil: 'networkidle' });
+    await waitForSystemRuleRow(page, 'LOAD');
 
     // ============================================
     // 步骤 4: 修改规则（可选 - 先跳过以减少测试复杂度）
@@ -104,10 +114,10 @@ test.describe('系统规则完整流程', () => {
 
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/system(?:$|\?)/, { timeout: 5000 });
-    await page.waitForTimeout(2000); // 等待规则列表刷新
+    await page.waitForLoadState('networkidle');
 
     // 验证创建成功 - 只需要看到 CPU 类型的规则
-    await expect(page.locator('tr').filter({ hasText: 'CPU' }).first()).toBeVisible({ timeout: 10000 });
+    await waitForSystemRuleRow(page, 'CPU');
 
     // 清理：删除规则
     const deleteButton = page.locator('tr').filter({ hasText: 'CPU' }).locator('button[aria-label="删除"]').first();
@@ -129,10 +139,10 @@ test.describe('系统规则完整流程', () => {
 
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/system(?:$|\?)/, { timeout: 5000 });
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // 验证创建成功
-    await expect(page.locator('tr:has-text("QPS"), tr:has-text("入口QPS")').first()).toBeVisible({ timeout: 5000 });
+    await waitForSystemRuleRow(page, '入口 QPS');
 
     // 清理：删除规则
     const deleteButton = page

@@ -5,6 +5,12 @@ import { test, expect } from '@playwright/test';
  * 测试基于并发线程数的流量控制
  */
 test.describe('流控规则 - 线程数限流', () => {
+  async function filterByResource(page: import('@playwright/test').Page, resource: string) {
+    const searchInput = page.getByPlaceholder(/搜索资源名\/来源/);
+    await searchInput.fill(resource);
+    await page.waitForTimeout(500);
+  }
+
   test('创建线程数限流规则并验证效果', async ({ page, request }) => {
     await page.goto('/dashboard/apps/sentinel-token-server/flow');
     await page.waitForLoadState('networkidle');
@@ -35,7 +41,8 @@ test.describe('流控规则 - 线程数限流', () => {
     // 步骤 2: 验证规则创建成功
     // ============================================
     await expect(page).toHaveURL(/\/flow($|\?)/, { timeout: 10000 });
-    await expect(page.locator(`text="${testResource}"`).first()).toBeVisible({ timeout: 10000 });
+    await filterByResource(page, testResource);
+    await expect(page.locator(`tr:has-text("${testResource}")`).first()).toBeVisible({ timeout: 10000 });
 
     // ============================================
     // 步骤 3: 验证线程数限流效果
@@ -57,14 +64,13 @@ test.describe('流控规则 - 线程数限流', () => {
     // ============================================
     await page.goto('/dashboard/apps/sentinel-token-server/flow');
     await page.waitForLoadState('networkidle');
+    await filterByResource(page, testResource);
 
-    const deleteButton = page.locator(`tr:has-text("${testResource}") button:has-text("删除")`).first();
+    const deleteButton = page.locator(`tr:has-text("${testResource}") button[aria-label="删除"]`).first();
     if (await deleteButton.isVisible({ timeout: 2000 })) {
+      page.once('dialog', async (dialog) => await dialog.accept());
       await deleteButton.click();
-      const confirmButton = page.locator('button:has-text("确定")').first();
-      if (await confirmButton.isVisible({ timeout: 2000 })) {
-        await confirmButton.click();
-      }
+      await page.waitForTimeout(1000);
     }
   });
 });

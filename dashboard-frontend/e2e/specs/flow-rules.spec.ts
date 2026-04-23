@@ -29,6 +29,12 @@ test.describe('流控规则管理', () => {
 });
 
 test.describe('流控规则完整流程', () => {
+  async function filterByResource(page: import('@playwright/test').Page, resource: string) {
+    const searchInput = page.getByPlaceholder(/搜索资源名\/来源/);
+    await searchInput.fill(resource);
+    await page.waitForTimeout(500);
+  }
+
   test('创建 → 验证显示 → 持久化 → 修改 → 删除', async ({ page }) => {
     await page.goto('/dashboard/apps/sentinel-token-server/flow');
     await page.waitForLoadState('networkidle');
@@ -52,18 +58,20 @@ test.describe('流控规则完整流程', () => {
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/flow(?:$|\?)/, { timeout: 5000 });
     await page.waitForTimeout(3000);
+    await filterByResource(page, testResource);
 
     // ============================================
     // 步骤 2: 验证规则在列表中显示
     // ============================================
-    await expect(page.getByText(testResource).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator(`tr:has-text("${testResource}")`).first()).toBeVisible({ timeout: 10000 });
 
     // ============================================
     // 步骤 3: 刷新页面验证持久化（Nacos）
     // ============================================
     await page.reload();
     await page.waitForTimeout(1000);
-    await expect(page.getByText(testResource).first()).toBeVisible({ timeout: 5000 });
+    await filterByResource(page, testResource);
+    await expect(page.locator(`tr:has-text("${testResource}")`).first()).toBeVisible({ timeout: 5000 });
 
     // ============================================
     // 步骤 4: 修改规则
@@ -85,6 +93,7 @@ test.describe('流控规则完整流程', () => {
       await page.click('button[type="submit"]');
       await expect(page).toHaveURL(/\/flow(?:$|\?)/, { timeout: 5000 });
       await page.waitForTimeout(1000);
+      await filterByResource(page, testResource);
 
       // 验证修改成功
       const row = page.locator(`tr:has-text("${testResource}")`);
@@ -94,6 +103,7 @@ test.describe('流控规则完整流程', () => {
     // ============================================
     // 步骤 5: 删除规则
     // ============================================
+    await filterByResource(page, testResource);
     const deleteButton = page.locator(`tr:has-text("${testResource}") button[aria-label="删除"]`).first();
 
     // 处理 window.confirm 弹窗
@@ -306,7 +316,7 @@ test.describe('流控规则完整流程', () => {
 
     // 选择流控效果：Warm Up
     await page.locator('select[name="controlBehavior"]').selectOption({ value: '1' }); // Warm Up
-    await page.locator('input[name="warmUpPeriodSec"]').fill('10'); // 预热时长 10 秒
+    await page.getByLabel(/预热时长\(秒\)/).fill('10'); // 预热时长 10 秒
 
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/flow(?:$|\?)/, { timeout: 5000 });

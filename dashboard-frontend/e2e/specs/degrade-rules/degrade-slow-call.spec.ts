@@ -5,6 +5,12 @@ import { test, expect } from '@playwright/test';
  * 测试基于慢调用比例的熔断降级功能
  */
 test.describe('降级规则 - 慢调用比例熔断', () => {
+  async function filterByResource(page: import('@playwright/test').Page, resource: string) {
+    const searchInput = page.getByPlaceholder(/搜索资源名/);
+    await searchInput.fill(resource);
+    await page.waitForTimeout(500);
+  }
+
   test('创建慢调用比例规则并验证熔断效果', async ({ page, request }) => {
     await page.goto('/dashboard/apps/sentinel-token-server/degrade');
     await page.waitForLoadState('networkidle');
@@ -22,40 +28,21 @@ test.describe('降级规则 - 慢调用比例熔断', () => {
     await page.locator('input[name="resource"]').fill(testResource);
 
     // 选择慢调用比例模式（grade=0）
-    const gradeSelect = page.locator('select[name="grade"], [name="熔断策略"]');
-    if (await gradeSelect.isVisible({ timeout: 2000 })) {
-      await gradeSelect.selectOption({ value: '0' }); // 0=慢调用比例
-    }
-
-    // 设置慢调用临界RT（毫秒）
-    await page.locator('input[name="slowRatioThreshold"], input[name="count"]').fill('100');
-
-    // 设置比例阈值（0-1之间，如0.5表示50%）
-    const ratioInput = page.locator('input[name="slowRatio"]');
-    if (await ratioInput.isVisible({ timeout: 2000 })) {
-      await ratioInput.fill('0.5'); // 50%的请求慢于100ms就熔断
-    }
-
-    // 设置最小请求数
-    const minRequestInput = page.locator('input[name="minRequestAmount"]');
-    if (await minRequestInput.isVisible({ timeout: 2000 })) {
-      await minRequestInput.fill('5');
-    }
-
-    // 设置熔断时长（秒）
-    const timeWindowInput = page.locator('input[name="timeWindow"]');
-    if (await timeWindowInput.isVisible({ timeout: 2000 })) {
-      await timeWindowInput.fill('10');
-    }
+    await page.locator('select[name="grade"]').selectOption({ value: '0' });
+    await page.locator('input[name="timeWindow"]').fill('10');
+    await page.locator('input[name="statIntervalMs"]').fill('100');
+    await page.locator('input[name="slowRatioThreshold"]').fill('0.5');
+    await page.locator('input[name="minRequestAmount"]').fill('5');
 
     await page.locator('button[type="submit"]').first().click();
-    await page.waitForTimeout(3000);
+    await page.waitForLoadState('networkidle');
 
     // ============================================
     // 步骤 2: 验证规则创建成功
     // ============================================
     await expect(page).toHaveURL(/\/degrade($|\?)/, { timeout: 10000 });
-    await expect(page.locator(`text="${testResource}"`).first()).toBeVisible({ timeout: 10000 });
+    await filterByResource(page, testResource);
+    await expect(page.locator(`tr:has-text("${testResource}")`).first()).toBeVisible({ timeout: 10000 });
 
     // 验证Nacos中的规则
     const nacosResponse = await request.get(
@@ -74,14 +61,13 @@ test.describe('降级规则 - 慢调用比例熔断', () => {
     // ============================================
     await page.goto('/dashboard/apps/sentinel-token-server/degrade');
     await page.waitForLoadState('networkidle');
+    await filterByResource(page, testResource);
 
-    const deleteButton = page.locator(`tr:has-text("${testResource}") button:has-text("删除")`).first();
+    const deleteButton = page.locator(`tr:has-text("${testResource}") button[aria-label="删除"]`).first();
     if (await deleteButton.isVisible({ timeout: 2000 })) {
+      page.once('dialog', async (dialog) => await dialog.accept());
       await deleteButton.click();
-      const confirmButton = page.locator('button:has-text("确定")').first();
-      if (await confirmButton.isVisible({ timeout: 2000 })) {
-        await confirmButton.click();
-      }
+      await page.waitForTimeout(1000);
     }
   });
 });

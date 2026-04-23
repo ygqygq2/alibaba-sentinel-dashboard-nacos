@@ -19,6 +19,12 @@ test.describe('降级规则管理', () => {
 });
 
 test.describe('降级规则完整流程', () => {
+  async function filterByResource(page: import('@playwright/test').Page, resource: string) {
+    const searchInput = page.getByPlaceholder(/搜索资源名/);
+    await searchInput.fill(resource);
+    await page.waitForTimeout(500);
+  }
+
   test('创建 → 验证显示 → 持久化 → 修改 → 删除', async ({ page }) => {
     // 监听网络请求以调试 API 错误
     let apiResponse: any = null;
@@ -75,18 +81,20 @@ test.describe('降级规则完整流程', () => {
 
     await expect(page).toHaveURL(/\/degrade(?:$|\?)/, { timeout: 10000 });
     await page.waitForTimeout(3000);
+    await filterByResource(page, testResource);
 
     // ============================================
     // 步骤 2: 验证规则在列表中显示
     // ============================================
-    await expect(page.getByText(testResource).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator(`tr:has-text("${testResource}")`).first()).toBeVisible({ timeout: 10000 });
 
     // ============================================
     // 步骤 3: 刷新页面验证持久化（Nacos）
     // ============================================
     await page.reload();
     await page.waitForTimeout(1000);
-    await expect(page.getByText(testResource).first()).toBeVisible({ timeout: 5000 });
+    await filterByResource(page, testResource);
+    await expect(page.locator(`tr:has-text("${testResource}")`).first()).toBeVisible({ timeout: 5000 });
 
     // ============================================
     // 步骤 4: 修改规则
@@ -104,6 +112,7 @@ test.describe('降级规则完整流程', () => {
       await page.click('button[type="submit"]');
       await expect(page).toHaveURL(/\/degrade(?:$|\?)/, { timeout: 5000 });
       await page.waitForTimeout(1000);
+      await filterByResource(page, testResource);
 
       // 验证修改成功
       const row = page.locator(`tr:has-text("${testResource}")`);
@@ -113,6 +122,7 @@ test.describe('降级规则完整流程', () => {
     // ============================================
     // 步骤 5: 删除规则
     // ============================================
+    await filterByResource(page, testResource);
     const deleteButton = page.locator(`tr:has-text("${testResource}") button[aria-label="删除"]`).first();
 
     // 处理 window.confirm 弹窗
@@ -148,11 +158,13 @@ test.describe('降级规则完整流程', () => {
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/degrade(?:$|\?)/, { timeout: 5000 });
     await page.waitForTimeout(1000);
+    await filterByResource(page, testResource);
 
     // 验证创建成功
-    await expect(page.getByText(testResource).first()).toBeVisible({ timeout: 5000 });
+    await expect(page.locator(`tr:has-text("${testResource}")`).first()).toBeVisible({ timeout: 5000 });
 
     // 清理：删除规则
+    await filterByResource(page, testResource);
     const deleteButton = page.locator(`tr:has-text("${testResource}") button[aria-label="删除"]`).first();
     page.once('dialog', async (dialog) => await dialog.accept());
     await deleteButton.click();
@@ -180,11 +192,13 @@ test.describe('降级规则完整流程', () => {
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/degrade(?:$|\?)/, { timeout: 5000 });
     await page.waitForTimeout(2000);
+    await filterByResource(page, testResource);
 
     // 验证创建成功
-    await expect(page.getByText(testResource).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator(`tr:has-text("${testResource}")`).first()).toBeVisible({ timeout: 10000 });
 
     // 清理：删除规则
+    await filterByResource(page, testResource);
     const deleteButton = page.locator(`tr:has-text("${testResource}") button[aria-label="删除"]`).first();
     page.once('dialog', async (dialog) => await dialog.accept());
     await deleteButton.click();
@@ -308,12 +322,21 @@ test.describe('降级规则完整流程', () => {
     let errorCount = 0;
     let circuitOpenCount = 0;
 
-    // 触发异常（使用 error=true）
+    // 触发异常回退（使用 100% 错误率）
     for (let i = 0; i < 5; i++) {
-      const response = await request.get(`${tokenServerUrl}/api/degrade/error?error=true`).catch(() => null);
+      const response = await request
+        .get(`${tokenServerUrl}/api/degrade/error?errorRate=100`)
+        .then(async (res) => {
+          const body = await res.text().catch(() => '');
+          return { status: res.status(), body, ok: res.ok() };
+        })
+        .catch(() => null);
       if (response) {
-        if (response.ok()) successCount++;
-        else errorCount++;
+        if (response.body.includes('Fallback for error')) {
+          errorCount++;
+        } else if (response.ok) {
+          successCount++;
+        }
       }
     }
 
@@ -322,7 +345,7 @@ test.describe('降级规则完整流程', () => {
     // 再次请求，验证是否被熔断
     for (let i = 0; i < 5; i++) {
       const response = await request
-        .get(`${tokenServerUrl}/api/degrade/error`)
+        .get(`${tokenServerUrl}/api/degrade/error?errorRate=0`)
         .then(async (res) => {
           const body = await res.text().catch(() => '');
           return { status: res.status(), body, ok: res.ok() };
@@ -344,7 +367,7 @@ test.describe('降级规则完整流程', () => {
       `降级测试结果（异常比例）: 异常${errorCount}个, 熔断后成功${successCount}个/被熔断${circuitOpenCount}个`
     );
 
-    expect(errorCount + successCount + circuitOpenCount).toBeGreaterThan(0);
+    expect(errorCount).toBeGreaterThan(0);
 
     // ============================================
     // 步骤 3: 清理
@@ -390,10 +413,16 @@ test.describe('降级规则完整流程', () => {
     let exceptionTriggered = 0;
     let circuitOpenCount = 0;
 
-    // 触发异常（使用 shouldError=true），达到阈值
+    // 触发异常回退（使用 shouldError=true），达到阈值
     for (let i = 0; i < 5; i++) {
-      const response = await request.get(`${tokenServerUrl}/api/degrade/exception?shouldError=true`).catch(() => null);
-      if (response && !response.ok()) {
+      const response = await request
+        .get(`${tokenServerUrl}/api/degrade/exception?shouldError=true`)
+        .then(async (res) => {
+          const body = await res.text().catch(() => '');
+          return { status: res.status(), body, ok: res.ok() };
+        })
+        .catch(() => null);
+      if (response?.body.includes('Fallback for exception')) {
         exceptionTriggered++;
       }
     }

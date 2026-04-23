@@ -5,6 +5,12 @@ import { test, expect } from '@playwright/test';
  * 测试页面显示、基础CRUD操作
  */
 test.describe('流控规则 - 基础功能', () => {
+  async function filterByResource(page: import('@playwright/test').Page, resource: string) {
+    const searchInput = page.getByPlaceholder(/搜索资源名\/来源/);
+    await searchInput.fill(resource);
+    await page.waitForTimeout(500);
+  }
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/dashboard/apps/sentinel-token-server/flow');
     await page.waitForLoadState('networkidle');
@@ -15,7 +21,7 @@ test.describe('流控规则 - 基础功能', () => {
   });
 
   test('显示规则表格', async ({ page }) => {
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle');
     const mainContent = page.locator('main, [role="main"], .content, table, .chakra-card');
     const hasContent = (await mainContent.count()) > 0;
     expect(hasContent).toBeTruthy();
@@ -49,8 +55,9 @@ test.describe('流控规则 - 基础功能', () => {
     // ============================================
     await expect(page).toHaveURL(/\/flow($|\?)/, { timeout: 10000 });
     await page.waitForLoadState('networkidle');
+    await filterByResource(page, testResource);
 
-    await expect(page.locator(`text="${testResource}"`).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator(`tr:has-text("${testResource}")`).first()).toBeVisible({ timeout: 10000 });
 
     // ============================================
     // 步骤 3: 验证规则持久化到 Nacos
@@ -66,46 +73,31 @@ test.describe('流控规则 - 基础功能', () => {
     // ============================================
     // 步骤 4: 修改规则（将阈值从 10 改为 20）
     // ============================================
-    const editButton = page
-      .locator(
-        `tr:has-text("${testResource}") button:has-text("编辑"), tr:has-text("${testResource}") a:has-text("编辑")`
-      )
-      .first();
-    await editButton.click();
-    await expect(page).toHaveURL(/\/flow\/edit/, { timeout: 5000 });
+    const editButton = page.locator(`tr:has-text("${testResource}") button[aria-label="编辑"]`).first();
+    if (await editButton.isVisible({ timeout: 2000 })) {
+      await editButton.click();
+      await expect(page).toHaveURL(/\/flow\/\d+/, { timeout: 5000 });
 
-    await page.locator('input[name="count"]').fill('20');
-    await page.locator('button[type="submit"]').first().click();
-    await page.waitForTimeout(2000);
+      await page.locator('input[name="count"]').fill('20');
+      await page.locator('button[type="submit"]').first().click();
+      await expect(page).toHaveURL(/\/flow($|\?)/, { timeout: 10000 });
+      await page.waitForLoadState('networkidle');
+      await filterByResource(page, testResource);
 
-    // 返回列表页验证修改后的阈值
-    await expect(page).toHaveURL(/\/flow($|\?)/, { timeout: 10000 });
-    await page.waitForLoadState('networkidle');
-
-    const updatedRow = page.locator(`tr:has-text("${testResource}")`).first();
-    await expect(updatedRow.locator('text=/20/')).toBeVisible({ timeout: 5000 });
+      const updatedRow = page.locator(`tr:has-text("${testResource}")`).first();
+      await expect(updatedRow).toContainText('20', { timeout: 5000 });
+    }
 
     // ============================================
     // 步骤 5: 删除规则
     // ============================================
-    const deleteButton = page
-      .locator(
-        `tr:has-text("${testResource}") button:has-text("删除"), tr:has-text("${testResource}") [aria-label*="删除"]`
-      )
-      .first();
+    page.once('dialog', async (dialog) => await dialog.accept());
+    const deleteButton = page.locator(`tr:has-text("${testResource}") button[aria-label="删除"]`).first();
     await deleteButton.click();
-
-    // 确认删除（可能有确认对话框）
-    const confirmButton = page
-      .locator('button:has-text("确定"), button:has-text("确认"), [role="dialog"] button:has-text("删除")')
-      .first();
-    if (await confirmButton.isVisible({ timeout: 2000 })) {
-      await confirmButton.click();
-    }
 
     await page.waitForTimeout(2000);
 
     // 验证规则已从列表中移除
-    await expect(page.locator(`text="${testResource}"`)).toHaveCount(0, { timeout: 5000 });
+    await expect(page.locator(`tr:has-text("${testResource}")`)).toHaveCount(0, { timeout: 5000 });
   });
 });

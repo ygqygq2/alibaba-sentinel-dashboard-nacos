@@ -32,7 +32,7 @@ test.describe('流控规则 - 排队等待', () => {
     await page.waitForTimeout(1000);
 
     // 等待超时时间字段动态显示（controlBehavior=2 时才显示）
-    const timeoutInput = page.locator('input[name="maxQueueingTimeMs"]');
+    const timeoutInput = page.getByLabel(/超时时间\(ms\)/);
     console.log('等待超时时间字段出现...');
     await timeoutInput.waitFor({ state: 'visible', timeout: 10000 });
 
@@ -40,7 +40,6 @@ test.describe('流控规则 - 排队等待', () => {
     await timeoutInput.click();
     await timeoutInput.clear();
     await timeoutInput.fill('2000');
-    await timeoutInput.press('Enter'); // 触发表单事件
 
     // 等待 React 状态更新
     await page.waitForTimeout(500);
@@ -54,14 +53,19 @@ test.describe('流控规则 - 排队等待', () => {
 
     // 尝试点击提交按钮
     console.log('点击提交按钮...');
-    await submitButton.click({ timeout: 5000 });
-    await page.waitForTimeout(3000);
+    await Promise.all([
+      page.waitForURL(/\/flow($|\?)/, { timeout: 10000 }),
+      submitButton.click({ force: true }),
+    ]);
+    await page.waitForLoadState('networkidle');
 
     // ============================================
     // 步骤 2: 验证规则创建成功
     // ============================================
-    await expect(page).toHaveURL(/\/flow($|\?)/, { timeout: 10000 });
-    await expect(page.locator(`text="${testResource}"`).first()).toBeVisible({ timeout: 10000 });
+    const searchInput = page.getByPlaceholder(/搜索资源名\/来源/);
+    await searchInput.fill(testResource);
+    await page.waitForTimeout(500);
+    await expect(page.locator(`tr:has-text("${testResource}")`).first()).toBeVisible({ timeout: 10000 });
 
     // 验证Nacos中的规则配置
     const nacosResponse = await request.get(
@@ -81,14 +85,14 @@ test.describe('流控规则 - 排队等待', () => {
     // ============================================
     await page.goto('/dashboard/apps/sentinel-token-server/flow');
     await page.waitForLoadState('networkidle');
+    await searchInput.fill(testResource);
+    await page.waitForTimeout(500);
 
-    const deleteButton = page.locator(`tr:has-text("${testResource}") button:has-text("删除")`).first();
+    const deleteButton = page.locator(`tr:has-text("${testResource}") button[aria-label="删除"]`).first();
     if (await deleteButton.isVisible({ timeout: 2000 })) {
+      page.once('dialog', async (dialog) => await dialog.accept());
       await deleteButton.click();
-      const confirmButton = page.locator('button:has-text("确定")').first();
-      if (await confirmButton.isVisible({ timeout: 2000 })) {
-        await confirmButton.click();
-      }
+      await page.waitForTimeout(1000);
     }
   });
 });

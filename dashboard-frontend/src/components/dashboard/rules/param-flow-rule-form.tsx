@@ -255,6 +255,7 @@ export function ParamFlowRuleForm({
             <Flex gap={2}>
               <NativeSelect.Root flex={1}>
                 <NativeSelect.Field
+                  name="classType"
                   value={newItem.classType}
                   onChange={(e) => setNewItem((prev) => ({ ...prev, classType: e.target.value }))}
                 >
@@ -270,12 +271,14 @@ export function ParamFlowRuleForm({
                 <NativeSelect.Indicator />
               </NativeSelect.Root>
               <Input
+                name="paramValue"
                 flex={2}
                 value={newItem.object}
                 onChange={(e) => setNewItem((prev) => ({ ...prev, object: e.target.value }))}
                 placeholder="参数值"
               />
               <Input
+                name="exceptionCount"
                 flex={1}
                 type="number"
                 value={newItem.count}

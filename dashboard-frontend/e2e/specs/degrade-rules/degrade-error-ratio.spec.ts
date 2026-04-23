@@ -5,6 +5,12 @@ import { test, expect } from '@playwright/test';
  * 测试基于异常比例的熔断降级功能
  */
 test.describe('降级规则 - 异常比例熔断', () => {
+  async function filterByResource(page: import('@playwright/test').Page, resource: string) {
+    const searchInput = page.getByPlaceholder(/搜索资源名/);
+    await searchInput.fill(resource);
+    await page.waitForTimeout(500);
+  }
+
   test('创建异常比例规则并验证熔断效果', async ({ page, request }) => {
     await page.goto('/dashboard/apps/sentinel-token-server/degrade');
     await page.waitForLoadState('networkidle');
@@ -48,7 +54,8 @@ test.describe('降级规则 - 异常比例熔断', () => {
     // 步骤 2: 验证规则创建成功
     // ============================================
     await expect(page).toHaveURL(/\/degrade($|\?)/, { timeout: 10000 });
-    await expect(page.locator(`text="${testResource}"`).first()).toBeVisible({ timeout: 10000 });
+    await filterByResource(page, testResource);
+    await expect(page.locator(`tr:has-text("${testResource}")`).first()).toBeVisible({ timeout: 10000 });
 
     // 验证Nacos中的规则
     const nacosResponse = await request.get(
@@ -67,14 +74,13 @@ test.describe('降级规则 - 异常比例熔断', () => {
     // ============================================
     await page.goto('/dashboard/apps/sentinel-token-server/degrade');
     await page.waitForLoadState('networkidle');
+    await filterByResource(page, testResource);
 
-    const deleteButton = page.locator(`tr:has-text("${testResource}") button:has-text("删除")`).first();
+    const deleteButton = page.locator(`tr:has-text("${testResource}") button[aria-label="删除"]`).first();
     if (await deleteButton.isVisible({ timeout: 2000 })) {
+      page.once('dialog', async (dialog) => await dialog.accept());
       await deleteButton.click();
-      const confirmButton = page.locator('button:has-text("确定")').first();
-      if (await confirmButton.isVisible({ timeout: 2000 })) {
-        await confirmButton.click();
-      }
+      await page.waitForTimeout(1000);
     }
   });
 });

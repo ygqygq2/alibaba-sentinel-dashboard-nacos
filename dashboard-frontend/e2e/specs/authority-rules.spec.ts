@@ -19,6 +19,12 @@ test.describe('授权规则管理', () => {
 });
 
 test.describe('授权规则完整流程', () => {
+  async function filterByResource(page: import('@playwright/test').Page, resource: string) {
+    const searchInput = page.getByPlaceholder(/搜索资源名/);
+    await searchInput.fill(resource);
+    await page.waitForTimeout(500);
+  }
+
   test('创建 → 验证显示 → 持久化 → 修改 → 删除（白名单）', async ({ page }) => {
     await page.goto('/dashboard/apps/sentinel-token-server/authority');
     await page.waitForLoadState('networkidle');
@@ -41,19 +47,22 @@ test.describe('授权规则完整流程', () => {
 
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/authority(?:$|\?)/, { timeout: 5000 });
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
+    await page.reload({ waitUntil: 'networkidle' });
+    await filterByResource(page, testResource);
 
     // ============================================
     // 步骤 2: 验证规则在列表中显示
     // ============================================
-    await expect(page.getByText(testResource).first()).toBeVisible({ timeout: 5000 });
+    await expect(page.locator(`tr:has-text("${testResource}")`).first()).toBeVisible({ timeout: 10000 });
 
     // ============================================
     // 步骤 3: 刷新页面验证持久化（Nacos）
     // ============================================
     await page.reload();
     await page.waitForTimeout(1000);
-    await expect(page.getByText(testResource).first()).toBeVisible({ timeout: 5000 });
+    await filterByResource(page, testResource);
+    await expect(page.locator(`tr:has-text("${testResource}")`).first()).toBeVisible({ timeout: 5000 });
 
     // ============================================
     // 步骤 4: 修改规则
@@ -71,6 +80,7 @@ test.describe('授权规则完整流程', () => {
       await page.click('button[type="submit"]');
       await expect(page).toHaveURL(/\/authority(?:$|\?)/, { timeout: 5000 });
       await page.waitForTimeout(1000);
+      await filterByResource(page, testResource);
 
       // 验证修改成功
       const row = page.locator(`tr:has-text("${testResource}")`);
@@ -80,6 +90,7 @@ test.describe('授权规则完整流程', () => {
     // ============================================
     // 步骤 5: 删除规则
     // ============================================
+    await filterByResource(page, testResource);
     const deleteButton = page.locator(`tr:has-text("${testResource}") button[aria-label="删除"]`).first();
 
     // 处理 window.confirm 弹窗
@@ -91,7 +102,7 @@ test.describe('授权规则完整流程', () => {
     await page.waitForTimeout(1000);
 
     // 验证删除成功
-    await expect(page.getByText(testResource)).not.toBeVisible({ timeout: 3000 });
+    await expect(page.locator(`tr:has-text("${testResource}")`)).not.toBeVisible({ timeout: 3000 });
   });
 
   test('创建黑名单规则', async ({ page }) => {
@@ -112,12 +123,15 @@ test.describe('授权规则完整流程', () => {
 
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/authority(?:$|\?)/, { timeout: 5000 });
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
+    await page.reload({ waitUntil: 'networkidle' });
+    await filterByResource(page, testResource);
 
     // 验证创建成功
-    await expect(page.getByText(testResource).first()).toBeVisible({ timeout: 5000 });
+    await expect(page.locator(`tr:has-text("${testResource}")`).first()).toBeVisible({ timeout: 10000 });
 
     // 清理：删除规则
+    await filterByResource(page, testResource);
     const deleteButton = page.locator(`tr:has-text("${testResource}") button[aria-label="删除"]`).first();
     page.once('dialog', async (dialog) => await dialog.accept());
     await deleteButton.click();

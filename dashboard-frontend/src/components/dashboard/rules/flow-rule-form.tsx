@@ -251,6 +251,7 @@ export function FlowRuleForm({
         {formData.controlBehavior === 1 && (
           <FormInput
             label="预热时长(秒)"
+            name="warmUpPeriodSec"
             required
             type="number"
             value={formData.warmUpPeriodSec || ''}

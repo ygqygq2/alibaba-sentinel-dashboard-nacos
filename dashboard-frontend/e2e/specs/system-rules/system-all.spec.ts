@@ -1,5 +1,35 @@
 import { test, expect } from '@playwright/test';
 
+async function createAndAssertSystemRule(
+  page: import('@playwright/test').Page,
+  options: {
+    ruleType: 'load' | 'cpu' | 'rt' | 'thread' | 'qps';
+    threshold: string;
+    label: string;
+    thresholdText: string;
+  }
+) {
+  await page.click('a[href*="/system/create"], button:has-text("新增")');
+  await expect(page).toHaveURL(/\/system\/(create|new)/, { timeout: 5000 });
+
+  await page.locator('select[name="ruleType"]').selectOption({ value: options.ruleType });
+  await page.locator('input[name="threshold"]').fill(options.threshold);
+
+  await page.locator('button[type="submit"]').first().click();
+  await expect(page).toHaveURL(/\/system($|\?)/, { timeout: 10000 });
+  await page.waitForLoadState('networkidle');
+
+  const row = page.locator('tr').filter({ hasText: options.label }).filter({ hasText: options.thresholdText }).first();
+  await expect(row).toBeVisible({ timeout: 10000 });
+
+  const deleteButton = row.locator('button[aria-label="删除"]').first();
+  if (await deleteButton.isVisible({ timeout: 2000 })) {
+    page.once('dialog', async (dialog) => await dialog.accept());
+    await deleteButton.click();
+    await page.waitForTimeout(1000);
+  }
+}
+
 /**
  * 系统规则 - 基础功能测试
  * 测试页面显示和各种系统保护规则的创建
@@ -20,88 +50,53 @@ test.describe('系统规则 - 基础功能', () => {
     });
   });
 
-  test('创建Load系统保护规则', async ({ page, request }) => {
-    await page.click('a[href*="/system/create"], button:has-text("新增")');
-    await expect(page).toHaveURL(/\/system\/(create|new)/, { timeout: 5000 });
-
-    // 设置Load阈值
-    const loadInput = page.locator('input[name="highestSystemLoad"]');
-    if (await loadInput.isVisible({ timeout: 2000 })) {
-      await loadInput.fill('8.0');
-    }
-
-    await page.locator('button[type="submit"]').first().click();
-    await page.waitForTimeout(2000);
-
-    await expect(page).toHaveURL(/\/system($|\?)/, { timeout: 10000 });
+  test('创建Load系统保护规则', async ({ page }) => {
+    await createAndAssertSystemRule(page, {
+      ruleType: 'load',
+      threshold: '81',
+      label: 'LOAD',
+      thresholdText: '81',
+    });
     console.log('Load系统保护规则创建成功');
   });
 
-  test('创建CPU使用率保护规则', async ({ page, request }) => {
-    await page.click('a[href*="/system/create"], button:has-text("新增")');
-    await expect(page).toHaveURL(/\/system\/(create|new)/, { timeout: 5000 });
-
-    // 设置CPU使用率阈值（0-1之间）
-    const cpuInput = page.locator('input[name="highestCpuUsage"]');
-    if (await cpuInput.isVisible({ timeout: 2000 })) {
-      await cpuInput.fill('0.8'); // 80%
-    }
-
-    await page.locator('button[type="submit"]').first().click();
-    await page.waitForTimeout(2000);
-
-    await expect(page).toHaveURL(/\/system($|\?)/, { timeout: 10000 });
+  test('创建CPU使用率保护规则', async ({ page }) => {
+    await createAndAssertSystemRule(page, {
+      ruleType: 'cpu',
+      threshold: '0.83',
+      label: 'CPU',
+      thresholdText: '83%',
+    });
     console.log('CPU使用率保护规则创建成功');
   });
 
-  test('创建平均响应时间保护规则', async ({ page, request }) => {
-    await page.click('a[href*="/system/create"], button:has-text("新增")');
-    await expect(page).toHaveURL(/\/system\/(create|new)/, { timeout: 5000 });
-
-    // 设置平均RT阈值（毫秒）
-    const rtInput = page.locator('input[name="avgRt"]');
-    if (await rtInput.isVisible({ timeout: 2000 })) {
-      await rtInput.fill('1000'); // 1秒
-    }
-
-    await page.locator('button[type="submit"]').first().click();
-    await page.waitForTimeout(2000);
-
-    await expect(page).toHaveURL(/\/system($|\?)/, { timeout: 10000 });
+  test('创建平均响应时间保护规则', async ({ page }) => {
+    await createAndAssertSystemRule(page, {
+      ruleType: 'rt',
+      threshold: '1357',
+      label: 'RT',
+      thresholdText: '1357ms',
+    });
     console.log('平均响应时间保护规则创建成功');
   });
 
-  test('创建并发线程数保护规则', async ({ page, request }) => {
-    await page.click('a[href*="/system/create"], button:has-text("新增")');
-    await expect(page).toHaveURL(/\/system\/(create|new)/, { timeout: 5000 });
-
-    // 设置线程数阈值
-    const threadInput = page.locator('input[name="maxThread"]');
-    if (await threadInput.isVisible({ timeout: 2000 })) {
-      await threadInput.fill('100');
-    }
-
-    await page.locator('button[type="submit"]').first().click();
-    await page.waitForTimeout(2000);
-
-    await expect(page).toHaveURL(/\/system($|\?)/, { timeout: 10000 });
+  test('创建并发线程数保护规则', async ({ page }) => {
+    await createAndAssertSystemRule(page, {
+      ruleType: 'thread',
+      threshold: '137',
+      label: '线程数',
+      thresholdText: '137',
+    });
     console.log('并发线程数保护规则创建成功');
   });
 
-  test('创建入口QPS保护规则', async ({ page, request }) => {
-    await page.click('a[href*="/system/create"], button:has-text("新增")');
-    await expect(page).toHaveURL(/\/system\/(create|new)/, { timeout: 5000 });
-
-    // 设置QPS阈值
-    const qpsInput = page.locator('input[name="qps"]');
-    if (await qpsInput.isVisible({ timeout: 2000 })) {
-      await qpsInput.fill('1000');
-    }
-
-    await page.locator('button[type="submit"]').first().click();
-    await page.waitForTimeout(2000);
-
-    await expect(page).toHaveURL(/\/system($|\?)/, { timeout: 10000 });
+  test('创建入口QPS保护规则', async ({ page }) => {
+    await createAndAssertSystemRule(page, {
+      ruleType: 'qps',
+      threshold: '1321',
+      label: '入口 QPS',
+      thresholdText: '1321',
+    });
     console.log('入口QPS保护规则创建成功');
   });
 });

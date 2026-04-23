@@ -67,6 +67,8 @@ jobs:
           build-args: |
             USE_CHINA_MIRROR=false
             FRONTEND_IMAGE=${{ env.FRONTEND_IMAGE }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Build token-server image (local only)
         uses: docker/build-push-action@v5

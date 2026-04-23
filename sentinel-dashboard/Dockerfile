@@ -6,6 +6,7 @@
 ARG JAVA_VERSION=21
 ARG FRONTEND_IMAGE=sentinel/frontend:local
 ARG USE_CHINA_MIRROR=false
+ARG MAVEN_CLI_OPTS="-B -ntp -DskipTests=true -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.wagon.http.retryHandler.requestSentEnabled=true -Dmaven.wagon.http.pool=false"
 
 # Frontend stage - 从预构建的前端镜像获取静态资源
 FROM ${FRONTEND_IMAGE} AS frontend
@@ -14,6 +15,7 @@ FROM ${FRONTEND_IMAGE} AS frontend
 FROM maven:3.8-eclipse-temurin-${JAVA_VERSION} AS builder
 
 ARG USE_CHINA_MIRROR
+ARG MAVEN_CLI_OPTS
 
 WORKDIR /build
 
@@ -23,13 +25,20 @@ RUN if [ "$USE_CHINA_MIRROR" = "true" ]; then \
       echo '<?xml version="1.0" encoding="UTF-8"?><settings><mirrors><mirror><id>aliyun</id><mirrorOf>central</mirrorOf><url>https://maven.aliyun.com/repository/central</url></mirror></mirrors></settings>' > /root/.m2/settings.xml; \
     fi
 
-# Copy backend files
-COPY . .
+# Copy dependency descriptors first to leverage Docker layer cache
+COPY pom.xml ./
+
+# Pre-fetch Maven dependencies with retry options to reduce CI network flakes
+RUN mvn ${MAVEN_CLI_OPTS} dependency:go-offline
+
+# Copy backend source files
+COPY src ./src
+COPY resources ./resources
 
 # Copy frontend build output to webapp
 COPY --from=frontend /app/dist/ ./src/main/webapp/resources/
 
-RUN mvn -B clean package -DskipTests=true
+RUN mvn ${MAVEN_CLI_OPTS} clean package
 
 # Runtime stage
 FROM eclipse-temurin:${JAVA_VERSION}-jre

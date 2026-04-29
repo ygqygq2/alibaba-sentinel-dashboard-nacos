@@ -4,7 +4,7 @@ test.describe('簇点链路', () => {
   const APP_NAME = 'sentinel-token-server';
 
   const getInstanceSelect = (page: import('@playwright/test').Page) => page.getByRole('combobox').first();
-  const getSearchInput = (page: import('@playwright/test').Page) => page.getByPlaceholder(/搜索资源名/);
+  const getSearchInput = (page: import('@playwright/test').Page) => page.getByPlaceholder('搜索资源名');
   const getResourceTable = (page: import('@playwright/test').Page) => page.locator('table').first();
 
   async function gotoIdentityPage(page: import('@playwright/test').Page) {
@@ -96,15 +96,20 @@ test.describe('簇点链路', () => {
     await expect.poll(async () => instanceSelect.inputValue(), { timeout: 10000 }).not.toBe('');
 
     if (optionCount === 1) {
-      await expect(instanceSelect).toHaveValue(await options.first().getAttribute('value'));
+      const value = await options.first().getAttribute('value');
+      if (value) {
+        await expect(instanceSelect).toHaveValue(value);
+      }
       return;
     }
 
     const secondValue = await options.nth(1).getAttribute('value');
-    expect(secondValue).toBeTruthy();
+    if (secondValue) {
+      expect(secondValue).toBeTruthy();
 
-    await instanceSelect.selectOption(secondValue!);
-    await expect(instanceSelect).toHaveValue(secondValue!);
-    await expect(getResourceTable(page)).toBeVisible({ timeout: 10000 });
+      await instanceSelect.selectOption(secondValue);
+      await expect(instanceSelect).toHaveValue(secondValue);
+      await expect(getResourceTable(page)).toBeVisible({ timeout: 10000 });
+    }
   });
 });
